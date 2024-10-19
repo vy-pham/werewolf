@@ -1,0 +1,46 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateUserInput {
+  email: String!
+
+  """Password"""
+  password: String!
+}
+
+input LoginUserInput {
+  email: String!
+
+  """Password"""
+  password: String!
+}
+
+type Me {
+  id: ID!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  login(input: LoginUserInput!): UserToken!
+}
+
+type Query {
+  me: Me!
+  rooms: [Room!]!
+  users: [User!]!
+}
+
+type Room {
+  id: ID!
+}
+
+type User {
+  email: String!
+  id: ID!
+  username: String!
+}
+
+type UserToken {
+  token: String!
+}

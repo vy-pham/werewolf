@@ -1,0 +1,26 @@
+<main class="bg-[url(/background.jpeg)] bg-center bg-cover w-screen h-screen">
+  <header class="p-2 border-b-2">Place holder for header</header>
+  <section class="flex flex-wrap mt-4">
+    <p class="w-full">Place holder for role information</p>
+    <div class="p-5 w-[20%]">
+      <p class="text-center">Role</p>
+    </div>
+    <div class="p-5 w-[20%]">
+      <p class="text-center">Role</p>
+    </div>
+    <div class="p-5 w-[20%]">
+      <p class="text-center">Role</p>
+    </div>
+    <div class="p-5 w-[20%]">
+      <p class="text-center">Role</p>
+    </div>
+    <div class="p-5 w-[20%]">
+      <p class="text-center">Role</p>
+    </div>
+  </section>
+  <section class="flex justify-center mt-4">
+    <app-button [disabled]="true">Join room</app-button>
+    <app-button (click)="openModal()">Create room</app-button>
+  </section>
+  <app-modal [isShow]="homeService.isShow" (close)="onClose()"></app-modal>
+</main>

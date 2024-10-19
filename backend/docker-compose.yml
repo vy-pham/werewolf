@@ -1,0 +1,14 @@
+version: '3'
+services:
+  werewolf-postgres-db:
+    image: postgres
+    ports:
+      - '5434:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=werewolf
+    volumes:
+      - werewolf-db:/var/lib/postgresql/data
+volumes:
+  werewolf-db:

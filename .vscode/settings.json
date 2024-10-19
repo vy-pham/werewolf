@@ -1,0 +1,30 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.addMissingImports": "always",
+    "source.fixAll": "always",
+    "source.removeUnusedImports": "always",
+  },
+  "editor.formatOnSave": true,
+  "[javascript]": {
+    "editor.autoIndent": "keep"
+  },
+  "[yaml]": {
+    "editor.autoIndent": "advanced"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.tabSize": 2,
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.autoClosingTags": true,
+  "typescript.format.enable": true,
+  "typescript.format.semicolons": "insert",
+  "typescript.check.npmIsInstalled": true,
+  "typescript.format.indentSwitchCase": true,
+  "typescript.format.insertSpaceAfterTypeAssertion": true,
+  "typescript.inlayHints.enumMemberValues.enabled": false,
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "typescript.referencesCodeLens.enabled": false,
+  "cSpell.words": [
+    "codegen"
+  ],
+}
