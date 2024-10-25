@@ -9,6 +9,10 @@ input CreateUserInput {
   password: String!
 }
 
+input FiltersUserInput {
+  username: String!
+}
+
 input LoginUserInput {
   email: String!
 
@@ -25,14 +29,32 @@ type Mutation {
   login(input: LoginUserInput!): UserToken!
 }
 
+type PaginationData {
+  cursorLeft: Float
+  cursorRight: Float
+  page: Float!
+  pageSize: Float!
+  total: Float!
+}
+
+input PaginationInput {
+  page: Float! = 1
+  pageSize: Float! = 10
+}
+
 type Query {
   me: Me!
-  rooms: [Room!]!
-  users: [User!]!
+  rooms: Room_List!
+  users(filters: FiltersUserInput, pagination: PaginationInput): User_List!
 }
 
 type Room {
   id: ID!
+}
+
+type Room_List {
+  data: [Room!]!
+  pagination: PaginationData!
 }
 
 type User {
@@ -43,4 +65,9 @@ type User {
 
 type UserToken {
   token: String!
+}
+
+type User_List {
+  data: [User!]!
+  pagination: PaginationData!
 }

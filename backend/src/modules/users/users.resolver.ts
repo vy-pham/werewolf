@@ -4,20 +4,28 @@ import { Inject } from '@nestjs/common';
 import { UserService } from './users.service';
 import { CreateUserInput } from './input/create-user.input';
 import { LoginUserInput } from './input/login-user.input';
+import { Pagination } from 'src/decorators/pagination.decorator';
+import { Filters } from 'src/decorators/filter.decorator';
+import { FiltersUserInput } from './input/filters-user.input';
+import { QueryList } from 'src/decorators/query-list.decorator';
 
 @Resolver('User')
 export class UserResolver {
   @Inject() userService: UserService;
+
   @Query(() => Me)
   async me() {
     const data = await this.userService.getCurrentUser();
     return data;
   }
 
-  @Query(() => [User])
-  async users() {
-    const data = await this.userService.getUsers();
-    return data;
+  @QueryList(User)
+  async users(
+    @Pagination() pagination: Pagination,
+    @Filters(FiltersUserInput) filters: FiltersUserInput
+  ) {
+    const { data, total } = await this.userService.getUsers(filters, pagination);
+    return { data, total };
   }
 
   @Mutation(() => UserToken)
