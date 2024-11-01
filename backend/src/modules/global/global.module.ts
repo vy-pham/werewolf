@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
+import { PrismaModule } from '../prisma/prisma.module';
 
 const provideUser = {
   provide: TOKEN.USER,
@@ -12,11 +13,13 @@ const provideUser = {
 
 @Global()
 @Module({
+  imports: [PrismaModule],
   providers: [
     provideUser
   ],
   exports: [
-    provideUser
+    provideUser,
+    PrismaModule
   ]
 })
 export class GlobalModule { }

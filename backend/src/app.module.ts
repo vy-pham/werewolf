@@ -1,6 +1,6 @@
 import { type ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
 import { Controller, Get, Inject, Module } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR, REQUEST } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, REQUEST } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
 import { JwtModule } from '@nestjs/jwt';
 import type { Request } from 'express';
@@ -10,15 +10,15 @@ import { RoomModule } from './modules/rooms/rooms.module';
 import { UsersModule } from './modules/users/users.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { AuthGuard } from './guard/auth.guard';
-import { PaginationMapInterceptor } from './interceptors/pagination-map.interceptor';
+import { PaginationMapInterceptor } from './interceptors/response.interceptor';
+import { HttpExceptionFilter } from './interceptors/exception.interceptor';
+import GraphQLJSON from 'graphql-type-json';
 
 @Controller()
 class AppController {
   @Inject(REQUEST) request: Request;
   @Get('')
   get() {
-    console.log(this.request.headers);
-
     return 'ABC';
   }
 }
@@ -30,6 +30,7 @@ class AppController {
       sortSchema: true,
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      resolvers: { JSON: GraphQLJSON },
     }),
     JwtModule,
     UsersModule,
@@ -45,7 +46,11 @@ class AppController {
     {
       provide: APP_INTERCEPTOR,
       useClass: PaginationMapInterceptor
-    }
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
   ],
 
   controllers: [AppController]

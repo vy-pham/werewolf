@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
+import type { BasePrismaService } from 'src/modules/prisma/prisma.service';
 config({
   path: fs.existsSync(path.join(process.cwd(), '.env'))
     ? path.join(process.cwd(), '.env')
@@ -40,8 +41,9 @@ declare global {
     skip: null | number;
     take: null | number;
   }
+
+  type PrismaService = ReturnType<BasePrismaService['withExtensions']>;
 }
 global.Config = envConfig;
-console.log('111111');
 
 global.TOKEN = PROVIDER_TOKEN;

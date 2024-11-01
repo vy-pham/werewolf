@@ -1,6 +1,7 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID } from '@nestjs/graphql';
+import { ObjectTypes } from 'src/decorators/object-type-with-status.decorator';
 
-@ObjectType()
+@ObjectTypes()
 export class Room {
   @Field(() => ID)
   id: number;

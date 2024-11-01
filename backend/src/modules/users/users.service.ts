@@ -1,14 +1,15 @@
 import { BadRequestException, Inject, Injectable, Scope } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
 import type { CreateUserInput } from './input/create-user.input';
 import type { LoginUserInput } from './input/login-user.input';
 import { JwtService } from '@nestjs/jwt';
 import type { FiltersUserInput } from './input/filters-user.input';
 import { Prisma } from '@prisma/client';
+import { InjectPrisma } from 'src/decorators/inject-prisma.decorator';
+import { hashSync } from 'bcrypt';
 @Injectable({ scope: Scope.REQUEST })
 export class UserService {
   @Inject() jwtService: JwtService;
-  @Inject() prisma: PrismaService;
+  @InjectPrisma() prisma: PrismaService;
 
   async getCurrentUser() {
     const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzI5NjAyMjQyfQ.XhKflHSg3-P5x4rtkjrKvFGyU_xYuJWyNREa4BBETvY';
@@ -35,10 +36,12 @@ export class UserService {
   }
 
   async createUser({ email, password }: CreateUserInput) {
+    await this.prisma.user.exists({ email }, { throwCase: 'IF_EXISTS' });
+
     const data = await this.prisma.user.create({
       data: {
         email,
-        password,
+        password: hashSync(password, 10),
         username: `${Date.now()}`
       }
     });

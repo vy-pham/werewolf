@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Query, Resolver } from '@nestjs/graphql';
 import { Me, User, UserToken } from './users.model';
 import { Inject } from '@nestjs/common';
 import { UserService } from './users.service';
@@ -8,6 +8,8 @@ import { Pagination } from 'src/decorators/pagination.decorator';
 import { Filters } from 'src/decorators/filter.decorator';
 import { FiltersUserInput } from './input/filters-user.input';
 import { QueryList } from 'src/decorators/query-list.decorator';
+import { Mutation } from 'src/decorators/mutation.decorator';
+import { Input } from 'src/decorators/input.decorator';
 
 @Resolver('User')
 export class UserResolver {
@@ -22,13 +24,13 @@ export class UserResolver {
   @QueryList(User)
   async users(
     @Pagination() pagination: Pagination,
-    @Filters(FiltersUserInput) filters: FiltersUserInput
+    @Filters() filters?: FiltersUserInput
   ) {
-    const { data, total } = await this.userService.getUsers(filters, pagination);
+    const { data, total } = await this.userService.getUsers(filters || {}, pagination);
     return { data, total };
   }
 
-  @Mutation(() => UserToken)
+  @Mutation(UserToken)
   async login(
     @Args('input') input: LoginUserInput,
   ) {
@@ -38,9 +40,9 @@ export class UserResolver {
     };
   }
 
-  @Mutation(() => User)
+  @Mutation(User)
   async createUser(
-    @Args('input') input: CreateUserInput,
+    @Input() input: CreateUserInput,
   ) {
     const data = await this.userService.createUser(input);
     return data;

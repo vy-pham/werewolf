@@ -6,10 +6,20 @@ export const GET_MY_USER = gql(
     me {
       id
     }
-    users {
-      id
-      email
-    }
   }
 `
 );
+
+export const MUTATION_CREATE_USER = gql(`
+  mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
+      ... on ErrorOutput {
+        errors
+      }
+      ... on BaseResponse {
+        message
+        statusCode
+      }
+    }
+  }
+`);

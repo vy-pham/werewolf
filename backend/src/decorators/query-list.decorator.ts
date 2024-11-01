@@ -1,6 +1,8 @@
-import { Field, ObjectType, Query } from '@nestjs/graphql';
-import { IsGetList } from './public.decorator';
-import { applyDecorators } from '@nestjs/common';
+import { createUnionType, Field, ObjectType, Query, type QueryOptions } from '@nestjs/graphql';
+import { IS_GET_LIST } from './public.decorator';
+import { applyDecorators, SetMetadata } from '@nestjs/common';
+import { ObjectTypes } from './object-type-with-status.decorator';
+import { ErrorOutput } from 'src/input-output/error.output';
 
 @ObjectType()
 class PaginationData {
@@ -16,15 +18,28 @@ class PaginationData {
   cursorRight?: number;
 }
 
-export const QueryList = (DataType: { new(...args: any[]): any; }) => {
-  @ObjectType()
+export const QueryList = (DataType: { new(...args: any[]): any; }, options?: QueryOptions) => {
+
+  @ObjectTypes()
   class Type {
     @Field(() => [DataType])
     data: typeof DataType;
     @Field(() => PaginationData)
     pagination: PaginationData;
   }
+
   Object.defineProperty(Type, 'name', { value: `${DataType.name}_List` });
-  applyDecorators(IsGetList());
-  return Query(() => Type);
+
+  const ResultUnion = createUnionType({
+    name: `ResultUnion_${DataType.name}_List`,
+    types: () => [Type, ErrorOutput],
+    resolveType(value) {
+      console.log(value);
+
+      if (value.errors) return ErrorOutput;
+      return Type;
+    }
+  });
+
+  return applyDecorators(SetMetadata(IS_GET_LIST, true), Query(() => ResultUnion, options));
 };

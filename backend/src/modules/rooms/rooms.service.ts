@@ -1,13 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { Injectable } from '@nestjs/common';
+import type { FilterRoomInput } from './input/filter-room.input';
+import { InjectPrisma } from 'src/decorators/inject-prisma.decorator';
 
 @Injectable()
 export class RoomService {
-  @Inject() prisma: PrismaService;
-  async getRooms() {
-    const rooms = await this.prisma.room.findMany({
+  @InjectPrisma() prisma: PrismaService;
+  async getRooms(filters: FilterRoomInput, pagination: Pagination) {
 
+    const results = await this.prisma.room.findAndPagination({
+      where: {},
+      ...pagination,
     });
-    return rooms;
+    return results;
   }
 }

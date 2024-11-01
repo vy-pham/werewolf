@@ -2,6 +2,15 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+interface BaseResponse {
+  message: String!
+  statusCode: Float!
+}
+
+input CreateRoomInput {
+  a: Float!
+}
+
 input CreateUserInput {
   email: String!
 
@@ -9,9 +18,24 @@ input CreateUserInput {
   password: String!
 }
 
+type ErrorOutput implements BaseResponse {
+  errors: JSON!
+  message: String!
+  statusCode: Float!
+}
+
+input FilterRoomInput {
+  max: Float!
+}
+
 input FiltersUserInput {
   username: String!
 }
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
 
 input LoginUserInput {
   email: String!
@@ -25,8 +49,9 @@ type Me {
 }
 
 type Mutation {
-  createUser(input: CreateUserInput!): User!
-  login(input: LoginUserInput!): UserToken!
+  createRoom(input: CreateRoomInput!): ResultUnion_Room_Mutation!
+  createUser(input: CreateUserInput!): ResultUnion_User_Mutation!
+  login(input: LoginUserInput!): ResultUnion_UserToken_Mutation!
 }
 
 type PaginationData {
@@ -44,17 +69,37 @@ input PaginationInput {
 
 type Query {
   me: Me!
-  rooms: Room_List!
-  users(filters: FiltersUserInput, pagination: PaginationInput): User_List!
+  rooms(filter: FilterRoomInput, pagination: PaginationInput): ResultUnion_Room_List!
+  users(filter: FiltersUserInput, pagination: PaginationInput): ResultUnion_User_List!
 }
 
-type Room {
+union ResultUnion_Room_List = ErrorOutput | Room_List
+
+union ResultUnion_Room_Mutation = ErrorOutput | Room_Mutation
+
+union ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation
+
+union ResultUnion_User_List = ErrorOutput | User_List
+
+union ResultUnion_User_Mutation = ErrorOutput | User_Mutation
+
+type Room implements BaseResponse {
   id: ID!
+  message: String!
+  statusCode: Float!
 }
 
-type Room_List {
+type Room_List implements BaseResponse {
   data: [Room!]!
+  message: String!
   pagination: PaginationData!
+  statusCode: Float!
+}
+
+type Room_Mutation implements BaseResponse {
+  data: Room!
+  message: String!
+  statusCode: Float!
 }
 
 type User {
@@ -67,7 +112,21 @@ type UserToken {
   token: String!
 }
 
-type User_List {
+type UserToken_Mutation implements BaseResponse {
+  data: UserToken!
+  message: String!
+  statusCode: Float!
+}
+
+type User_List implements BaseResponse {
   data: [User!]!
+  message: String!
   pagination: PaginationData!
+  statusCode: Float!
+}
+
+type User_Mutation implements BaseResponse {
+  data: User!
+  message: String!
+  statusCode: Float!
 }

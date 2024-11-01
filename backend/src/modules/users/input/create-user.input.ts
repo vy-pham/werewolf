@@ -4,9 +4,8 @@ import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 @InputType()
 export class CreateUserInput {
   @Field()
-  @IsEmail({}, { message: 'Dmmm sai roi' })
+  @IsEmail({}, { message: 'Invalid Email' })
   email: string;
-
 
   @Field({ description: 'Password' })
   @IsString()
