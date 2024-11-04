@@ -1,8 +1,7 @@
 import { inject } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { GET_MY_USER, MUTATION_CREATE_USER } from './home.queries';
 import { BehaviorSubject } from 'rxjs';
-
+import { FormBuilder, Validators } from '@angular/forms';
 export class HomeService {
   apollo = inject(Apollo);
   get isShow() {
@@ -12,24 +11,33 @@ export class HomeService {
     this.isShow$.next(value);
   }
   isShow$ = new BehaviorSubject(false);
-  getUser() {
-    this.apollo
-      .watchQuery({
-        query: GET_MY_USER,
-      })
-      .valueChanges
-      .subscribe(({ data: { me } }) => {
-      });
-  }
+
+  formBuilder = new FormBuilder().nonNullable;
+  form = this.formBuilder.group({
+    username: [
+      '',
+      [Validators.required, Validators.minLength(4), Validators.maxLength(12)],
+    ],
+    password: [
+      '',
+      [Validators.required, Validators.minLength(6), Validators.maxLength(12)],
+    ],
+  });
 
   login() {
-    this.apollo
-      .mutate({
-        mutation: MUTATION_CREATE_USER
-      })
-      .subscribe(({ data }) => {
-        data?.createUser.statusCode;
+    console.log(this.form.controls.username.errors);
 
-      });
+    // this.apollo
+    //   .mutate<CreateUserMutation, CreateUserMutationVariables>({
+    //     mutation: MUTATION_CREATE_USER,
+    //   })
+    //   .subscribe(({ data }) => {
+    //     if (!data) return;
+    //     const { createUser } = data;
+    //     if (createUser.__typename === 'ErrorOutput') {
+    //     } else {
+    //       const {} = createUser;
+    //     }
+    //   });
   }
 }

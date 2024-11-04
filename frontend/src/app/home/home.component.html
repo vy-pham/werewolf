@@ -1,5 +1,10 @@
 <main class="bg-[url(/background.jpeg)] bg-center bg-cover w-screen h-screen">
-  <header class="p-2 border-b-2">Place holder for header</header>
+  <header class="border-b-2 p-4 flex">
+    <div class="w-1/2"></div>
+    <div class="flex justify-end w-1/2">
+      <app-button (click)="openModal()">Sign in</app-button>
+    </div>
+  </header>
   <section class="flex flex-wrap mt-4">
     <p class="w-full">Place holder for role information</p>
     <div class="p-5 w-[20%]">
@@ -20,7 +25,25 @@
   </section>
   <section class="flex justify-center mt-4">
     <app-button [disabled]="true">Join room</app-button>
-    <app-button (click)="openModal()">Create room</app-button>
+    <app-button>Create room</app-button>
   </section>
-  <app-modal [isShow]="homeService.isShow" (close)="onClose()"></app-modal>
+  <app-modal [isShow]="homeService.isShow" (close)="onClose()">
+    <h2 class="text-2xl text-center font-bold">Sign in</h2>
+    <p>In case you are not sign up</p>
+    <app-input
+      type="text"
+      placeholder="User name"
+      [formControl]="homeService.form.controls.username"
+    />
+
+    <app-input
+      type="password"
+      placeholder="Password"
+      [formControl]="homeService.form.controls.password"
+    />
+    <div class="error" *ngIf="homeService.form.controls.password.errors">
+      {{ "Password is required, min length 6, max length 12" }}
+    </div>
+    <app-button (click)="homeService.login()">Login</app-button>
+  </app-modal>
 </main>

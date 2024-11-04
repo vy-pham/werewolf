@@ -14,34 +14,34 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 const documents = {
-    "\n  query  QueryMe{\n    me {\n      id\n    }\n  }\n": types.QueryMeDocument,
+    "\n  query QueryMe {\n    me {\n      id\n    }\n  }\n": types.QueryMeDocument,
     "\n  mutation CreateUser($input: CreateUserInput!) {\n    createUser(input: $input) {\n      ... on ErrorOutput {\n        errors\n      }\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n    }\n  }\n": types.CreateUserDocument,
 };
 
 /**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  *
  *
  * @example
  * ```ts
- * const query = gql(`query GetUser($id: ID!) { user(id: $id) { name } }`);
+ * const query = graphql(`query GetUser($id: ID!) { user(id: $id) { name } }`);
  * ```
  *
  * The query argument is unknown!
  * Please regenerate the types.
  */
-export function gql(source: string): unknown;
+export function graphql(source: string): unknown;
 
 /**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query  QueryMe{\n    me {\n      id\n    }\n  }\n"): (typeof documents)["\n  query  QueryMe{\n    me {\n      id\n    }\n  }\n"];
+export function graphql(source: "\n  query QueryMe {\n    me {\n      id\n    }\n  }\n"): (typeof documents)["\n  query QueryMe {\n    me {\n      id\n    }\n  }\n"];
 /**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  mutation CreateUser($input: CreateUserInput!) {\n    createUser(input: $input) {\n      ... on ErrorOutput {\n        errors\n      }\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation CreateUser($input: CreateUserInput!) {\n    createUser(input: $input) {\n      ... on ErrorOutput {\n        errors\n      }\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  mutation CreateUser($input: CreateUserInput!) {\n    createUser(input: $input) {\n      ... on ErrorOutput {\n        errors\n      }\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation CreateUser($input: CreateUserInput!) {\n    createUser(input: $input) {\n      ... on ErrorOutput {\n        errors\n      }\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n    }\n  }\n"];
 
-export function gql(source: string) {
+export function graphql(source: string) {
   return (documents as any)[source] ?? {};
 }
 
