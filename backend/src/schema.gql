@@ -4,7 +4,7 @@
 
 interface BaseResponse {
   message: String!
-  statusCode: Float!
+  statusCode: HttpCode!
 }
 
 input CreateRoomInput {
@@ -12,16 +12,15 @@ input CreateRoomInput {
 }
 
 input CreateUserInput {
-  email: String!
-
   """Password"""
   password: String!
+  username: String!
 }
 
 type ErrorOutput implements BaseResponse {
   errors: JSON!
   message: String!
-  statusCode: Float!
+  statusCode: HttpCode!
 }
 
 input FilterRoomInput {
@@ -32,20 +31,76 @@ input FiltersUserInput {
   username: String!
 }
 
+enum HttpCode {
+  ACCEPTED
+  AMBIGUOUS
+  BAD_GATEWAY
+  BAD_REQUEST
+  CONFLICT
+  CONTINUE
+  CREATED
+  EARLYHINTS
+  EXPECTATION_FAILED
+  FAILED_DEPENDENCY
+  FORBIDDEN
+  FOUND
+  GATEWAY_TIMEOUT
+  GONE
+  HTTP_VERSION_NOT_SUPPORTED
+  INTERNAL_SERVER_ERROR
+  I_AM_A_TEAPOT
+  LENGTH_REQUIRED
+  METHOD_NOT_ALLOWED
+  MISDIRECTED
+  MOVED_PERMANENTLY
+  NON_AUTHORITATIVE_INFORMATION
+  NOT_ACCEPTABLE
+  NOT_FOUND
+  NOT_IMPLEMENTED
+  NOT_MODIFIED
+  NO_CONTENT
+  OK
+  PARTIAL_CONTENT
+  PAYLOAD_TOO_LARGE
+  PAYMENT_REQUIRED
+  PERMANENT_REDIRECT
+  PRECONDITION_FAILED
+  PRECONDITION_REQUIRED
+  PROCESSING
+  PROXY_AUTHENTICATION_REQUIRED
+  REQUESTED_RANGE_NOT_SATISFIABLE
+  REQUEST_TIMEOUT
+  RESET_CONTENT
+  SEE_OTHER
+  SERVICE_UNAVAILABLE
+  SWITCHING_PROTOCOLS
+  TEMPORARY_REDIRECT
+  TOO_MANY_REQUESTS
+  UNAUTHORIZED
+  UNPROCESSABLE_ENTITY
+  UNSUPPORTED_MEDIA_TYPE
+  URI_TOO_LONG
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSON
 
 input LoginUserInput {
-  email: String!
-
   """Password"""
   password: String!
+  username: String!
 }
 
 type Me {
   id: ID!
+}
+
+type Me_Single implements BaseResponse {
+  data: Me!
+  message: String!
+  statusCode: HttpCode!
 }
 
 type Mutation {
@@ -68,10 +123,12 @@ input PaginationInput {
 }
 
 type Query {
-  me: Me!
+  me: ResultUnion_Me_Single!
   rooms(filter: FilterRoomInput, pagination: PaginationInput): ResultUnion_Room_List!
   users(filter: FiltersUserInput, pagination: PaginationInput): ResultUnion_User_List!
 }
+
+union ResultUnion_Me_Single = ErrorOutput | Me_Single
 
 union ResultUnion_Room_List = ErrorOutput | Room_List
 
@@ -86,20 +143,20 @@ union ResultUnion_User_Mutation = ErrorOutput | User_Mutation
 type Room implements BaseResponse {
   id: ID!
   message: String!
-  statusCode: Float!
+  statusCode: HttpCode!
 }
 
 type Room_List implements BaseResponse {
   data: [Room!]!
   message: String!
   pagination: PaginationData!
-  statusCode: Float!
+  statusCode: HttpCode!
 }
 
 type Room_Mutation implements BaseResponse {
   data: Room!
   message: String!
-  statusCode: Float!
+  statusCode: HttpCode!
 }
 
 type User {
@@ -115,18 +172,18 @@ type UserToken {
 type UserToken_Mutation implements BaseResponse {
   data: UserToken!
   message: String!
-  statusCode: Float!
+  statusCode: HttpCode!
 }
 
 type User_List implements BaseResponse {
   data: [User!]!
   message: String!
   pagination: PaginationData!
-  statusCode: Float!
+  statusCode: HttpCode!
 }
 
 type User_Mutation implements BaseResponse {
   data: User!
   message: String!
-  statusCode: Float!
+  statusCode: HttpCode!
 }

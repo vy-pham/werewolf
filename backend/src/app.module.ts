@@ -1,7 +1,7 @@
 import { type ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
-import { Controller, Get, Inject, Module } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, REQUEST } from '@nestjs/core';
-import { GraphQLModule } from '@nestjs/graphql';
+import { GraphQLModule, registerEnumType } from '@nestjs/graphql';
 import { JwtModule } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { join } from 'path';
@@ -13,6 +13,9 @@ import { AuthGuard } from './guard/auth.guard';
 import { PaginationMapInterceptor } from './interceptors/response.interceptor';
 import { HttpExceptionFilter } from './interceptors/exception.interceptor';
 import GraphQLJSON from 'graphql-type-json';
+registerEnumType(HttpStatus, {
+  name: 'HttpCode',
+});
 
 @Controller()
 class AppController {
@@ -36,7 +39,6 @@ class AppController {
     UsersModule,
     RoomModule,
     GlobalModule,
-
   ],
   providers: [
     {
@@ -45,7 +47,7 @@ class AppController {
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: PaginationMapInterceptor
+      useClass: PaginationMapInterceptor,
     },
     {
       provide: APP_FILTER,
@@ -53,8 +55,6 @@ class AppController {
     },
   ],
 
-  controllers: [AppController]
+  controllers: [AppController],
 })
-export class AppModule {
-
-}
+export class AppModule {}

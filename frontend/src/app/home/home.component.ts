@@ -16,10 +16,10 @@ export class HomeComponent {
   homeService = inject(HomeService);
 
   openModal() {
-    this.homeService.isShow = true;
+    this.homeService.isShowModal = true;
   }
   onClose() {
-    this.homeService.isShow = false;
+    this.homeService.isShowModal = false;
     console.log('Closed');
   }
 }

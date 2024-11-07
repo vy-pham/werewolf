@@ -1,8 +1,16 @@
-import { createUnionType, Field, Query, type QueryOptions } from '@nestjs/graphql';
+import {
+  createUnionType,
+  Field,
+  Query,
+  type QueryOptions,
+} from '@nestjs/graphql';
 import { ObjectTypes } from './object-type-with-status.decorator';
 import { ErrorOutput } from 'src/input-output/error.output';
 
-export const QuerySingle = (DataType: { new(...args: any[]): any; }, options?: QueryOptions) => {
+export const QuerySingle = (
+  DataType: { new (...args: any[]): any },
+  options?: QueryOptions,
+) => {
   @ObjectTypes()
   class Type {
     @Field(() => DataType)
@@ -15,7 +23,7 @@ export const QuerySingle = (DataType: { new(...args: any[]): any; }, options?: Q
     resolveType(value) {
       if (value.statusCode !== 200) return ErrorOutput;
       return Type;
-    }
+    },
   });
   return Query(() => ResultUnion, options);
 };

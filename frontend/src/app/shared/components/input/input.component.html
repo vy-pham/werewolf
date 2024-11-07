@@ -1,9 +1,14 @@
-<input
-  class="w-full rounded-lg p-2 bg-orange-200 outline-none"
-  [type]="type"
-  [placeholder]="placeholder"
-  [formControl]="formControl"
-/>
-<div class="error" *ngIf="formControl.errors">
-  {{ formControl.errors }}
+<div class="relative pb-8">
+  <input
+    class="w-full rounded-lg p-2 bg-orange-200 outline-none"
+    [type]="type"
+    [placeholder]="placeholder"
+    [formControl]="formControl"
+  />
+  <div
+    class="absolute bottom-0 left-0 text-red-500"
+    *ngIf="formControl.touched && formControl.errors && errorMessage"
+  >
+    {{ errorMessage }}
+  </div>
 </div>

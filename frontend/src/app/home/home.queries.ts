@@ -1,22 +1,31 @@
 import { gql } from 'apollo-angular';
 
 export const GET_MY_USER = gql`
-  query QueryMe {
+  query Me {
     me {
-      id
+      ... on Me_Single {
+        data {
+          id
+        }
+      }
+      ... on BaseResponse {
+        statusCode
+      }
     }
   }
 `;
 
-export const MUTATION_CREATE_USER = gql`
-  mutation CreateUser($input: CreateUserInput!) {
-    createUser(input: $input) {
-      ... on ErrorOutput {
-        errors
-      }
+export const LOGIN = gql`
+  mutation Login($input: LoginUserInput!) {
+    login(input: $input) {
       ... on BaseResponse {
         message
         statusCode
+      }
+      ... on UserToken_Mutation {
+        data {
+          token
+        }
       }
     }
   }

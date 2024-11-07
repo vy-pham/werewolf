@@ -29,21 +29,23 @@
   </section>
   <app-modal [isShow]="homeService.isShow" (close)="onClose()">
     <h2 class="text-2xl text-center font-bold">Sign in</h2>
-    <p>In case you are not sign up</p>
+    <p>Your account will be create in the first time you sign-in</p>
     <app-input
       type="text"
       placeholder="User name"
       [formControl]="homeService.form.controls.username"
+      errorMessage="Username is required, min length 4, max length 6"
     />
 
     <app-input
       type="password"
       placeholder="Password"
       [formControl]="homeService.form.controls.password"
+      errorMessage="Password is required, min length 6, max length 12"
     />
-    <div class="error" *ngIf="homeService.form.controls.password.errors">
-      {{ "Password is required, min length 6, max length 12" }}
-    </div>
     <app-button (click)="homeService.login()">Login</app-button>
+    <div class="error" *ngIf="homeService.form.controls.password.errors">
+      {{ "" }}
+    </div>
   </app-modal>
 </main>

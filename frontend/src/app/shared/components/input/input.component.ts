@@ -12,4 +12,5 @@ export class InputComponent {
   @Input() formControl!: FormControl<any>;
   @Input() type = 'text';
   @Input() placeholder = '';
+  @Input() errorMessage = '';
 }

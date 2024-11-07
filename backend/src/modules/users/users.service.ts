@@ -5,16 +5,14 @@ import { JwtService } from '@nestjs/jwt';
 import type { FiltersUserInput } from './input/filters-user.input';
 import { Prisma } from '@prisma/client';
 import { InjectPrisma } from 'src/decorators/inject-prisma.decorator';
-import { hashSync } from 'bcrypt';
+import { compareSync, hashSync } from 'bcrypt';
 @Injectable({ scope: Scope.REQUEST })
 export class UserService {
   @Inject() jwtService: JwtService;
   @InjectPrisma() prisma: PrismaService;
-
+  @Inject(TOKEN.USER) user: JWTPayload;
   async getCurrentUser() {
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzI5NjAyMjQyfQ.XhKflHSg3-P5x4rtkjrKvFGyU_xYuJWyNREa4BBETvY';
-    const data = this.jwtService.verify(token, { secret: global.Config.JWT_SECRET });
-    return data;
+    return this.user;
   }
 
   async getUsers({ username }: FiltersUserInput, { skip, take }: Pagination) {
@@ -26,36 +24,52 @@ export class UserService {
       this.prisma.user.findMany({
         where,
         skip,
-        take
+        take,
       }),
       this.prisma.user.count({
-        where
-      })
+        where,
+      }),
     ]);
     return { data, total };
   }
 
-  async createUser({ email, password }: CreateUserInput) {
-    await this.prisma.user.exists({ email }, { throwCase: 'IF_EXISTS' });
+  async createUser({ username, password }: CreateUserInput) {
+    await this.prisma.user.exists({ username }, { throwCase: 'IF_EXISTS' });
 
     const data = await this.prisma.user.create({
       data: {
-        email,
+        username,
         password: hashSync(password, 10),
-        username: `${Date.now()}`
-      }
+        email: '',
+      },
     });
 
     return data;
   }
 
-  async login({ email, password }: LoginUserInput) {
-    const data = await this.prisma.user.findUnique({
-      where: { email, password }
+  async login({ username, password }: LoginUserInput) {
+    let message = 'Login successfully';
+    console.log(123);
+
+    let user = await this.prisma.user.findUnique({
+      where: { username },
     });
-    if (!data) {
-      throw new BadRequestException('Email or password incorrect');
+    if (!user) {
+      message = 'Signup and login successfully';
+      user = await this.createUser({ username, password });
     }
-    return this.jwtService.sign({ id: data.id }, { secret: global.Config.JWT_SECRET });
+    const isCorrectPassword = compareSync(password, user.password);
+    if (!isCorrectPassword) {
+      throw new BadRequestException('Incorrect password');
+    }
+    const token = this.jwtService.sign(
+      { id: user.id },
+      { secret: global.Config.JWT_SECRET },
+    );
+
+    return {
+      token,
+      message,
+    };
   }
 }
