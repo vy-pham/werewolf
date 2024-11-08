@@ -13,9 +13,9 @@ import { AuthGuard } from './guard/auth.guard';
 import { PaginationMapInterceptor } from './interceptors/response.interceptor';
 import { HttpExceptionFilter } from './interceptors/exception.interceptor';
 import GraphQLJSON from 'graphql-type-json';
-registerEnumType(HttpStatus, {
-  name: 'HttpCode',
-});
+import { RoomStatus } from '@prisma/client';
+registerEnumType(HttpStatus, { name: 'HttpCode' });
+registerEnumType(RoomStatus, { name: 'RoomStatus' });
 
 @Controller()
 class AppController {

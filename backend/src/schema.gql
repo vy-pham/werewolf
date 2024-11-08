@@ -8,7 +8,8 @@ interface BaseResponse {
 }
 
 input CreateRoomInput {
-  a: Float!
+  max_players: Float!
+  name: String!
 }
 
 input CreateUserInput {
@@ -141,10 +142,8 @@ union ResultUnion_User_List = ErrorOutput | User_List
 
 union ResultUnion_User_Mutation = ErrorOutput | User_Mutation
 
-type Room implements BaseResponse {
+type Room {
   id: ID!
-  message: String!
-  statusCode: HttpCode!
 }
 
 type Room_List implements BaseResponse {

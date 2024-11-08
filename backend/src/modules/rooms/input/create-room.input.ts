@@ -1,9 +1,13 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { Min } from 'class-validator';
+import { Max, Min } from 'class-validator';
 
 @InputType()
 export class CreateRoomInput {
-  @Min(10)
+  @Min(4)
+  @Max(40)
   @Field()
-  a: number;
+  max_players: number;
+
+  @Field()
+  name: string;
 }

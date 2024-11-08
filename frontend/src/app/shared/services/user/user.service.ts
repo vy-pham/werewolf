@@ -4,8 +4,9 @@ import { Apollo } from 'apollo-angular';
 import { BehaviorSubject, map } from 'rxjs';
 import { STORAGE_KEY, StorageService } from '../storage.service';
 import type { MeQuery } from '../../../../graphql/queries';
-import type { Me } from '../../../../graphql/types';
+import type { ExtractDataType } from '../../entities/utils.entities';
 
+type Me = ExtractDataType<MeQuery['me']>;
 @Injectable({ providedIn: 'root' })
 export class UserService {
   apollo = inject(Apollo);

@@ -16,17 +16,15 @@ export class RoomResolver {
   @QueryList(Room)
   async rooms(
     @Pagination() pagination: Pagination,
-    @Filters() filters: FilterRoomInput
-
+    @Filters() filters: FilterRoomInput,
   ) {
     const results = await this.roomService.getRooms(filters, pagination);
     return { ...results, message: 'Get rooms successfully' };
   }
 
   @Mutation(Room)
-  async createRoom(
-    @Input() data: CreateRoomInput
-  ) {
-    return {};
+  async createRoom(@Input() input: CreateRoomInput) {
+    const data = await this.roomService.createRoom(input);
+    return { data, message: 'Create room successfully' };
   }
 }

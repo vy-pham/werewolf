@@ -8,12 +8,12 @@ generator client {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  username String  @unique
-  password String
-  email    String?
-  avatar   String?
-  Room     Room[]
+  id         Int         @id @default(autoincrement())
+  username   String      @unique
+  password   String
+  email      String?
+  avatar     String?
+  RoomPlayer RoomPlayer?
 }
 
 model Role {
@@ -23,17 +23,25 @@ model Role {
   point       Int
 }
 
-model Room {
-  id          Int    @id @default(autoincrement())
-  name        String
-  host_id     Int
-  max_players Int
-  status      Status
-  host        User   @relation(fields: [host_id], references: [id])
-}
-
-enum Status {
+enum RoomStatus {
   waiting
   playing
   finished
+}
+
+model Room {
+  id          Int          @id @default(autoincrement())
+  name        String
+  max_players Int
+  status      RoomStatus   @default(waiting)
+  players     RoomPlayer[]
+}
+
+model RoomPlayer {
+  id      Int     @id @default(autoincrement())
+  is_host Boolean @default(false)
+  room_id Int
+  user_id Int?    @unique
+  user    User?   @relation(fields: [user_id], references: [id])
+  room    Room    @relation(fields: [room_id], references: [id])
 }
