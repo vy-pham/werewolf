@@ -15,13 +15,13 @@ export class RoomService {
     return results;
   }
 
-  async createRoom({ max_players, name }: CreateRoomInput) {
+  async createRoom({ maxPlayers, name }: CreateRoomInput) {
     const user = await this.prisma.user.findUnique({
       where: { id: this.user.id },
     });
     console.log('abc');
     await this.prisma.roomPlayer.exists(
-      { user_id: this.user.id },
+      { userId: this.user.id },
       {
         throwCase: 'IF_EXISTS',
         message: 'You cannot create room while you are in another room',
@@ -30,18 +30,18 @@ export class RoomService {
 
     const room = await this.prisma.room.create({
       data: {
-        max_players,
+        maxPlayers,
         name,
         players: {
           createMany: {
             data: [
               {
-                user_id: this.user.id,
-                is_host: true,
+                userId: this.user.id,
+                isHost: true,
               },
-              ...new Array(max_players - 1)
+              ...new Array(maxPlayers - 1)
                 .fill(null)
-                .map(() => ({ user_id: null })),
+                .map(() => ({ userId: null })),
             ],
           },
         },

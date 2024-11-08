@@ -8,7 +8,7 @@ interface BaseResponse {
 }
 
 input CreateRoomInput {
-  max_players: Float!
+  maxPlayers: Float!
   name: String!
 }
 

@@ -6,7 +6,7 @@ export class CreateRoomInput {
   @Min(4)
   @Max(40)
   @Field()
-  max_players: number;
+  maxPlayers: number;
 
   @Field()
   name: string;

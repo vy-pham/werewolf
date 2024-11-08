@@ -30,18 +30,18 @@ enum RoomStatus {
 }
 
 model Room {
-  id          Int          @id @default(autoincrement())
-  name        String
-  max_players Int
-  status      RoomStatus   @default(waiting)
-  players     RoomPlayer[]
+  id         Int          @id @default(autoincrement())
+  name       String
+  maxPlayers Int          @map("max_players")
+  status     RoomStatus   @default(waiting)
+  players    RoomPlayer[]
 }
 
 model RoomPlayer {
-  id      Int     @id @default(autoincrement())
-  is_host Boolean @default(false)
-  room_id Int
-  user_id Int?    @unique
-  user    User?   @relation(fields: [user_id], references: [id])
-  room    Room    @relation(fields: [room_id], references: [id])
+  id     Int     @id @default(autoincrement())
+  isHost Boolean @default(false) @map("is_host")
+  roomId Int     @map("room_id")
+  userId Int?    @unique @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id])
+  room   Room    @relation(fields: [roomId], references: [id])
 }
