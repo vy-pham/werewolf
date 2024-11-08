@@ -16,4 +16,4 @@ export class UserToken {
 }
 
 @ObjectType()
-export class Me extends PickType(User, ['id']) { }
+export class Me extends PickType(User, ['id', 'username']) {}

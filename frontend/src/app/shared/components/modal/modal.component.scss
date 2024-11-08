@@ -2,6 +2,8 @@
   opacity: 0;
   pointer-events: none;
   transition: 0.3s;
+  z-index: 99;
+  position: relative;
   .mask {
     display: flex;
     opacity: 0;

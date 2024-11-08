@@ -12,7 +12,10 @@ export class UserService {
   @InjectPrisma() prisma: PrismaService;
   @Inject(TOKEN.USER) user: JWTPayload;
   async getCurrentUser() {
-    return this.user;
+    const data = await this.prisma.user.findUnique({
+      where: { id: this.user.id },
+    });
+    return data;
   }
 
   async getUsers({ username }: FiltersUserInput, { skip, take }: Pagination) {

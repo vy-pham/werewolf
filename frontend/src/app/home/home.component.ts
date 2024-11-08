@@ -14,12 +14,4 @@ import { InputComponent } from '../shared/components/input/input.component';
 })
 export class HomeComponent {
   homeService = inject(HomeService);
-
-  openModal() {
-    this.homeService.isShowModal = true;
-  }
-  onClose() {
-    this.homeService.isShowModal = false;
-    console.log('Closed');
-  }
 }

@@ -20,16 +20,16 @@ const envConfig = {
   JWT_SECRET: process.env.JWT_SECRET || '',
 };
 enum PROVIDER_TOKEN {
-  USER = 'USER'
-};
+  USER = 'USER',
+}
 declare global {
   var Config: {
-    [k in keyof typeof envConfig]: typeof envConfig[k]
+    [k in keyof typeof envConfig]: (typeof envConfig)[k];
   };
   var TOKEN: typeof PROVIDER_TOKEN;
   var tenants: string[];
   export interface JWTPayload {
-    id: string;
+    id: number;
   }
   interface NestedObjectSelect {
     [k: string]: number | NestedObjectSelect;

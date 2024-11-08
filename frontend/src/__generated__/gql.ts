@@ -14,8 +14,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 const documents = {
-    "\n  query Me {\n    me {\n      ... on Me_Single {\n        data {\n          id\n        }\n      }\n      ... on BaseResponse {\n        statusCode\n      }\n    }\n  }\n": types.MeDocument,
     "\n  mutation Login($input: LoginUserInput!) {\n    login(input: $input) {\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n      ... on UserToken_Mutation {\n        data {\n          token\n        }\n      }\n    }\n  }\n": types.LoginDocument,
+    "\n  query Me {\n    me {\n      ... on Me_Single {\n        data {\n          id\n          username\n        }\n      }\n      ... on BaseResponse {\n        statusCode\n      }\n    }\n  }\n": types.MeDocument,
 };
 
 /**
@@ -35,11 +35,11 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query Me {\n    me {\n      ... on Me_Single {\n        data {\n          id\n        }\n      }\n      ... on BaseResponse {\n        statusCode\n      }\n    }\n  }\n"): (typeof documents)["\n  query Me {\n    me {\n      ... on Me_Single {\n        data {\n          id\n        }\n      }\n      ... on BaseResponse {\n        statusCode\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  mutation Login($input: LoginUserInput!) {\n    login(input: $input) {\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n      ... on UserToken_Mutation {\n        data {\n          token\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation Login($input: LoginUserInput!) {\n    login(input: $input) {\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n      ... on UserToken_Mutation {\n        data {\n          token\n        }\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation Login($input: LoginUserInput!) {\n    login(input: $input) {\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n      ... on UserToken_Mutation {\n        data {\n          token\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation Login($input: LoginUserInput!) {\n    login(input: $input) {\n      ... on BaseResponse {\n        message\n        statusCode\n      }\n      ... on UserToken_Mutation {\n        data {\n          token\n        }\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  query Me {\n    me {\n      ... on Me_Single {\n        data {\n          id\n          username\n        }\n      }\n      ... on BaseResponse {\n        statusCode\n      }\n    }\n  }\n"): (typeof documents)["\n  query Me {\n    me {\n      ... on Me_Single {\n        data {\n          id\n          username\n        }\n      }\n      ... on BaseResponse {\n        statusCode\n      }\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

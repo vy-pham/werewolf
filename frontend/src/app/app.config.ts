@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideApollo(() => {
       const httpLink = inject(HttpLink);
       const authLink = setContext((_, { headers }) => {
-        const token = localStorage.getItem('token');
+        const token = JSON.parse(localStorage.getItem('token') as string);
 
         return {
           headers: {

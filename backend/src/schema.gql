@@ -95,6 +95,7 @@ input LoginUserInput {
 
 type Me {
   id: ID!
+  username: String!
 }
 
 type Me_Single implements BaseResponse {
