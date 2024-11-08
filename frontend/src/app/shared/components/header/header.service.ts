@@ -3,13 +3,13 @@ import { Apollo } from 'apollo-angular';
 import { BehaviorSubject, of, switchMap } from 'rxjs';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import type {
-  LoginMutation,
-  LoginMutationVariables,
-} from '../../../../__generated__/graphql';
 import { LOGIN } from './header.queries';
 import { STORAGE_KEY, StorageService } from '../../services/storage.service';
 import { UserService } from '../../services/user/user.service';
+import type {
+  LoginMutation,
+  LoginMutationVariables,
+} from '../../../../graphql/queries';
 export class HeaderService {
   toastr = inject(ToastrService);
   apollo = inject(Apollo);

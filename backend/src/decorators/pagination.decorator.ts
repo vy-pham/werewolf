@@ -1,4 +1,8 @@
-import { BadRequestException, createParamDecorator, ExecutionContext } from '@nestjs/common';
+import {
+  BadRequestException,
+  createParamDecorator,
+  ExecutionContext,
+} from '@nestjs/common';
 import { Args, GqlExecutionContext } from '@nestjs/graphql';
 import { validateOrReject } from 'class-validator';
 import { PaginationInput } from 'src/input-output/pagination.input';
@@ -6,12 +10,13 @@ import { PaginationInput } from 'src/input-output/pagination.input';
 export const Pagination = createParamDecorator(
   async (_: unknown, context: ExecutionContext) => {
     const ctx = GqlExecutionContext.create(context);
-    const { page, pageSize } = (ctx.getArgs().pagination || {}) as PaginationInput;
+    const { page, pageSize } = (ctx.getArgs().pagination ||
+      {}) as PaginationInput;
     try {
-      await validateOrReject(Object.assign(new PaginationInput(), { page, pageSize }));
+      await validateOrReject(
+        Object.assign(new PaginationInput(), { page, pageSize }),
+      );
     } catch (error) {
-      console.log({ error });
-
       throw new BadRequestException(error, 'Invalid pagination');
     }
 
@@ -22,9 +27,5 @@ export const Pagination = createParamDecorator(
     }
     return { skip, take };
   },
-  [
-    Args(
-      { name: 'pagination', type: () => PaginationInput, nullable: true },
-    ),
-  ]
+  [Args({ name: 'pagination', type: () => PaginationInput, nullable: true })],
 );

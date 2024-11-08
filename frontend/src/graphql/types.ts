@@ -1,5 +1,3 @@
-/* eslint-disable */
-import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -14,8 +12,12 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
   JSON: { input: any; output: any; }
+};
+
+export type BaseResponse = {
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
 };
 
 export type CreateRoomInput = {
@@ -26,6 +28,13 @@ export type CreateUserInput = {
   /** Password */
   password: Scalars['String']['input'];
   username: Scalars['String']['input'];
+};
+
+export type ErrorOutput = BaseResponse & {
+  __typename?: 'ErrorOutput';
+  errors: Scalars['JSON']['output'];
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
 };
 
 export type FilterRoomInput = {
@@ -93,23 +102,138 @@ export type LoginUserInput = {
   username: Scalars['String']['input'];
 };
 
+export type Me = {
+  __typename?: 'Me';
+  id: Scalars['ID']['output'];
+  username: Scalars['String']['output'];
+};
+
+export type Me_Single = BaseResponse & {
+  __typename?: 'Me_Single';
+  data: Me;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  createRoom: ResultUnion_Room_Mutation;
+  createUser: ResultUnion_User_Mutation;
+  login: ResultUnion_UserToken_Mutation;
+};
+
+
+export type MutationCreateRoomArgs = {
+  input: CreateRoomInput;
+};
+
+
+export type MutationCreateUserArgs = {
+  input: CreateUserInput;
+};
+
+
+export type MutationLoginArgs = {
+  input: LoginUserInput;
+};
+
+export type PaginationData = {
+  __typename?: 'PaginationData';
+  cursorLeft?: Maybe<Scalars['Float']['output']>;
+  cursorRight?: Maybe<Scalars['Float']['output']>;
+  page: Scalars['Float']['output'];
+  pageSize: Scalars['Float']['output'];
+  total: Scalars['Float']['output'];
+};
+
 export type PaginationInput = {
   page?: Scalars['Float']['input'];
   pageSize?: Scalars['Float']['input'];
 };
 
-export type LoginMutationVariables = Exact<{
-  input: LoginUserInput;
-}>;
+export type Query = {
+  __typename?: 'Query';
+  me: ResultUnion_Me_Single;
+  rooms: ResultUnion_Room_List;
+  users: ResultUnion_User_List;
+};
 
 
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'ErrorOutput', message: string, statusCode: HttpCode } | { __typename?: 'UserToken_Mutation', message: string, statusCode: HttpCode, data: { __typename?: 'UserToken', token: string } } };
-
-export type MeQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type MeQuery = { __typename?: 'Query', me: { __typename?: 'ErrorOutput', statusCode: HttpCode } | { __typename?: 'Me_Single', statusCode: HttpCode, data: { __typename?: 'Me', id: string, username: string } } };
+export type QueryRoomsArgs = {
+  filter?: InputMaybe<FilterRoomInput>;
+  pagination?: InputMaybe<PaginationInput>;
+};
 
 
-export const LoginDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"Login"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"LoginUserInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"login"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BaseResponse"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"statusCode"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UserToken_Mutation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"data"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"}}]}}]}}]}}]}}]} as unknown as DocumentNode<LoginMutation, LoginMutationVariables>;
-export const MeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Me_Single"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"data"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BaseResponse"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"statusCode"}}]}}]}}]}}]} as unknown as DocumentNode<MeQuery, MeQueryVariables>;
+export type QueryUsersArgs = {
+  filter?: InputMaybe<FiltersUserInput>;
+  pagination?: InputMaybe<PaginationInput>;
+};
+
+export type ResultUnion_Me_Single = ErrorOutput | Me_Single;
+
+export type ResultUnion_Room_List = ErrorOutput | Room_List;
+
+export type ResultUnion_Room_Mutation = ErrorOutput | Room_Mutation;
+
+export type ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation;
+
+export type ResultUnion_User_List = ErrorOutput | User_List;
+
+export type ResultUnion_User_Mutation = ErrorOutput | User_Mutation;
+
+export type Room = BaseResponse & {
+  __typename?: 'Room';
+  id: Scalars['ID']['output'];
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export type Room_List = BaseResponse & {
+  __typename?: 'Room_List';
+  data: Array<Room>;
+  message: Scalars['String']['output'];
+  pagination: PaginationData;
+  statusCode: HttpCode;
+};
+
+export type Room_Mutation = BaseResponse & {
+  __typename?: 'Room_Mutation';
+  data: Room;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export type User = {
+  __typename?: 'User';
+  email: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  username: Scalars['String']['output'];
+};
+
+export type UserToken = {
+  __typename?: 'UserToken';
+  token: Scalars['String']['output'];
+};
+
+export type UserToken_Mutation = BaseResponse & {
+  __typename?: 'UserToken_Mutation';
+  data: UserToken;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export type User_List = BaseResponse & {
+  __typename?: 'User_List';
+  data: Array<User>;
+  message: Scalars['String']['output'];
+  pagination: PaginationData;
+  statusCode: HttpCode;
+};
+
+export type User_Mutation = BaseResponse & {
+  __typename?: 'User_Mutation';
+  data: User;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
