@@ -9,7 +9,7 @@ export const Mutation = (
 ) => {
   @ObjectTypes()
   class Type {
-    @Field(() => DataType)
+    @Field(() => DataType, options)
     data: typeof DataType;
   }
   Object.defineProperty(Type, 'name', { value: `${DataType.name}_Mutation` });

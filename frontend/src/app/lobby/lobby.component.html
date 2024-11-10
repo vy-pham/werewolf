@@ -1,0 +1,21 @@
+<main *ngIf="roomService.currentRoom">
+  <h2 class="text-4xl text-center font-bold">Players</h2>
+  <div class="grid grid-cols-3 gap-4">
+    <div *ngFor="let item of roomService.currentRoom?.players">
+      <app-button class="w-full">
+        {{ item.user.username }} - <span *ngIf="item.isHost">Host</span>
+      </app-button>
+    </div>
+    <div
+      *ngFor="
+        let item of [
+          1,
+          roomService.currentRoom.maxPlayers -
+            roomService.currentRoom.players.length
+        ] | createArray
+      "
+    >
+      <app-button>Slot {{ item }} - Empty </app-button>
+    </div>
+  </div>
+</main>

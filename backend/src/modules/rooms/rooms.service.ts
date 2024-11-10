@@ -19,14 +19,31 @@ export class RoomService {
     const user = await this.prisma.user.findUnique({
       where: { id: this.user.id },
     });
-    console.log('abc');
-    await this.prisma.roomPlayer.exists(
-      { userId: this.user.id },
-      {
-        throwCase: 'IF_EXISTS',
-        message: 'You cannot create room while you are in another room',
-      },
-    );
+
+    const roomPlayer = await this.prisma.roomPlayer.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (roomPlayer) {
+      await this.prisma.roomPlayer.delete({
+        where: { id: roomPlayer.id },
+      });
+      if (roomPlayer.isHost) {
+        const newHost = await this.prisma.roomPlayer.findFirstAndUpdate(
+          {
+            where: { roomId: roomPlayer.roomId },
+          },
+          {
+            isHost: true,
+          },
+        );
+        if (!newHost) {
+          await this.prisma.room.delete({
+            where: { id: roomPlayer.roomId },
+          });
+        }
+      }
+    }
 
     const room = await this.prisma.room.create({
       data: {
@@ -36,17 +53,41 @@ export class RoomService {
           createMany: {
             data: [
               {
-                userId: this.user.id,
+                userId: user.id,
                 isHost: true,
               },
-              ...new Array(maxPlayers - 1)
-                .fill(null)
-                .map(() => ({ userId: null })),
             ],
           },
         },
       },
+      include: {
+        players: {
+          include: {
+            user: true,
+          },
+        },
+      },
     });
+
     return room;
+  }
+
+  async getCurrentRoom() {
+    return await this.prisma.room.findFirst({
+      where: {
+        players: {
+          some: {
+            userId: this.user.id,
+          },
+        },
+      },
+      include: {
+        players: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
   }
 }

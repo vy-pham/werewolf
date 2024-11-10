@@ -125,6 +125,7 @@ input PaginationInput {
 }
 
 type Query {
+  currentRoom: ResultUnion_Room_Single
   me: ResultUnion_Me_Single!
   rooms(filter: FilterRoomInput, pagination: PaginationInput): ResultUnion_Room_List!
   users(filter: FiltersUserInput, pagination: PaginationInput): ResultUnion_User_List!
@@ -136,6 +137,8 @@ union ResultUnion_Room_List = ErrorOutput | Room_List
 
 union ResultUnion_Room_Mutation = ErrorOutput | Room_Mutation
 
+union ResultUnion_Room_Single = ErrorOutput | Room_Single
+
 union ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation
 
 union ResultUnion_User_List = ErrorOutput | User_List
@@ -144,6 +147,22 @@ union ResultUnion_User_Mutation = ErrorOutput | User_Mutation
 
 type Room {
   id: ID!
+  maxPlayers: Float!
+  name: String!
+  players: [RoomPlayer!]!
+  status: RoomStatus!
+}
+
+type RoomPlayer {
+  id: ID!
+  isHost: Boolean!
+  user: User!
+}
+
+enum RoomStatus {
+  finished
+  playing
+  waiting
 }
 
 type Room_List implements BaseResponse {
@@ -155,6 +174,12 @@ type Room_List implements BaseResponse {
 
 type Room_Mutation implements BaseResponse {
   data: Room!
+  message: String!
+  statusCode: HttpCode!
+}
+
+type Room_Single implements BaseResponse {
+  data: Room
   message: String!
   statusCode: HttpCode!
 }

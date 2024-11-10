@@ -4,6 +4,7 @@ import {
   type OnModuleInit,
 } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
+type Model<T> = T extends { findMany: any } ? T : never;
 
 @Injectable()
 export class BasePrismaService extends PrismaClient implements OnModuleInit {
@@ -15,10 +16,13 @@ export class BasePrismaService extends PrismaClient implements OnModuleInit {
     return this.$extends({
       model: {
         $allModels: {
-          async findAndPagination<T>(
+          async findAndPagination<T, A extends Prisma.Args<T, 'findMany'>>(
             this: T,
-            args: Prisma.Args<T, 'findMany'>,
-          ): Promise<{ data: any; total: number }> {
+            args: A,
+          ): Promise<{
+            data: Prisma.Result<T, A, 'findMany'>;
+            total: number;
+          }> {
             const context = Prisma.getExtensionContext(this) as any;
             const [data, total] = await Promise.all([
               context.findMany(args),
@@ -37,7 +41,7 @@ export class BasePrismaService extends PrismaClient implements OnModuleInit {
             }: {
               throwCase?: 'IF_EXISTS' | 'IF_NOT_EXISTS';
               message?: string;
-            },
+            } = {},
           ) {
             const context = Prisma.getExtensionContext(this) as any;
             const data = await context.findFirst({ where, select: { id: 1 } });
@@ -56,11 +60,45 @@ export class BasePrismaService extends PrismaClient implements OnModuleInit {
                       message ||
                         `${context.$name} with query ${JSON.stringify(where)} is not existed`,
                     );
+                  break;
                 default:
                   break;
               }
             }
             return !!data;
+          },
+
+          async findFirstAndUpdate<T, A extends Prisma.Args<T, 'findFirst'>>(
+            this: T,
+            args: A,
+            updateData: Prisma.Args<T, 'update'>['data'],
+            {
+              isThrow,
+              message,
+            }: {
+              isThrow?: boolean;
+              message?: string;
+            } = {},
+          ): Promise<Prisma.Result<T, A, 'update'>> {
+            const context = Prisma.getExtensionContext(this) as any;
+            const data = await context.findFirst({
+              ...args,
+              select: { id: 1 },
+            });
+            if (isThrow && !data) {
+              throw new BadRequestException(
+                message ||
+                  `${context.$name} with query ${JSON.stringify(args.where)} is existed`,
+              );
+            }
+            if (data) {
+              return context.update({
+                ...args,
+                where: { id: data.id },
+                data: updateData,
+              });
+            }
+            return null;
           },
         },
       },

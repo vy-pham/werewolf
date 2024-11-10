@@ -21,7 +21,8 @@ export type BaseResponse = {
 };
 
 export type CreateRoomInput = {
-  a: Scalars['Float']['input'];
+  maxPlayers: Scalars['Float']['input'];
+  name: Scalars['String']['input'];
 };
 
 export type CreateUserInput = {
@@ -153,6 +154,7 @@ export type PaginationInput = {
 
 export type Query = {
   __typename?: 'Query';
+  currentRoom?: Maybe<ResultUnion_Room_Single>;
   me: ResultUnion_Me_Single;
   rooms: ResultUnion_Room_List;
   users: ResultUnion_User_List;
@@ -176,18 +178,35 @@ export type ResultUnion_Room_List = ErrorOutput | Room_List;
 
 export type ResultUnion_Room_Mutation = ErrorOutput | Room_Mutation;
 
+export type ResultUnion_Room_Single = ErrorOutput | Room_Single;
+
 export type ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation;
 
 export type ResultUnion_User_List = ErrorOutput | User_List;
 
 export type ResultUnion_User_Mutation = ErrorOutput | User_Mutation;
 
-export type Room = BaseResponse & {
+export type Room = {
   __typename?: 'Room';
   id: Scalars['ID']['output'];
-  message: Scalars['String']['output'];
-  statusCode: HttpCode;
+  maxPlayers: Scalars['Float']['output'];
+  name: Scalars['String']['output'];
+  players: Array<RoomPlayer>;
+  status: RoomStatus;
 };
+
+export type RoomPlayer = {
+  __typename?: 'RoomPlayer';
+  id: Scalars['ID']['output'];
+  isHost: Scalars['Boolean']['output'];
+  user: User;
+};
+
+export enum RoomStatus {
+  Finished = 'finished',
+  Playing = 'playing',
+  Waiting = 'waiting'
+}
 
 export type Room_List = BaseResponse & {
   __typename?: 'Room_List';
@@ -200,6 +219,13 @@ export type Room_List = BaseResponse & {
 export type Room_Mutation = BaseResponse & {
   __typename?: 'Room_Mutation';
   data: Room;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export type Room_Single = BaseResponse & {
+  __typename?: 'Room_Single';
+  data?: Maybe<Room>;
   message: Scalars['String']['output'];
   statusCode: HttpCode;
 };

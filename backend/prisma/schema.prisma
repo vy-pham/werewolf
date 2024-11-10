@@ -41,7 +41,7 @@ model RoomPlayer {
   id     Int     @id @default(autoincrement())
   isHost Boolean @default(false) @map("is_host")
   roomId Int     @map("room_id")
-  userId Int?    @unique @map("user_id")
-  user   User?   @relation(fields: [userId], references: [id])
+  userId Int     @unique @map("user_id")
+  user   User    @relation(fields: [userId], references: [id])
   room   Room    @relation(fields: [roomId], references: [id])
 }
