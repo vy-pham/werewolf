@@ -3,7 +3,7 @@ import { gql } from 'apollo-angular';
 export const MUTATION_CREATE_ROOM = gql`
   mutation CreateRoom($input: CreateRoomInput!) {
     createRoom(input: $input) {
-      ... on Room_Mutation {
+      ... on RoomModel_Mutation {
         data {
           id
           maxPlayers
@@ -32,7 +32,7 @@ export const MUTATION_CREATE_ROOM = gql`
 export const QUERY_CURRENT_ROOM = gql`
   query CurrentRoom {
     currentRoom {
-      ... on Room_Single {
+      ... on RoomModel_Single {
         data {
           id
           maxPlayers

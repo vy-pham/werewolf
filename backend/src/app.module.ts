@@ -13,9 +13,14 @@ import { AuthGuard } from './guard/auth.guard';
 import { PaginationMapInterceptor } from './interceptors/response.interceptor';
 import { HttpExceptionFilter } from './interceptors/exception.interceptor';
 import GraphQLJSON from 'graphql-type-json';
-import { RoomStatus } from '@prisma/client';
+import { Roles, RoomStatus, Status } from '@prisma/client';
+import { InjectPrisma } from './decorators/inject-prisma.decorator';
+import { ROLES } from './roles';
+import { RoleModule } from './modules/roles/roles.module';
 registerEnumType(HttpStatus, { name: 'HttpCode' });
 registerEnumType(RoomStatus, { name: 'RoomStatus' });
+registerEnumType(Status, { name: 'Status' });
+registerEnumType(Roles, { name: 'Roles' });
 
 @Controller()
 class AppController {
@@ -25,6 +30,7 @@ class AppController {
     return 'ABC';
   }
 }
+
 @Module({
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -38,6 +44,7 @@ class AppController {
     JwtModule,
     UsersModule,
     RoomModule,
+    RoleModule,
     GlobalModule,
   ],
   providers: [
@@ -57,4 +64,21 @@ class AppController {
 
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule {
+  @InjectPrisma() prisma: PrismaService;
+  async onModuleInit() {
+    ROLES.map(async (role) => {
+      const findRole = await this.prisma.role.findFirst({
+        where: { enum: role.enum },
+      });
+      if (findRole) {
+        this.prisma.role.update({
+          where: { id: findRole.id },
+          data: role,
+        });
+      } else {
+        await this.prisma.role.create({ data: role });
+      }
+    });
+  }
+}

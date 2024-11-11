@@ -52,8 +52,6 @@ export class UserService {
 
   async login({ username, password }: LoginUserInput) {
     let message = 'Login successfully';
-    console.log(123);
-
     let user = await this.prisma.user.findUnique({
       where: { username },
     });

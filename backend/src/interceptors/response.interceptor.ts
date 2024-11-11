@@ -26,8 +26,6 @@ export class PaginationMapInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((result) => {
-        console.log(result);
-
         if (isList) {
           return {
             data: result.data,

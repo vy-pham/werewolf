@@ -1,12 +1,12 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import {
-  Room as RoomModel,
+  Room,
   RoomStatus,
   RoomPlayer as RoomPlayerModel,
 } from '@prisma/client';
-import { User } from '../users/users.model';
+import { UserModel } from '../users/users.model';
 @ObjectType()
-export class Room implements RoomModel {
+export class RoomModel implements Room {
   @Field(() => ID)
   id: number;
   @Field()
@@ -26,6 +26,6 @@ class RoomPlayer implements Omit<RoomPlayerModel, 'roomId' | 'userId'> {
   id: number;
   @Field()
   isHost: boolean;
-  @Field(() => User)
-  user: User;
+  @Field(() => UserModel)
+  user: UserModel;
 }

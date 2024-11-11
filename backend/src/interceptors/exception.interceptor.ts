@@ -19,8 +19,6 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
       message = (exception as any).message;
       statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     }
-    console.log({ exception });
-
     return {
       message: exception.message,
       errors: error,

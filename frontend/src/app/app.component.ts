@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { StorageService } from './shared/services/storage.service';
 import { UserService } from './shared/services/user/user.service';
+import { RoleService } from './shared/services/role/role.service';
 
 @Component({
   selector: 'app-root',
@@ -14,10 +15,8 @@ import { UserService } from './shared/services/user/user.service';
 export class AppComponent {
   storageService = inject(StorageService);
   userService = inject(UserService);
-  // ngOnInit() {
-  //   const jwt = this.storageService.data[STORAGE_KEY.TOKEN];
-  //   if (jwt) {
-  //     this.userService.meQuery$.subscribe();
-  //   }
-  // }
+  roleService = inject(RoleService);
+  ngOnInit() {
+    this.roleService.getRoles$.subscribe();
+  }
 }

@@ -118,8 +118,8 @@ export type Me_Single = BaseResponse & {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createRoom: ResultUnion_Room_Mutation;
-  createUser: ResultUnion_User_Mutation;
+  createRoom: ResultUnion_RoomModel_Mutation;
+  createUser: ResultUnion_UserModel_Mutation;
   login: ResultUnion_UserToken_Mutation;
 };
 
@@ -154,10 +154,11 @@ export type PaginationInput = {
 
 export type Query = {
   __typename?: 'Query';
-  currentRoom?: Maybe<ResultUnion_Room_Single>;
+  currentRoom?: Maybe<ResultUnion_RoomModel_Single>;
   me: ResultUnion_Me_Single;
-  rooms: ResultUnion_Room_List;
-  users: ResultUnion_User_List;
+  roles: ResultUnion_RoleModel_List;
+  rooms: ResultUnion_RoomModel_List;
+  users: ResultUnion_UserModel_List;
 };
 
 
@@ -174,20 +175,55 @@ export type QueryUsersArgs = {
 
 export type ResultUnion_Me_Single = ErrorOutput | Me_Single;
 
-export type ResultUnion_Room_List = ErrorOutput | Room_List;
+export type ResultUnion_RoleModel_List = ErrorOutput | RoleModel_List;
 
-export type ResultUnion_Room_Mutation = ErrorOutput | Room_Mutation;
+export type ResultUnion_RoomModel_List = ErrorOutput | RoomModel_List;
 
-export type ResultUnion_Room_Single = ErrorOutput | Room_Single;
+export type ResultUnion_RoomModel_Mutation = ErrorOutput | RoomModel_Mutation;
+
+export type ResultUnion_RoomModel_Single = ErrorOutput | RoomModel_Single;
+
+export type ResultUnion_UserModel_List = ErrorOutput | UserModel_List;
+
+export type ResultUnion_UserModel_Mutation = ErrorOutput | UserModel_Mutation;
 
 export type ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation;
 
-export type ResultUnion_User_List = ErrorOutput | User_List;
+export type RoleModel = {
+  __typename?: 'RoleModel';
+  description: Scalars['String']['output'];
+  enum: Roles;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  point: Scalars['Float']['output'];
+  status: Status;
+};
 
-export type ResultUnion_User_Mutation = ErrorOutput | User_Mutation;
+export type RoleModel_List = BaseResponse & {
+  __typename?: 'RoleModel_List';
+  data: Array<RoleModel>;
+  message: Scalars['String']['output'];
+  pagination: PaginationData;
+  statusCode: HttpCode;
+};
 
-export type Room = {
-  __typename?: 'Room';
+export enum Roles {
+  Cupid = 'cupid',
+  Doctor = 'doctor',
+  Elder = 'elder',
+  Hunter = 'hunter',
+  LittleGirl = 'little_girl',
+  Seer = 'seer',
+  Tanner = 'tanner',
+  VillageIdiot = 'village_idiot',
+  Villager = 'villager',
+  Werewolf = 'werewolf',
+  WildChild = 'wild_child',
+  Witch = 'witch'
+}
+
+export type RoomModel = {
+  __typename?: 'RoomModel';
   id: Scalars['ID']['output'];
   maxPlayers: Scalars['Float']['output'];
   name: Scalars['String']['output'];
@@ -195,11 +231,33 @@ export type Room = {
   status: RoomStatus;
 };
 
+export type RoomModel_List = BaseResponse & {
+  __typename?: 'RoomModel_List';
+  data: Array<RoomModel>;
+  message: Scalars['String']['output'];
+  pagination: PaginationData;
+  statusCode: HttpCode;
+};
+
+export type RoomModel_Mutation = BaseResponse & {
+  __typename?: 'RoomModel_Mutation';
+  data: RoomModel;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export type RoomModel_Single = BaseResponse & {
+  __typename?: 'RoomModel_Single';
+  data?: Maybe<RoomModel>;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
 export type RoomPlayer = {
   __typename?: 'RoomPlayer';
   id: Scalars['ID']['output'];
   isHost: Scalars['Boolean']['output'];
-  user: User;
+  user: UserModel;
 };
 
 export enum RoomStatus {
@@ -208,33 +266,31 @@ export enum RoomStatus {
   Waiting = 'waiting'
 }
 
-export type Room_List = BaseResponse & {
-  __typename?: 'Room_List';
-  data: Array<Room>;
+export enum Status {
+  Active = 'active',
+  Inactive = 'inactive'
+}
+
+export type UserModel = {
+  __typename?: 'UserModel';
+  email: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  username: Scalars['String']['output'];
+};
+
+export type UserModel_List = BaseResponse & {
+  __typename?: 'UserModel_List';
+  data: Array<UserModel>;
   message: Scalars['String']['output'];
   pagination: PaginationData;
   statusCode: HttpCode;
 };
 
-export type Room_Mutation = BaseResponse & {
-  __typename?: 'Room_Mutation';
-  data: Room;
+export type UserModel_Mutation = BaseResponse & {
+  __typename?: 'UserModel_Mutation';
+  data: UserModel;
   message: Scalars['String']['output'];
   statusCode: HttpCode;
-};
-
-export type Room_Single = BaseResponse & {
-  __typename?: 'Room_Single';
-  data?: Maybe<Room>;
-  message: Scalars['String']['output'];
-  statusCode: HttpCode;
-};
-
-export type User = {
-  __typename?: 'User';
-  email: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  username: Scalars['String']['output'];
 };
 
 export type UserToken = {
@@ -245,21 +301,6 @@ export type UserToken = {
 export type UserToken_Mutation = BaseResponse & {
   __typename?: 'UserToken_Mutation';
   data: UserToken;
-  message: Scalars['String']['output'];
-  statusCode: HttpCode;
-};
-
-export type User_List = BaseResponse & {
-  __typename?: 'User_List';
-  data: Array<User>;
-  message: Scalars['String']['output'];
-  pagination: PaginationData;
-  statusCode: HttpCode;
-};
-
-export type User_Mutation = BaseResponse & {
-  __typename?: 'User_Mutation';
-  data: User;
   message: Scalars['String']['output'];
   statusCode: HttpCode;
 };

@@ -1,44 +1,33 @@
-<main>
-  <app-modal
-    (close)="homeService.toggleModal()"
-    [isShow]="homeService.isShowModal"
-  >
-    <h2 class="text-2xl text-center font-bold">Create room</h2>
-    <app-input
-      label="Room name"
-      placeholder="Room name"
-      [formControl]="homeService.form.controls.name"
-      errorMessage="Name is required"
-    />
-    <app-input
-      label="Max players"
-      placeholder="Max player"
-      type="number"
-      [formControl]="homeService.form.controls.maxPlayers"
-      errorMessage="Min Player 4, Max player 40"
-    />
-    <app-button (click)="homeService.createRoom()"> Create room</app-button>
-  </app-modal>
-  <section class="flex flex-wrap mt-4">
-    <p class="w-full">Place holder for role information</p>
-    <div class="p-5 w-[20%]">
-      <p class="text-center">Role</p>
-    </div>
-    <div class="p-5 w-[20%]">
-      <p class="text-center">Role</p>
-    </div>
-    <div class="p-5 w-[20%]">
-      <p class="text-center">Role</p>
-    </div>
-    <div class="p-5 w-[20%]">
-      <p class="text-center">Role</p>
-    </div>
-    <div class="p-5 w-[20%]">
-      <p class="text-center">Role</p>
-    </div>
-  </section>
-  <section class="flex justify-center mt-4">
-    <app-button [disabled]="true">Join room</app-button>
-    <app-button (click)="homeService.toggleModal()">Create room</app-button>
-  </section>
-</main>
+<app-modal
+  (close)="homeService.toggleModal()"
+  [isShow]="homeService.isShowModal"
+>
+  <h2 class="text-2xl text-center font-bold">Create room</h2>
+
+  <app-input
+    label="Room name"
+    placeholder="Room name"
+    [formControl]="homeService.form.controls.name"
+    errorMessage="Name is required"
+  />
+  <app-input
+    label="Max players"
+    placeholder="Max player"
+    type="number"
+    [formControl]="homeService.form.controls.maxPlayers"
+    errorMessage="Min Player 4, Max player 40"
+  />
+
+  <app-button (click)="homeService.createRoom()"> Create room</app-button>
+</app-modal>
+<h1 class="w-full text-center text-4xl font-bold mt-4">Roles</h1>
+<section class="grid grid-cols-4 gap-4 mt-4">
+  <div *ngFor="let item of roleService.roles" class="p-5 border-2">
+    <p class="text-center">{{ item.name }}</p>
+    <p>{{ item.description }}</p>
+  </div>
+</section>
+<section class="flex justify-center mt-4">
+  <app-button [disabled]="true">Join room</app-button>
+  <app-button (click)="homeService.toggleModal()">Create room</app-button>
+</section>

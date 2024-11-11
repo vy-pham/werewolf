@@ -1,4 +1,10 @@
-import { createUnionType, Field, ObjectType, Query, type QueryOptions } from '@nestjs/graphql';
+import {
+  createUnionType,
+  Field,
+  ObjectType,
+  Query,
+  type QueryOptions,
+} from '@nestjs/graphql';
 import { IS_GET_LIST } from './public.decorator';
 import { applyDecorators, SetMetadata } from '@nestjs/common';
 import { ObjectTypes } from './object-type-with-status.decorator';
@@ -18,8 +24,10 @@ class PaginationData {
   cursorRight?: number;
 }
 
-export const QueryList = (DataType: { new(...args: any[]): any; }, options?: QueryOptions) => {
-
+export const QueryList = (
+  DataType: { new (...args: any[]): any },
+  options?: QueryOptions,
+) => {
   @ObjectTypes()
   class Type {
     @Field(() => [DataType])
@@ -34,12 +42,13 @@ export const QueryList = (DataType: { new(...args: any[]): any; }, options?: Que
     name: `ResultUnion_${DataType.name}_List`,
     types: () => [Type, ErrorOutput],
     resolveType(value) {
-      console.log(value);
-
       if (value.errors) return ErrorOutput;
       return Type;
-    }
+    },
   });
 
-  return applyDecorators(SetMetadata(IS_GET_LIST, true), Query(() => ResultUnion, options));
+  return applyDecorators(
+    SetMetadata(IS_GET_LIST, true),
+    Query(() => ResultUnion, options),
+  );
 };

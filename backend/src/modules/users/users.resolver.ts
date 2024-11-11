@@ -1,5 +1,5 @@
 import { Args, Resolver } from '@nestjs/graphql';
-import { Me, User, UserToken } from './users.model';
+import { Me, UserModel, UserToken } from './users.model';
 import { Inject } from '@nestjs/common';
 import { UserService } from './users.service';
 import { CreateUserInput } from './input/create-user.input';
@@ -23,7 +23,7 @@ export class UserResolver {
     return { data };
   }
 
-  @QueryList(User)
+  @QueryList(UserModel)
   async users(
     @Pagination() pagination: Pagination,
     @Filters() filters?: FiltersUserInput,
@@ -38,8 +38,6 @@ export class UserResolver {
   @IsPublic()
   @Mutation(UserToken)
   async login(@Args('input') input: LoginUserInput) {
-    console.log(123333);
-
     const { token, message } = await this.userService.login(input);
     return {
       data: { token },
@@ -47,7 +45,7 @@ export class UserResolver {
     };
   }
 
-  @Mutation(User)
+  @Mutation(UserModel)
   async createUser(@Input() input: CreateUserInput) {
     const data = await this.userService.createUser(input);
     return data;

@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType, PickType } from '@nestjs/graphql';
-import type { User as UserModel } from '@prisma/client';
+import type { User } from '@prisma/client';
 @ObjectType()
-export class User implements Omit<UserModel, 'password'> {
+export class UserModel implements Omit<User, 'password'> {
   avatar: string;
   @Field(() => ID)
   id: number;
@@ -18,4 +18,4 @@ export class UserToken {
 }
 
 @ObjectType()
-export class Me extends PickType(User, ['id', 'username']) {}
+export class Me extends PickType(UserModel, ['id', 'username']) {}

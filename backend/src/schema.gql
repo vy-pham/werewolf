@@ -106,8 +106,8 @@ type Me_Single implements BaseResponse {
 }
 
 type Mutation {
-  createRoom(input: CreateRoomInput!): ResultUnion_Room_Mutation!
-  createUser(input: CreateUserInput!): ResultUnion_User_Mutation!
+  createRoom(input: CreateRoomInput!): ResultUnion_RoomModel_Mutation!
+  createUser(input: CreateUserInput!): ResultUnion_UserModel_Mutation!
   login(input: LoginUserInput!): ResultUnion_UserToken_Mutation!
 }
 
@@ -125,27 +125,61 @@ input PaginationInput {
 }
 
 type Query {
-  currentRoom: ResultUnion_Room_Single
+  currentRoom: ResultUnion_RoomModel_Single
   me: ResultUnion_Me_Single!
-  rooms(filter: FilterRoomInput, pagination: PaginationInput): ResultUnion_Room_List!
-  users(filter: FiltersUserInput, pagination: PaginationInput): ResultUnion_User_List!
+  roles: ResultUnion_RoleModel_List!
+  rooms(filter: FilterRoomInput, pagination: PaginationInput): ResultUnion_RoomModel_List!
+  users(filter: FiltersUserInput, pagination: PaginationInput): ResultUnion_UserModel_List!
 }
 
 union ResultUnion_Me_Single = ErrorOutput | Me_Single
 
-union ResultUnion_Room_List = ErrorOutput | Room_List
+union ResultUnion_RoleModel_List = ErrorOutput | RoleModel_List
 
-union ResultUnion_Room_Mutation = ErrorOutput | Room_Mutation
+union ResultUnion_RoomModel_List = ErrorOutput | RoomModel_List
 
-union ResultUnion_Room_Single = ErrorOutput | Room_Single
+union ResultUnion_RoomModel_Mutation = ErrorOutput | RoomModel_Mutation
+
+union ResultUnion_RoomModel_Single = ErrorOutput | RoomModel_Single
+
+union ResultUnion_UserModel_List = ErrorOutput | UserModel_List
+
+union ResultUnion_UserModel_Mutation = ErrorOutput | UserModel_Mutation
 
 union ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation
 
-union ResultUnion_User_List = ErrorOutput | User_List
+type RoleModel {
+  description: String!
+  enum: Roles!
+  id: ID!
+  name: String!
+  point: Float!
+  status: Status!
+}
 
-union ResultUnion_User_Mutation = ErrorOutput | User_Mutation
+type RoleModel_List implements BaseResponse {
+  data: [RoleModel!]!
+  message: String!
+  pagination: PaginationData!
+  statusCode: HttpCode!
+}
 
-type Room {
+enum Roles {
+  cupid
+  doctor
+  elder
+  hunter
+  little_girl
+  seer
+  tanner
+  village_idiot
+  villager
+  werewolf
+  wild_child
+  witch
+}
+
+type RoomModel {
   id: ID!
   maxPlayers: Float!
   name: String!
@@ -153,10 +187,29 @@ type Room {
   status: RoomStatus!
 }
 
+type RoomModel_List implements BaseResponse {
+  data: [RoomModel!]!
+  message: String!
+  pagination: PaginationData!
+  statusCode: HttpCode!
+}
+
+type RoomModel_Mutation implements BaseResponse {
+  data: RoomModel!
+  message: String!
+  statusCode: HttpCode!
+}
+
+type RoomModel_Single implements BaseResponse {
+  data: RoomModel
+  message: String!
+  statusCode: HttpCode!
+}
+
 type RoomPlayer {
   id: ID!
   isHost: Boolean!
-  user: User!
+  user: UserModel!
 }
 
 enum RoomStatus {
@@ -165,29 +218,28 @@ enum RoomStatus {
   waiting
 }
 
-type Room_List implements BaseResponse {
-  data: [Room!]!
+enum Status {
+  active
+  inactive
+}
+
+type UserModel {
+  email: String!
+  id: ID!
+  username: String!
+}
+
+type UserModel_List implements BaseResponse {
+  data: [UserModel!]!
   message: String!
   pagination: PaginationData!
   statusCode: HttpCode!
 }
 
-type Room_Mutation implements BaseResponse {
-  data: Room!
+type UserModel_Mutation implements BaseResponse {
+  data: UserModel!
   message: String!
   statusCode: HttpCode!
-}
-
-type Room_Single implements BaseResponse {
-  data: Room
-  message: String!
-  statusCode: HttpCode!
-}
-
-type User {
-  email: String!
-  id: ID!
-  username: String!
 }
 
 type UserToken {
@@ -196,19 +248,6 @@ type UserToken {
 
 type UserToken_Mutation implements BaseResponse {
   data: UserToken!
-  message: String!
-  statusCode: HttpCode!
-}
-
-type User_List implements BaseResponse {
-  data: [User!]!
-  message: String!
-  pagination: PaginationData!
-  statusCode: HttpCode!
-}
-
-type User_Mutation implements BaseResponse {
-  data: User!
   message: String!
   statusCode: HttpCode!
 }

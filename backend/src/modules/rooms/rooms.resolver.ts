@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { Resolver } from '@nestjs/graphql';
 import { RoomService } from './rooms.service';
-import { Room } from './rooms.model';
+import { RoomModel } from './rooms.model';
 import { QueryList } from 'src/decorators/query-list.decorator';
 import { Filters } from 'src/decorators/filter.decorator';
 import { Pagination } from 'src/decorators/pagination.decorator';
@@ -14,7 +14,7 @@ import { QuerySingle } from 'src/decorators/query-single.decorator';
 export class RoomResolver {
   @Inject() roomService: RoomService;
 
-  @QueryList(Room)
+  @QueryList(RoomModel)
   async rooms(
     @Pagination() pagination: Pagination,
     @Filters() filters: FilterRoomInput,
@@ -23,7 +23,7 @@ export class RoomResolver {
     return { ...results, message: 'Get rooms successfully' };
   }
 
-  @QuerySingle(Room, { nullable: true })
+  @QuerySingle(RoomModel, { nullable: true })
   async currentRoom() {
     const data = await this.roomService.getCurrentRoom();
     return {
@@ -31,10 +31,10 @@ export class RoomResolver {
     };
   }
 
-  @Mutation(Room)
+  @Mutation(RoomModel)
   async createRoom(
     @Input() input: CreateRoomInput,
-  ): Promise<{ data: Room; message: string }> {
+  ): Promise<{ data: RoomModel; message: string }> {
     const data = await this.roomService.createRoom(input);
     return { data, message: 'Create room successfully' };
   }

@@ -29,10 +29,11 @@ export class RoomService {
   getCurrentRoom$ = this.apollo
     .query<CurrentRoomQuery>({
       query: QUERY_CURRENT_ROOM,
+      fetchPolicy: 'no-cache',
     })
     .pipe(
       map(({ data }) => {
-        if (data.currentRoom?.__typename === 'Room_Single') {
+        if (data.currentRoom?.__typename === 'RoomModel_Single') {
           this.currentRoom = data.currentRoom.data || null;
         } else {
           this.currentRoom = null;
@@ -51,7 +52,7 @@ export class RoomService {
       })
       .pipe(
         map(({ data }) => {
-          if (data?.createRoom.__typename === 'Room_Mutation') {
+          if (data?.createRoom.__typename === 'RoomModel_Mutation') {
             this.toastr.success(data.createRoom.message);
             this.currentRoom = data.createRoom.data;
             return true;

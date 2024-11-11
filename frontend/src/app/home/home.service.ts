@@ -5,11 +5,13 @@ import { ToastrService } from 'ngx-toastr';
 import { FormBuilder, Validators } from '@angular/forms';
 import { RoomService } from '../shared/services/room/room.service';
 import { Router } from '@angular/router';
+import { RoleService } from '../shared/services/role/role.service';
 export class HomeService {
   router = inject(Router);
   toastr = inject(ToastrService);
   apollo = inject(Apollo);
   roomService = inject(RoomService);
+  roleService = inject(RoleService);
   get isShowModal() {
     return this.isShowModal$.getValue();
   }

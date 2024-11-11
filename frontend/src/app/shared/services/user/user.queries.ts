@@ -1,5 +1,4 @@
 import { gql } from 'apollo-angular';
-
 export const GET_MY_USER = gql`
   query Me {
     me {

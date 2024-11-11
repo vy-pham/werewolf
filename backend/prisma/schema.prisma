@@ -7,6 +7,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Status {
+  active
+  inactive
+}
+
 model User {
   id         Int         @id @default(autoincrement())
   username   String      @unique
@@ -16,11 +21,28 @@ model User {
   RoomPlayer RoomPlayer?
 }
 
+enum Roles {
+  werewolf
+  villager
+  seer
+  doctor
+  hunter
+  cupid
+  witch
+  little_girl
+  elder
+  tanner
+  village_idiot
+  wild_child
+}
+
 model Role {
   id          Int     @id @default(autoincrement())
   name        String
   description String?
   point       Int
+  enum        Roles   @unique
+  status      Status  @default(active)
 }
 
 enum RoomStatus {
@@ -29,12 +51,21 @@ enum RoomStatus {
   finished
 }
 
+model RoomRole {
+  id       Int  @id @default(autoincrement())
+  quantity Int
+  roomId   Int  @map("room_id")
+  roleId   Int  @map("role_id")
+  room     Room @relation(fields: [roomId], references: [id])
+}
+
 model Room {
   id         Int          @id @default(autoincrement())
   name       String
   maxPlayers Int          @map("max_players")
   status     RoomStatus   @default(waiting)
   players    RoomPlayer[]
+  RoomRole   RoomRole[]
 }
 
 model RoomPlayer {
