@@ -1,17 +1,97 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
-import { ReactiveFormsModule, type FormControl } from '@angular/forms';
+import {
+  Component,
+  forwardRef,
+  Host,
+  Input,
+  Optional,
+  SkipSelf,
+  type OnInit,
+} from '@angular/core';
+import {
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  ControlContainer,
+  type ControlValueAccessor,
+  type AbstractControl,
+} from '@angular/forms';
+import { ClassNamePipe } from '../../pipes/class-name.pipe';
 
 @Component({
   selector: 'app-input',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, ClassNamePipe],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => InputComponent),
+      multi: true,
+    },
+  ],
   templateUrl: './input.component.html',
 })
-export class InputComponent {
-  @Input() formControl!: FormControl<any>;
+export class InputComponent implements ControlValueAccessor, OnInit {
+  @Input() label: string = '';
+  @Input() placeholder: string = '';
   @Input() type = 'text';
-  @Input() placeholder = '';
   @Input() errorMessage = '';
-  @Input() label = '';
+  @Input() formControlName!: string;
+  control!: AbstractControl<any, any>;
+
+  value: any = '';
+  isDisabled: boolean = false;
+
+  constructor(
+    @Optional()
+    @Host()
+    @SkipSelf()
+    private controlContainer: ControlContainer
+  ) {}
+  ngOnInit() {
+    if (this.controlContainer) {
+      if (this.formControlName) {
+        this.control = this.controlContainer.control!.get(
+          this.formControlName
+        )!;
+      } else {
+        console.warn(
+          'Missing FormControlName directive from host element of the component'
+        );
+      }
+    } else {
+      console.warn("Can't find parent FormGroup directive");
+    }
+  }
+
+  onChange = (value: any) => {};
+  onTouched = () => {};
+
+  writeValue(value: any): void {
+    this.value = value;
+  }
+
+  registerOnChange(fn: any): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: any): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.isDisabled = isDisabled;
+  }
+
+  onInput(event: any) {
+    let value = event.target.value;
+    if (this.type === 'number') {
+      value = Number(value);
+    }
+    this.value = value;
+    this.onChange(this.value);
+  }
+
+  onBlur() {
+    this.onTouched();
+  }
 }

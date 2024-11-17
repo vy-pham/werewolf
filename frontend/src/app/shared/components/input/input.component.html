@@ -1,14 +1,19 @@
-<div class="relative pb-8">
+<div [class]="'relative' | className : errorMessage && 'pb-8'">
   <label *ngIf="label">{{ label }}</label>
   <input
     class="w-full rounded-lg p-2 bg-orange-200 outline-none"
     [type]="type"
     [placeholder]="placeholder"
-    [formControl]="formControl"
+    name="name"
+    (input)="onInput($event)"
+    [value]="value"
+    (blur)="onBlur()"
+    [disabled]="isDisabled"
   />
+
   <div
     class="absolute bottom-0 left-0 text-red-500"
-    *ngIf="formControl.touched && formControl.errors && errorMessage"
+    *ngIf="control.touched && control.errors && errorMessage"
   >
     {{ errorMessage }}
   </div>

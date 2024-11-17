@@ -3,9 +3,10 @@ import { ButtonComponent } from '../shared/components/button/button.component';
 import { HomeService } from './home.service';
 import { CommonModule } from '@angular/common';
 import { ModalComponent } from '../shared/components/modal/modal.component';
-import { InputComponent } from '../shared/components/input/input.component';
 import { RoleService } from '../shared/services/role/role.service';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { InputComponent } from '../shared/components/input/input.component';
+import { GetRoleNamePipe } from '../shared/pipes/get-role-name.pipe';
 
 @Component({
   selector: 'app-home',
@@ -14,8 +15,10 @@ import { ReactiveFormsModule } from '@angular/forms';
     ButtonComponent,
     CommonModule,
     ModalComponent,
-    InputComponent,
     ReactiveFormsModule,
+    FormsModule,
+    InputComponent,
+    GetRoleNamePipe,
   ],
   providers: [HomeService],
   templateUrl: './home.component.html',

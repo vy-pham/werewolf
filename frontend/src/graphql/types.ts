@@ -23,6 +23,7 @@ export type BaseResponse = {
 export type CreateRoomInput = {
   maxPlayers: Scalars['Float']['input'];
   name: Scalars['String']['input'];
+  roles: Array<RoleInput>;
 };
 
 export type CreateUserInput = {
@@ -188,6 +189,12 @@ export type ResultUnion_UserModel_List = ErrorOutput | UserModel_List;
 export type ResultUnion_UserModel_Mutation = ErrorOutput | UserModel_Mutation;
 
 export type ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation;
+
+export type RoleInput = {
+  checked: Scalars['Boolean']['input'];
+  quantity: Scalars['Float']['input'];
+  roleId: Scalars['ID']['input'];
+};
 
 export type RoleModel = {
   __typename?: 'RoleModel';

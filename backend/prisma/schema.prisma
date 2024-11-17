@@ -37,12 +37,13 @@ enum Roles {
 }
 
 model Role {
-  id          Int     @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   name        String
   description String?
   point       Int
-  enum        Roles   @unique
-  status      Status  @default(active)
+  enum        Roles      @unique
+  status      Status     @default(active)
+  RoomRole    RoomRole[]
 }
 
 enum RoomStatus {
@@ -52,11 +53,13 @@ enum RoomStatus {
 }
 
 model RoomRole {
-  id       Int  @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   quantity Int
-  roomId   Int  @map("room_id")
-  roleId   Int  @map("role_id")
-  room     Room @relation(fields: [roomId], references: [id])
+  checked  Boolean
+  roomId   Int     @map("room_id")
+  roleId   Int     @map("role_id")
+  role     Role    @relation(fields: [roleId], references: [id])
+  room     Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
 }
 
 model Room {
@@ -65,7 +68,7 @@ model Room {
   maxPlayers Int          @map("max_players")
   status     RoomStatus   @default(waiting)
   players    RoomPlayer[]
-  RoomRole   RoomRole[]
+  roles      RoomRole[]
 }
 
 model RoomPlayer {
@@ -74,5 +77,5 @@ model RoomPlayer {
   roomId Int     @map("room_id")
   userId Int     @unique @map("user_id")
   user   User    @relation(fields: [userId], references: [id])
-  room   Room    @relation(fields: [roomId], references: [id])
+  room   Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
 }

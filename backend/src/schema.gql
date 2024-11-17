@@ -10,6 +10,7 @@ interface BaseResponse {
 input CreateRoomInput {
   maxPlayers: Float!
   name: String!
+  roles: [RoleInput!]!
 }
 
 input CreateUserInput {
@@ -147,6 +148,12 @@ union ResultUnion_UserModel_List = ErrorOutput | UserModel_List
 union ResultUnion_UserModel_Mutation = ErrorOutput | UserModel_Mutation
 
 union ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation
+
+input RoleInput {
+  checked: Boolean!
+  quantity: Float!
+  roleId: ID!
+}
 
 type RoleModel {
   description: String!
