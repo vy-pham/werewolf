@@ -13,6 +13,7 @@ export class BasePrismaService extends PrismaClient implements OnModuleInit {
   }
 
   withExtensions() {
+    this.room.findUniqueOrThrow;
     return this.$extends({
       model: {
         $allModels: {
@@ -68,6 +69,42 @@ export class BasePrismaService extends PrismaClient implements OnModuleInit {
             return !!data;
           },
 
+          async findFirstOrThrow<T, A extends Prisma.Args<T, 'findFirst'>>(
+            this: T,
+            args: A,
+            {
+              throwCase,
+              message,
+            }: {
+              throwCase?: 'IF_EXISTS' | 'IF_NOT_EXISTS';
+              message?: string;
+            } = {},
+          ): Promise<Prisma.Result<T, A, 'findFirst'>> {
+            const context = Prisma.getExtensionContext(this) as any;
+            const data = await context.findFirst(args);
+            if (throwCase) {
+              switch (throwCase) {
+                case 'IF_EXISTS':
+                  if (data)
+                    throw new BadRequestException(
+                      message ||
+                        `${context.$name} with query ${JSON.stringify(args.where)} is existed`,
+                    );
+                  break;
+                case 'IF_NOT_EXISTS':
+                  if (!data)
+                    throw new BadRequestException(
+                      message ||
+                        `${context.$name} with query ${JSON.stringify(args.where)} is not existed`,
+                    );
+                  break;
+                default:
+                  break;
+              }
+            }
+            return data;
+          },
+
           async findFirstAndUpdate<T, A extends Prisma.Args<T, 'findFirst'>>(
             this: T,
             args: A,
@@ -83,7 +120,6 @@ export class BasePrismaService extends PrismaClient implements OnModuleInit {
             const context = Prisma.getExtensionContext(this) as any;
             const data = await context.findFirst({
               ...args,
-              select: { id: 1 },
             });
             if (isThrow && !data) {
               throw new BadRequestException(

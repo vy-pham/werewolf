@@ -17,12 +17,19 @@ export type CreateRoomMutationVariables = Types.Exact<{
 }>;
 
 
-export type CreateRoomMutation = { __typename?: 'Mutation', createRoom: { __typename?: 'ErrorOutput', message: string, statusCode: Types.HttpCode } | { __typename?: 'RoomModel_Mutation', message: string, statusCode: Types.HttpCode, data: { __typename?: 'RoomModel', id: string, maxPlayers: number, name: string, status: Types.RoomStatus, players: Array<{ __typename?: 'RoomPlayerModel', id: string, isHost: boolean, user: { __typename?: 'UserModel', email: string, id: string, username: string } }>, rolesConfig: Array<{ __typename?: 'RoomRoleModel', id: string, role: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number } }> } } };
+export type CreateRoomMutation = { __typename?: 'Mutation', createRoom: { __typename?: 'ErrorOutput', message: string, statusCode: Types.HttpCode } | { __typename?: 'RoomModel_Mutation', message: string, statusCode: Types.HttpCode, data: { __typename?: 'RoomModel', id: string, name: string, type: Types.RoomType, status: Types.RoomStatus, players: Array<{ __typename?: 'RoomPlayerModel', id: string, isHost: boolean, user: { __typename?: 'UserModel', email: string, id: string, username: string } }>, rolesConfig: Array<{ __typename?: 'RoomRoleModel', id: string, role: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number } }> } } };
+
+export type UpdateRoomMutationVariables = Types.Exact<{
+  input: Types.UpdateRoomInput;
+}>;
+
+
+export type UpdateRoomMutation = { __typename?: 'Mutation', updateRoom: { __typename?: 'ErrorOutput', message: string, statusCode: Types.HttpCode } | { __typename?: 'RoomModel_Mutation', message: string, statusCode: Types.HttpCode, data: { __typename?: 'RoomModel', id: string, name: string, type: Types.RoomType, status: Types.RoomStatus, players: Array<{ __typename?: 'RoomPlayerModel', id: string, isHost: boolean, user: { __typename?: 'UserModel', email: string, id: string, username: string } }>, rolesConfig: Array<{ __typename?: 'RoomRoleModel', id: string, role: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number } }> } } };
 
 export type CurrentRoomQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type CurrentRoomQuery = { __typename?: 'Query', currentRoom?: { __typename?: 'ErrorOutput', message: string } | { __typename?: 'RoomModel_Single', message: string, data?: { __typename?: 'RoomModel', id: string, maxPlayers: number, name: string, status: Types.RoomStatus, players: Array<{ __typename?: 'RoomPlayerModel', id: string, isHost: boolean, user: { __typename?: 'UserModel', email: string, id: string, username: string } }>, rolesConfig: Array<{ __typename?: 'RoomRoleModel', id: string, role: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number } }> } | null } | null };
+export type CurrentRoomQuery = { __typename?: 'Query', currentRoom?: { __typename?: 'ErrorOutput', message: string } | { __typename?: 'RoomModel_Single', message: string, data?: { __typename?: 'RoomModel', id: string, name: string, type: Types.RoomType, status: Types.RoomStatus, players: Array<{ __typename?: 'RoomPlayerModel', id: string, isHost: boolean, user: { __typename?: 'UserModel', email: string, id: string, username: string } }>, rolesConfig: Array<{ __typename?: 'RoomRoleModel', id: string, role: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number } }> } | null } | null };
 
 export type MeQueryVariables = Types.Exact<{ [key: string]: never; }>;
 

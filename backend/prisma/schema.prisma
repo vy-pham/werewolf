@@ -60,20 +60,26 @@ model RoomRole {
   room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
 }
 
+enum RoomType {
+  support
+  multiplayer
+}
+
 model Room {
   id          Int          @id @default(autoincrement())
   name        String
-  maxPlayers  Int          @map("max_players")
   status      RoomStatus   @default(waiting)
+  type        RoomType     @default(multiplayer)
   players     RoomPlayer[]
   rolesConfig RoomRole[]
 }
 
 model RoomPlayer {
-  id     Int     @id @default(autoincrement())
-  isHost Boolean @default(false) @map("is_host")
-  roomId Int     @map("room_id")
-  userId Int     @unique @map("user_id")
-  user   User    @relation(fields: [userId], references: [id])
-  room   Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  id      Int     @id @default(autoincrement())
+  isHost  Boolean @default(false) @map("is_host")
+  roomId  Int     @map("room_id")
+  userId  Int     @unique @map("user_id")
+  virtual String?
+  user    User    @relation(fields: [userId], references: [id])
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
 }

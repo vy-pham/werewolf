@@ -1,28 +1,35 @@
 <main *ngIf="roomService.currentRoom">
   <h2 class="text-4xl text-center font-bold">Players</h2>
-  <div class="grid grid-cols-3 gap-4">
-    <div *ngFor="let item of roomService.currentRoom.players">
-      <app-button class="w-full">
-        {{ item.user.username }} - <span *ngIf="item.isHost">Host</span>
-      </app-button>
-    </div>
-    <div
-      *ngFor="
-        let item of [
-          1,
-          roomService.currentRoom.maxPlayers -
-            roomService.currentRoom.players.length
-        ] | createArray
-      "
-    >
-      <app-button>Slot {{ item }} - Empty </app-button>
+  <div
+    *ngIf="roomService.currentRoom.type === roomType.Multiplayer; else support"
+  >
+    <div class="grid grid-cols-3 gap-4">
+      <div *ngFor="let item of roomService.currentRoom.players">
+        <app-button class="w-full">
+          {{ item.user.username }} - <span *ngIf="item.isHost">Host</span>
+        </app-button>
+      </div>
     </div>
   </div>
+
+  <ng-template #support>
+    <div class="grid grid-cols-4 gap-4">
+      <div *ngFor="let player of tempPlayers.controls; index">
+        <app-input [control]="player" />
+      </div>
+    </div>
+    <div class="grid grid-cols-2 mt-4">
+      <app-button (click)="addPlayer()"> Add players</app-button>
+      <app-button (click)="addPlayer()">Done </app-button>
+    </div>
+  </ng-template>
+
   <div [formGroup]="roomService.form">
     <h2 class="text-4xl text-center font-bold">Configuration</h2>
-    <app-input formControlName="name" />
-    <app-input type="number" formControlName="maxPlayers" />
-    <div formArrayName="rolesConfig" class="grid grid-cols-3 gap-4">
+    <div class="mt-4">
+      <app-input formControlName="name" />
+    </div>
+    <div formArrayName="rolesConfig" class="grid grid-cols-3 gap-4 mt-4">
       <div
         *ngFor="
           let roleGroup of roomService.form.controls.rolesConfig.controls;
@@ -30,10 +37,11 @@
         "
       >
         <div [formGroupName]="i">
-          {{ roleGroup.value.roleId | getRoleName }}
-          <input type="checkbox" formControlName="checked" />
+          <input type="checkbox" formControlName="checked" [id]="i" />
+          <label [for]="i">{{ roleGroup.value.roleId | getRoleName }}</label>
         </div>
       </div>
     </div>
+    <app-button (click)="onUpdate()">Update</app-button>
   </div>
 </main>

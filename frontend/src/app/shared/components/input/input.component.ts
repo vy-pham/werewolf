@@ -36,7 +36,7 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() type = 'text';
   @Input() errorMessage = '';
   @Input() formControlName!: string;
-  control!: AbstractControl<any, any>;
+  @Input() control!: AbstractControl<any, any>;
 
   value: any = '';
   isDisabled: boolean = false;
@@ -58,8 +58,6 @@ export class InputComponent implements ControlValueAccessor, OnInit {
           'Missing FormControlName directive from host element of the component'
         );
       }
-    } else {
-      console.warn("Can't find parent FormGroup directive");
     }
   }
 

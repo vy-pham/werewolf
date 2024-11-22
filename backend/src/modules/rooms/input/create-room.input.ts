@@ -1,15 +1,13 @@
 import { Field, ID, InputType } from '@nestjs/graphql';
-import { Max, Min } from 'class-validator';
+import { RoomType } from '@prisma/client';
 @InputType()
 export class CreateRoomInput {
-  @Min(4)
-  @Max(40)
-  @Field()
-  maxPlayers: number;
-
   @Field()
   name: string;
 
   @Field(() => [ID])
   rolesConfig: string[];
+
+  @Field(() => RoomType)
+  type: RoomType;
 }

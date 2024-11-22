@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { FilterRoomInput } from './input/filter-room.input';
 import { InjectPrisma } from 'src/decorators/inject-prisma.decorator';
 import type { CreateRoomInput } from './input/create-room.input';
+import type { UpdateRoomInput } from './input/update-room.input';
 
 @Injectable()
 export class RoomService {
@@ -15,7 +16,7 @@ export class RoomService {
     return results;
   }
 
-  async createRoom({ maxPlayers, name, rolesConfig }: CreateRoomInput) {
+  async createRoom({ name, rolesConfig, type }: CreateRoomInput) {
     const user = await this.prisma.user.findUnique({
       where: { id: this.user.id },
     });
@@ -47,8 +48,8 @@ export class RoomService {
 
     const room = await this.prisma.room.create({
       data: {
-        maxPlayers,
         name,
+        type,
         players: {
           createMany: {
             data: [
@@ -81,6 +82,56 @@ export class RoomService {
       },
     });
 
+    return room;
+  }
+
+  async updateRoom({ id, rolesConfig, name }: UpdateRoomInput) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: this.user.id },
+    });
+
+    const roomPlayer = await this.prisma.roomPlayer.findFirstOrThrow(
+      {
+        where: {
+          userId: user.id,
+          roomId: Number(id),
+          isHost: true,
+        },
+      },
+      {
+        throwCase: 'IF_NOT_EXISTS',
+        message: 'Room not found or you are not the host',
+      },
+    );
+
+    const room = await this.prisma.room.findFirstAndUpdate(
+      {
+        where: { id: Number(id) },
+        include: {
+          players: {
+            include: {
+              user: true,
+            },
+          },
+          rolesConfig: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      },
+      {
+        name,
+        rolesConfig: {
+          deleteMany: { roomId: Number(id) },
+          createMany: {
+            data: rolesConfig.map((o) => ({
+              roleId: Number(o),
+            })),
+          },
+        },
+      },
+    );
     return room;
   }
 

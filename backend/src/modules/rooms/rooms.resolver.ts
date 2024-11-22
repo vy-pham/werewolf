@@ -10,6 +10,7 @@ import { Input } from 'src/decorators/input.decorator';
 import { CreateRoomInput } from './input/create-room.input';
 import { Mutation } from 'src/decorators/mutation.decorator';
 import { QuerySingle } from 'src/decorators/query-single.decorator';
+import { UpdateRoomInput } from './input/update-room.input';
 @Resolver('Room')
 export class RoomResolver {
   @Inject() roomService: RoomService;
@@ -37,5 +38,13 @@ export class RoomResolver {
   ): Promise<{ data: RoomModel; message: string }> {
     const data = await this.roomService.createRoom(input);
     return { data, message: 'Create room successfully' };
+  }
+
+  @Mutation(RoomModel)
+  async updateRoom(
+    @Input() input: UpdateRoomInput,
+  ): Promise<{ data: RoomModel; message: string }> {
+    const data = await this.roomService.updateRoom(input);
+    return { data, message: 'Update room successfully' };
   }
 }

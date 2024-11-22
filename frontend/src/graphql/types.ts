@@ -21,9 +21,9 @@ export type BaseResponse = {
 };
 
 export type CreateRoomInput = {
-  maxPlayers: Scalars['Float']['input'];
   name: Scalars['String']['input'];
   rolesConfig: Array<Scalars['ID']['input']>;
+  type: RoomType;
 };
 
 export type CreateUserInput = {
@@ -122,6 +122,7 @@ export type Mutation = {
   createRoom: ResultUnion_RoomModel_Mutation;
   createUser: ResultUnion_UserModel_Mutation;
   login: ResultUnion_UserToken_Mutation;
+  updateRoom: ResultUnion_RoomModel_Mutation;
 };
 
 
@@ -137,6 +138,11 @@ export type MutationCreateUserArgs = {
 
 export type MutationLoginArgs = {
   input: LoginUserInput;
+};
+
+
+export type MutationUpdateRoomArgs = {
+  input: UpdateRoomInput;
 };
 
 export type PaginationData = {
@@ -226,11 +232,11 @@ export enum Roles {
 export type RoomModel = {
   __typename?: 'RoomModel';
   id: Scalars['ID']['output'];
-  maxPlayers: Scalars['Float']['output'];
   name: Scalars['String']['output'];
   players: Array<RoomPlayerModel>;
   rolesConfig: Array<RoomRoleModel>;
   status: RoomStatus;
+  type: RoomType;
 };
 
 export type RoomModel_List = BaseResponse & {
@@ -274,10 +280,22 @@ export enum RoomStatus {
   Waiting = 'waiting'
 }
 
+export enum RoomType {
+  Multiplayer = 'multiplayer',
+  Support = 'support'
+}
+
 export enum Status {
   Active = 'active',
   Inactive = 'inactive'
 }
+
+export type UpdateRoomInput = {
+  id: Scalars['ID']['input'];
+  name: Scalars['String']['input'];
+  rolesConfig: Array<Scalars['ID']['input']>;
+  type: RoomType;
+};
 
 export type UserModel = {
   __typename?: 'UserModel';

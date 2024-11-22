@@ -8,9 +8,9 @@ interface BaseResponse {
 }
 
 input CreateRoomInput {
-  maxPlayers: Float!
   name: String!
   rolesConfig: [ID!]!
+  type: RoomType!
 }
 
 input CreateUserInput {
@@ -110,6 +110,7 @@ type Mutation {
   createRoom(input: CreateRoomInput!): ResultUnion_RoomModel_Mutation!
   createUser(input: CreateUserInput!): ResultUnion_UserModel_Mutation!
   login(input: LoginUserInput!): ResultUnion_UserToken_Mutation!
+  updateRoom(input: UpdateRoomInput!): ResultUnion_RoomModel_Mutation!
 }
 
 type PaginationData {
@@ -182,11 +183,11 @@ enum Roles {
 
 type RoomModel {
   id: ID!
-  maxPlayers: Float!
   name: String!
   players: [RoomPlayerModel!]!
   rolesConfig: [RoomRoleModel!]!
   status: RoomStatus!
+  type: RoomType!
 }
 
 type RoomModel_List implements BaseResponse {
@@ -225,9 +226,21 @@ enum RoomStatus {
   waiting
 }
 
+enum RoomType {
+  multiplayer
+  support
+}
+
 enum Status {
   active
   inactive
+}
+
+input UpdateRoomInput {
+  id: ID!
+  name: String!
+  rolesConfig: [ID!]!
+  type: RoomType!
 }
 
 type UserModel {
