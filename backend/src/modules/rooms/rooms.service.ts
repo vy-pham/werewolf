@@ -145,16 +145,16 @@ export class RoomService {
         },
       },
       include: {
-        players: {
-          include: {
-            user: true,
-          },
-        },
-        rolesConfig: {
-          include: {
-            role: true,
-          },
-        },
+        // players: {
+        //   include: {
+        //     user: true,
+        //   },
+        // },
+        // rolesConfig: {
+        //   include: {
+        //     role: true,
+        //   },
+        // },
       },
     });
   }

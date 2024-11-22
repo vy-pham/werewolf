@@ -17,6 +17,8 @@ import { Roles, RoleSide, RoomStatus, RoomType, Status } from '@prisma/client';
 import { InjectPrisma } from './decorators/inject-prisma.decorator';
 import { ROLES } from './roles';
 import { RoleModule } from './modules/roles/roles.module';
+import { RoomPlayerModule } from './modules/room-player/room-player.module';
+import { RoomRoleModule } from './modules/room-role/room-role.module';
 registerEnumType(HttpStatus, { name: 'HttpCode' });
 registerEnumType(RoomStatus, { name: 'RoomStatus' });
 registerEnumType(Status, { name: 'Status' });
@@ -47,6 +49,8 @@ class AppController {
     UsersModule,
     RoomModule,
     RoleModule,
+    RoomPlayerModule,
+    RoomRoleModule,
     GlobalModule,
   ],
   providers: [

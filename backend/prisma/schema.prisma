@@ -78,8 +78,8 @@ model RoomPlayer {
   id      Int     @id @default(autoincrement())
   isHost  Boolean @default(false) @map("is_host")
   roomId  Int     @map("room_id")
-  userId  Int     @unique @map("user_id")
+  userId  Int?    @unique @map("user_id")
   virtual String?
-  user    User    @relation(fields: [userId], references: [id])
+  user    User?   @relation(fields: [userId], references: [id])
   room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
 }

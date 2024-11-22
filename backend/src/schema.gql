@@ -212,7 +212,8 @@ type RoomModel_Single implements BaseResponse {
 type RoomPlayerModel {
   id: ID!
   isHost: Boolean!
-  user: UserModel!
+  user: UserModel
+  virtual: String
 }
 
 type RoomRoleModel {

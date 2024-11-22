@@ -1,13 +1,7 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import {
-  Room,
-  RoomStatus,
-  RoomPlayer,
-  RoomType,
-  type RoomRole,
-} from '@prisma/client';
-import { UserModel } from '../users/users.model';
-import { RoleModel } from '../roles/roles.model';
+import { Room, RoomStatus, RoomPlayer, RoomType } from '@prisma/client';
+import { RoomPlayerModel } from '../room-player/room-player.model';
+import { RoomRoleModel } from '../room-role/room-role.model';
 @ObjectType()
 export class RoomModel implements Room {
   @Field(() => ID)
@@ -25,23 +19,4 @@ export class RoomModel implements Room {
 
   @Field(() => RoomType)
   type: RoomType;
-}
-
-@ObjectType()
-class RoomPlayerModel implements Omit<RoomPlayer, 'roomId' | 'userId'> {
-  virtual: string;
-  @Field(() => ID)
-  id: number;
-  @Field()
-  isHost: boolean;
-  @Field(() => UserModel)
-  user: UserModel;
-}
-
-@ObjectType()
-class RoomRoleModel implements Omit<RoomRole, 'roomId' | 'roleId'> {
-  @Field(() => ID)
-  id: number;
-  @Field(() => RoleModel)
-  role: RoleModel;
 }

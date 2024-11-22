@@ -21,11 +21,11 @@ export class RoomResolver {
     @Filters() filters: FilterRoomInput,
   ) {
     const results = await this.roomService.getRooms(filters, pagination);
-    return { ...results, message: 'Get rooms successfully' };
+    return { data: [{ id: 1 }, { id: 2 }], message: 'Get rooms successfully' };
   }
 
   @QuerySingle(RoomModel, { nullable: true })
-  async currentRoom(): Promise<{ data: RoomModel }> {
+  async currentRoom() {
     const data = await this.roomService.getCurrentRoom();
     return {
       data,
