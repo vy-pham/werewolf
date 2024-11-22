@@ -25,15 +25,14 @@ enum Roles {
   werewolf
   villager
   seer
-  doctor
+  guard
   hunter
-  cupid
   witch
-  little_girl
-  elder
-  tanner
-  village_idiot
-  wild_child
+}
+
+enum RoleSide {
+  werewolf
+  villager
 }
 
 model Role {
@@ -42,6 +41,7 @@ model Role {
   description String?
   point       Int
   enum        Roles      @unique
+  side        RoleSide   @default(villager)
   status      Status     @default(active)
   RoomRole    RoomRole[]
 }

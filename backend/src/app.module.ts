@@ -13,7 +13,7 @@ import { AuthGuard } from './guard/auth.guard';
 import { PaginationMapInterceptor } from './interceptors/response.interceptor';
 import { HttpExceptionFilter } from './interceptors/exception.interceptor';
 import GraphQLJSON from 'graphql-type-json';
-import { Roles, RoomStatus, Status } from '@prisma/client';
+import { Roles, RoleSide, RoomStatus, Status } from '@prisma/client';
 import { InjectPrisma } from './decorators/inject-prisma.decorator';
 import { ROLES } from './roles';
 import { RoleModule } from './modules/roles/roles.module';
@@ -21,6 +21,7 @@ registerEnumType(HttpStatus, { name: 'HttpCode' });
 registerEnumType(RoomStatus, { name: 'RoomStatus' });
 registerEnumType(Status, { name: 'Status' });
 registerEnumType(Roles, { name: 'Roles' });
+registerEnumType(RoleSide, { name: 'RoleSide' });
 
 @Controller()
 class AppController {

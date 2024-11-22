@@ -203,6 +203,7 @@ export type RoleModel = {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   point: Scalars['Float']['output'];
+  side: RoleSide;
   status: Status;
 };
 
@@ -214,18 +215,17 @@ export type RoleModel_List = BaseResponse & {
   statusCode: HttpCode;
 };
 
+export enum RoleSide {
+  Villager = 'villager',
+  Werewolf = 'werewolf'
+}
+
 export enum Roles {
-  Cupid = 'cupid',
-  Doctor = 'doctor',
-  Elder = 'elder',
+  Guard = 'guard',
   Hunter = 'hunter',
-  LittleGirl = 'little_girl',
   Seer = 'seer',
-  Tanner = 'tanner',
-  VillageIdiot = 'village_idiot',
   Villager = 'villager',
   Werewolf = 'werewolf',
-  WildChild = 'wild_child',
   Witch = 'witch'
 }
 
@@ -234,7 +234,8 @@ export type RoomModel = {
   id: Scalars['ID']['output'];
   maxPlayers: Scalars['Float']['output'];
   name: Scalars['String']['output'];
-  players: Array<RoomPlayer>;
+  players: Array<RoomPlayerModel>;
+  roles: Array<RoomRoleModel>;
   status: RoomStatus;
 };
 
@@ -260,11 +261,19 @@ export type RoomModel_Single = BaseResponse & {
   statusCode: HttpCode;
 };
 
-export type RoomPlayer = {
-  __typename?: 'RoomPlayer';
+export type RoomPlayerModel = {
+  __typename?: 'RoomPlayerModel';
   id: Scalars['ID']['output'];
   isHost: Scalars['Boolean']['output'];
   user: UserModel;
+};
+
+export type RoomRoleModel = {
+  __typename?: 'RoomRoleModel';
+  checked: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  quantity: Scalars['Float']['output'];
+  role: RoleModel;
 };
 
 export enum RoomStatus {

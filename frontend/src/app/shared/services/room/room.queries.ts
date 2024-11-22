@@ -17,6 +17,18 @@ export const MUTATION_CREATE_ROOM = gql`
               username
             }
           }
+          roles {
+            checked
+            id
+            quantity
+            role {
+              description
+              enum
+              id
+              name
+              point
+            }
+          }
           status
         }
       }
@@ -44,6 +56,18 @@ export const QUERY_CURRENT_ROOM = gql`
               email
               id
               username
+            }
+          }
+          roles {
+            checked
+            id
+            quantity
+            role {
+              description
+              enum
+              id
+              name
+              point
             }
           }
           status

@@ -75,6 +75,11 @@ export class RoomService {
             user: true,
           },
         },
+        roles: {
+          include: {
+            role: true,
+          },
+        },
       },
     });
 
@@ -94,6 +99,11 @@ export class RoomService {
         players: {
           include: {
             user: true,
+          },
+        },
+        roles: {
+          include: {
+            role: true,
           },
         },
       },

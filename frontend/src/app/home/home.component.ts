@@ -7,6 +7,7 @@ import { RoleService } from '../shared/services/role/role.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { InputComponent } from '../shared/components/input/input.component';
 import { GetRoleNamePipe } from '../shared/pipes/get-role-name.pipe';
+import { RoomService } from '../shared/services/room/room.service';
 
 @Component({
   selector: 'app-home',
@@ -25,5 +26,6 @@ import { GetRoleNamePipe } from '../shared/pipes/get-role-name.pipe';
 })
 export class HomeComponent {
   homeService = inject(HomeService);
+  roomService = inject(RoomService);
   roleService = inject(RoleService);
 }

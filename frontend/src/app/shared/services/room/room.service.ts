@@ -7,15 +7,46 @@ import type {
 import { Apollo } from 'apollo-angular';
 import { ToastrService } from 'ngx-toastr';
 import { MUTATION_CREATE_ROOM, QUERY_CURRENT_ROOM } from './room.queries';
-import type { CreateRoomInput } from '../../../../graphql/types';
-import { BehaviorSubject, map } from 'rxjs';
+import { Roles, type CreateRoomInput } from '../../../../graphql/types';
+import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import type { ExtractDataType } from '../../entities/utils.entities';
-
+import {
+  FormBuilder,
+  Validators,
+  type FormControl,
+  type FormGroup,
+} from '@angular/forms';
+import { RoleService } from '../role/role.service';
+interface IRoles {
+  roleId: FormControl<string>;
+  checked: FormControl<boolean>;
+  disabled: FormControl<boolean>;
+}
 @Injectable({ providedIn: 'root' })
 export class RoomService {
   toastr = inject(ToastrService);
   apollo = inject(Apollo);
+  roleService = inject(RoleService);
+  constructor() {
+    combineLatest([this.roleService.roles$, this.currentRoom$]).subscribe(
+      ([roles, room]) => {
+        roles.forEach((role) => {
+          let checked = (role.enum === Roles.Villager) === false;
+          const isHaveInRoom = room?.roles.find(
+            (r) => r.role.enum === role.enum
+          );
+          if (isHaveInRoom) checked = true;
 
+          const roleGroup = this.formBuilder.group({
+            roleId: role.id,
+            checked: [role.enum === Roles.Villager],
+            disabled: role.enum === Roles.Villager,
+          });
+          this.form.controls.roles.push(roleGroup);
+        });
+      }
+    );
+  }
   get currentRoom() {
     return this.currentRoom$.value;
   }
@@ -25,6 +56,17 @@ export class RoomService {
   currentRoom$ = new BehaviorSubject<ExtractDataType<
     CreateRoomMutation['createRoom']
   > | null>(null);
+
+  formBuilder = new FormBuilder().nonNullable;
+
+  form = this.formBuilder.group({
+    name: ['', [Validators.required]],
+    maxPlayers: [
+      4,
+      [Validators.required, Validators.min(4), Validators.max(40)],
+    ],
+    roles: this.formBuilder.array<FormGroup<IRoles>>([]),
+  });
 
   getCurrentRoom$ = this.apollo
     .query<CurrentRoomQuery>({

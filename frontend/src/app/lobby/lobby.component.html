@@ -1,7 +1,7 @@
 <main *ngIf="roomService.currentRoom">
   <h2 class="text-4xl text-center font-bold">Players</h2>
   <div class="grid grid-cols-3 gap-4">
-    <div *ngFor="let item of roomService.currentRoom?.players">
+    <div *ngFor="let item of roomService.currentRoom.players">
       <app-button class="w-full">
         {{ item.user.username }} - <span *ngIf="item.isHost">Host</span>
       </app-button>
@@ -16,6 +16,25 @@
       "
     >
       <app-button>Slot {{ item }} - Empty </app-button>
+    </div>
+  </div>
+  <div [formGroup]="roomService.form">
+    <h2 class="text-4xl text-center font-bold">Configuration</h2>
+    <app-input formControlName="name" />
+    <app-input type="number" formControlName="maxPlayers" />
+    <div formArrayName="roles" class="grid grid-cols-3 gap-4">
+      <div
+        *ngFor="
+          let roleGroup of roomService.form.controls.roles.controls;
+          let i = index
+        "
+      >
+        <div [formGroupName]="i">
+          {{ roleGroup.value.roleId | getRoleName }}
+          <input type="checkbox" formControlName="checked" />
+          <app-input type="number" formControlName="quantity" />
+        </div>
+      </div>
     </div>
   </div>
 </main>

@@ -24,7 +24,7 @@ export class RoomResolver {
   }
 
   @QuerySingle(RoomModel, { nullable: true })
-  async currentRoom() {
+  async currentRoom(): Promise<{ data: RoomModel }> {
     const data = await this.roomService.getCurrentRoom();
     return {
       data,

@@ -17,12 +17,12 @@ export type CreateRoomMutationVariables = Types.Exact<{
 }>;
 
 
-export type CreateRoomMutation = { __typename?: 'Mutation', createRoom: { __typename?: 'ErrorOutput', message: string, statusCode: Types.HttpCode } | { __typename?: 'RoomModel_Mutation', message: string, statusCode: Types.HttpCode, data: { __typename?: 'RoomModel', id: string, maxPlayers: number, name: string, status: Types.RoomStatus, players: Array<{ __typename?: 'RoomPlayer', id: string, isHost: boolean, user: { __typename?: 'UserModel', email: string, id: string, username: string } }> } } };
+export type CreateRoomMutation = { __typename?: 'Mutation', createRoom: { __typename?: 'ErrorOutput', message: string, statusCode: Types.HttpCode } | { __typename?: 'RoomModel_Mutation', message: string, statusCode: Types.HttpCode, data: { __typename?: 'RoomModel', id: string, maxPlayers: number, name: string, status: Types.RoomStatus, players: Array<{ __typename?: 'RoomPlayerModel', id: string, isHost: boolean, user: { __typename?: 'UserModel', email: string, id: string, username: string } }>, roles: Array<{ __typename?: 'RoomRoleModel', checked: boolean, id: string, quantity: number, role: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number } }> } } };
 
 export type CurrentRoomQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type CurrentRoomQuery = { __typename?: 'Query', currentRoom?: { __typename?: 'ErrorOutput', message: string } | { __typename?: 'RoomModel_Single', message: string, data?: { __typename?: 'RoomModel', id: string, maxPlayers: number, name: string, status: Types.RoomStatus, players: Array<{ __typename?: 'RoomPlayer', id: string, isHost: boolean, user: { __typename?: 'UserModel', email: string, id: string, username: string } }> } | null } | null };
+export type CurrentRoomQuery = { __typename?: 'Query', currentRoom?: { __typename?: 'ErrorOutput', message: string } | { __typename?: 'RoomModel_Single', message: string, data?: { __typename?: 'RoomModel', id: string, maxPlayers: number, name: string, status: Types.RoomStatus, players: Array<{ __typename?: 'RoomPlayerModel', id: string, isHost: boolean, user: { __typename?: 'UserModel', email: string, id: string, username: string } }>, roles: Array<{ __typename?: 'RoomRoleModel', checked: boolean, id: string, quantity: number, role: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number } }> } | null } | null };
 
 export type MeQueryVariables = Types.Exact<{ [key: string]: never; }>;
 

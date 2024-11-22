@@ -161,6 +161,7 @@ type RoleModel {
   id: ID!
   name: String!
   point: Float!
+  side: RoleSide!
   status: Status!
 }
 
@@ -171,18 +172,17 @@ type RoleModel_List implements BaseResponse {
   statusCode: HttpCode!
 }
 
-enum Roles {
-  cupid
-  doctor
-  elder
-  hunter
-  little_girl
-  seer
-  tanner
-  village_idiot
+enum RoleSide {
   villager
   werewolf
-  wild_child
+}
+
+enum Roles {
+  guard
+  hunter
+  seer
+  villager
+  werewolf
   witch
 }
 
@@ -190,7 +190,8 @@ type RoomModel {
   id: ID!
   maxPlayers: Float!
   name: String!
-  players: [RoomPlayer!]!
+  players: [RoomPlayerModel!]!
+  roles: [RoomRoleModel!]!
   status: RoomStatus!
 }
 
@@ -213,10 +214,17 @@ type RoomModel_Single implements BaseResponse {
   statusCode: HttpCode!
 }
 
-type RoomPlayer {
+type RoomPlayerModel {
   id: ID!
   isHost: Boolean!
   user: UserModel!
+}
+
+type RoomRoleModel {
+  checked: Boolean!
+  id: ID!
+  quantity: Float!
+  role: RoleModel!
 }
 
 enum RoomStatus {
