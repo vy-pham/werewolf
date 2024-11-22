@@ -18,20 +18,15 @@
       formControlName="maxPlayers"
       errorMessage="Min Player 4, Max player 40"
     />
-    <div class="grid grid-cols-3 gap-x-4" formArrayName="roles">
+    <div class="grid grid-cols-3 gap-x-4" formArrayName="rolesConfig">
       <div
         *ngFor="
-          let roleGroup of roomService.form.controls.roles.controls;
+          let roleGroup of roomService.form.controls.rolesConfig.controls;
           let i = index
         "
       >
         <div [formGroupName]="i">
-          <input
-            [id]="i"
-            type="checkbox"
-            [disabled]="roleGroup.value.disabled!"
-            formControlName="checked"
-          />
+          <input [id]="i" type="checkbox" formControlName="checked" />
           <label [for]="i">{{ roleGroup.value.roleId | getRoleName }}</label>
         </div>
       </div>

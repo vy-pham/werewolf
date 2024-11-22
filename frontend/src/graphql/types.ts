@@ -23,7 +23,7 @@ export type BaseResponse = {
 export type CreateRoomInput = {
   maxPlayers: Scalars['Float']['input'];
   name: Scalars['String']['input'];
-  roles: Array<RoleInput>;
+  rolesConfig: Array<Scalars['ID']['input']>;
 };
 
 export type CreateUserInput = {
@@ -190,12 +190,6 @@ export type ResultUnion_UserModel_Mutation = ErrorOutput | UserModel_Mutation;
 
 export type ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation;
 
-export type RoleInput = {
-  checked: Scalars['Boolean']['input'];
-  quantity: Scalars['Float']['input'];
-  roleId: Scalars['ID']['input'];
-};
-
 export type RoleModel = {
   __typename?: 'RoleModel';
   description: Scalars['String']['output'];
@@ -235,7 +229,7 @@ export type RoomModel = {
   maxPlayers: Scalars['Float']['output'];
   name: Scalars['String']['output'];
   players: Array<RoomPlayerModel>;
-  roles: Array<RoomRoleModel>;
+  rolesConfig: Array<RoomRoleModel>;
   status: RoomStatus;
 };
 
@@ -270,9 +264,7 @@ export type RoomPlayerModel = {
 
 export type RoomRoleModel = {
   __typename?: 'RoomRoleModel';
-  checked: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
-  quantity: Scalars['Float']['output'];
   role: RoleModel;
 };
 

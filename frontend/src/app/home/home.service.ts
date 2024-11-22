@@ -25,16 +25,16 @@ export class HomeService {
   }
 
   createRoom() {
-    const { maxPlayers, name, roles } = this.roomService.form.getRawValue();
+    const { maxPlayers, name, rolesConfig } =
+      this.roomService.form.getRawValue();
     if (this.roomService.form.valid && maxPlayers && name) {
       this.roomService
         .createRoom$({
           maxPlayers: maxPlayers,
           name,
-          roles: roles.map((role) => ({
-            checked: role.checked,
-            roleId: role.roleId,
-          })),
+          rolesConfig: rolesConfig
+            .filter((o) => o.checked)
+            .map((o) => o.roleId),
         })
         .subscribe((succeed) => {
           if (succeed) {

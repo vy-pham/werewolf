@@ -17,10 +17,8 @@ export const MUTATION_CREATE_ROOM = gql`
               username
             }
           }
-          roles {
-            checked
+          rolesConfig {
             id
-            quantity
             role {
               description
               enum
@@ -58,10 +56,8 @@ export const QUERY_CURRENT_ROOM = gql`
               username
             }
           }
-          roles {
-            checked
+          rolesConfig {
             id
-            quantity
             role {
               description
               enum

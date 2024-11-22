@@ -21,6 +21,7 @@ interface IRoles {
   roleId: FormControl<string>;
   checked: FormControl<boolean>;
   disabled: FormControl<boolean>;
+  enum: FormControl<Roles>;
 }
 @Injectable({ providedIn: 'root' })
 export class RoomService {
@@ -30,19 +31,28 @@ export class RoomService {
   constructor() {
     combineLatest([this.roleService.roles$, this.currentRoom$]).subscribe(
       ([roles, room]) => {
+        console.log({ room });
+
+        this.form.controls.rolesConfig.clear();
         roles.forEach((role) => {
-          let checked = (role.enum === Roles.Villager) === false;
-          const isHaveInRoom = room?.roles.find(
+          let checked = role.enum === Roles.Villager;
+          const isHaveInRoom = room?.rolesConfig.find(
             (r) => r.role.enum === role.enum
           );
-          if (isHaveInRoom) checked = true;
 
+          if (isHaveInRoom) {
+            checked = true;
+          }
           const roleGroup = this.formBuilder.group({
             roleId: role.id,
-            checked: [role.enum === Roles.Villager],
+            checked: this.formBuilder.control({
+              value: role.enum === Roles.Villager || checked,
+              disabled: role.enum === Roles.Villager,
+            }),
             disabled: role.enum === Roles.Villager,
+            enum: role.enum,
           });
-          this.form.controls.roles.push(roleGroup);
+          this.form.controls.rolesConfig.push(roleGroup);
         });
       }
     );
@@ -65,7 +75,7 @@ export class RoomService {
       4,
       [Validators.required, Validators.min(4), Validators.max(40)],
     ],
-    roles: this.formBuilder.array<FormGroup<IRoles>>([]),
+    rolesConfig: this.formBuilder.array<FormGroup<IRoles>>([]),
   });
 
   getCurrentRoom$ = this.apollo

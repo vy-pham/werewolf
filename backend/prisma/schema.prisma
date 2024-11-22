@@ -53,22 +53,20 @@ enum RoomStatus {
 }
 
 model RoomRole {
-  id       Int     @id @default(autoincrement())
-  quantity Int
-  checked  Boolean
-  roomId   Int     @map("room_id")
-  roleId   Int     @map("role_id")
-  role     Role    @relation(fields: [roleId], references: [id])
-  room     Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  id     Int  @id @default(autoincrement())
+  roomId Int  @map("room_id")
+  roleId Int  @map("role_id")
+  role   Role @relation(fields: [roleId], references: [id])
+  room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
 }
 
 model Room {
-  id         Int          @id @default(autoincrement())
-  name       String
-  maxPlayers Int          @map("max_players")
-  status     RoomStatus   @default(waiting)
-  players    RoomPlayer[]
-  roles      RoomRole[]
+  id          Int          @id @default(autoincrement())
+  name        String
+  maxPlayers  Int          @map("max_players")
+  status      RoomStatus   @default(waiting)
+  players     RoomPlayer[]
+  rolesConfig RoomRole[]
 }
 
 model RoomPlayer {

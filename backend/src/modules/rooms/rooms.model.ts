@@ -17,7 +17,7 @@ export class RoomModel implements Room {
   players: RoomPlayer[];
 
   @Field(() => [RoomRoleModel])
-  roles: RoomRoleModel[];
+  rolesConfig: RoomRoleModel[];
 }
 
 @ObjectType()
@@ -34,10 +34,6 @@ class RoomPlayerModel implements Omit<RoomPlayer, 'roomId' | 'userId'> {
 class RoomRoleModel implements Omit<RoomRole, 'roomId' | 'roleId'> {
   @Field(() => ID)
   id: number;
-  @Field()
-  quantity: number;
-  @Field()
-  checked: boolean;
   @Field(() => RoleModel)
   role: RoleModel;
 }

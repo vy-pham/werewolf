@@ -15,7 +15,7 @@ export class RoomService {
     return results;
   }
 
-  async createRoom({ maxPlayers, name, roles }: CreateRoomInput) {
+  async createRoom({ maxPlayers, name, rolesConfig }: CreateRoomInput) {
     const user = await this.prisma.user.findUnique({
       where: { id: this.user.id },
     });
@@ -59,12 +59,10 @@ export class RoomService {
             ],
           },
         },
-        roles: {
+        rolesConfig: {
           createMany: {
-            data: roles.map((o) => ({
-              quantity: o.quantity,
-              roleId: Number(o.roleId),
-              checked: o.checked,
+            data: rolesConfig.map((o) => ({
+              roleId: Number(o),
             })),
           },
         },
@@ -75,7 +73,7 @@ export class RoomService {
             user: true,
           },
         },
-        roles: {
+        rolesConfig: {
           include: {
             role: true,
           },
@@ -101,7 +99,7 @@ export class RoomService {
             user: true,
           },
         },
-        roles: {
+        rolesConfig: {
           include: {
             role: true,
           },

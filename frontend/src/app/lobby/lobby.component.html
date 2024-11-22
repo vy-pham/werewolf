@@ -22,17 +22,16 @@
     <h2 class="text-4xl text-center font-bold">Configuration</h2>
     <app-input formControlName="name" />
     <app-input type="number" formControlName="maxPlayers" />
-    <div formArrayName="roles" class="grid grid-cols-3 gap-4">
+    <div formArrayName="rolesConfig" class="grid grid-cols-3 gap-4">
       <div
         *ngFor="
-          let roleGroup of roomService.form.controls.roles.controls;
+          let roleGroup of roomService.form.controls.rolesConfig.controls;
           let i = index
         "
       >
         <div [formGroupName]="i">
           {{ roleGroup.value.roleId | getRoleName }}
           <input type="checkbox" formControlName="checked" />
-          <app-input type="number" formControlName="quantity" />
         </div>
       </div>
     </div>
