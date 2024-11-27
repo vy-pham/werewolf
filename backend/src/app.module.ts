@@ -13,18 +13,36 @@ import { AuthGuard } from './guard/auth.guard';
 import { PaginationMapInterceptor } from './interceptors/response.interceptor';
 import { HttpExceptionFilter } from './interceptors/exception.interceptor';
 import GraphQLJSON from 'graphql-type-json';
-import { Roles, RoleSide, RoomStatus, RoomType, Status } from '@prisma/client';
+import {
+  GamePlayerStatus,
+  GameRoundActionTargetStatus,
+  GameStatus,
+  Roles,
+  RoleSide,
+  RoomStatus,
+  RoomType,
+  Status,
+} from '@prisma/client';
 import { InjectPrisma } from './decorators/inject-prisma.decorator';
 import { ROLES } from './roles';
 import { RoleModule } from './modules/roles/roles.module';
 import { RoomPlayerModule } from './modules/room-player/room-player.module';
 import { RoomRoleModule } from './modules/room-role/room-role.module';
+import { GameModule } from './modules/game/game.module';
+import { GamePlayerModule } from './modules/game-player/game-player.module';
+import { GameRoundModule } from './modules/game-round/game-round.module';
+import { GameRoundActionModule } from './modules/game-round-action/game-round-action.module';
 registerEnumType(HttpStatus, { name: 'HttpCode' });
 registerEnumType(RoomStatus, { name: 'RoomStatus' });
 registerEnumType(Status, { name: 'Status' });
 registerEnumType(RoomType, { name: 'RoomType' });
 registerEnumType(Roles, { name: 'Roles' });
 registerEnumType(RoleSide, { name: 'RoleSide' });
+registerEnumType(GameStatus, { name: 'GameStatus' });
+registerEnumType(GamePlayerStatus, { name: 'GamePlayerStatus' });
+registerEnumType(GameRoundActionTargetStatus, {
+  name: 'GameRoundActionTargetStatus',
+});
 
 @Controller()
 class AppController {
@@ -52,6 +70,10 @@ class AppController {
     RoomPlayerModule,
     RoomRoleModule,
     GlobalModule,
+    GameModule,
+    GamePlayerModule,
+    GameRoundModule,
+    GameRoundActionModule,
   ],
   providers: [
     {

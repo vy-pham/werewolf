@@ -20,8 +20,11 @@ export class RoomResolver {
     @Pagination() pagination: Pagination,
     @Filters() filters: FilterRoomInput,
   ) {
-    const results = await this.roomService.getRooms(filters, pagination);
-    return { data: [{ id: 1 }, { id: 2 }], message: 'Get rooms successfully' };
+    const { data, total } = await this.roomService.getRooms(
+      filters,
+      pagination,
+    );
+    return { data, total, message: 'Get rooms successfully' };
   }
 
   @QuerySingle(RoomModel, { nullable: true })

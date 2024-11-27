@@ -6,7 +6,7 @@ import { ErrorOutput } from 'src/input-output/error.output';
 const hash: { [k: string]: any } = {};
 
 export const Mutation = (
-  DataType: { new (...args: any[]): any },
+  DataType: { new (...args: any[]): any } | [{ new (...args: any[]): any }],
   options?: QueryOptions,
 ) => {
   @ObjectTypes()
@@ -14,22 +14,26 @@ export const Mutation = (
     @Field(() => DataType, options)
     data: typeof DataType;
   }
-  Object.defineProperty(Type, 'name', { value: `${DataType.name}_Mutation` });
-  if (hash[`ResultUnion_${DataType.name}_Mutation`]) {
-    return BaseMutation(
-      () => hash[`ResultUnion_${DataType.name}_Mutation`],
-      options,
-    );
+  let name = '';
+  if (Array.isArray(DataType)) {
+    name = `${DataType[0].name}_List`;
+  } else {
+    name = DataType.name;
+  }
+
+  Object.defineProperty(Type, 'name', { value: `${name}_Mutation` });
+  if (hash[`ResultUnion_${name}_Mutation`]) {
+    return BaseMutation(() => hash[`ResultUnion_${name}_Mutation`], options);
   } else {
     const ResultUnion = createUnionType({
-      name: `ResultUnion_${DataType.name}_Mutation`,
+      name: `ResultUnion_${name}_Mutation`,
       types: () => [Type, ErrorOutput],
       resolveType(value) {
         if (value.statusCode !== 200) return ErrorOutput;
         return Type;
       },
     });
-    hash[`ResultUnion_${DataType.name}_Mutation`] = ResultUnion;
+    hash[`ResultUnion_${name}_Mutation`] = ResultUnion;
     return BaseMutation(() => ResultUnion, options);
   }
 };

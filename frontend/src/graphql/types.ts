@@ -24,6 +24,7 @@ export type CreateRoomInput = {
   name: Scalars['String']['input'];
   rolesConfig: Array<Scalars['ID']['input']>;
   type: RoomType;
+  werewolfQuantity: Scalars['Float']['input'];
 };
 
 export type CreateUserInput = {
@@ -123,6 +124,7 @@ export type Mutation = {
   createUser: ResultUnion_UserModel_Mutation;
   login: ResultUnion_UserToken_Mutation;
   updateRoom: ResultUnion_RoomModel_Mutation;
+  updateRoomPlayer: ResultUnion_RoomPlayerModel_List_Mutation;
 };
 
 
@@ -143,6 +145,11 @@ export type MutationLoginArgs = {
 
 export type MutationUpdateRoomArgs = {
   input: UpdateRoomInput;
+};
+
+
+export type MutationUpdateRoomPlayerArgs = {
+  input: UpdateRoomPlayerInput;
 };
 
 export type PaginationData = {
@@ -189,6 +196,8 @@ export type ResultUnion_RoomModel_List = ErrorOutput | RoomModel_List;
 export type ResultUnion_RoomModel_Mutation = ErrorOutput | RoomModel_Mutation;
 
 export type ResultUnion_RoomModel_Single = ErrorOutput | RoomModel_Single;
+
+export type ResultUnion_RoomPlayerModel_List_Mutation = ErrorOutput | RoomPlayerModel_List_Mutation;
 
 export type ResultUnion_UserModel_List = ErrorOutput | UserModel_List;
 
@@ -237,6 +246,7 @@ export type RoomModel = {
   rolesConfig: Array<RoomRoleModel>;
   status: RoomStatus;
   type: RoomType;
+  werewolfQuantity: Scalars['Float']['output'];
 };
 
 export type RoomModel_List = BaseResponse & {
@@ -265,7 +275,15 @@ export type RoomPlayerModel = {
   __typename?: 'RoomPlayerModel';
   id: Scalars['ID']['output'];
   isHost: Scalars['Boolean']['output'];
-  user: UserModel;
+  user?: Maybe<UserModel>;
+  virtual?: Maybe<Scalars['String']['output']>;
+};
+
+export type RoomPlayerModel_List_Mutation = BaseResponse & {
+  __typename?: 'RoomPlayerModel_List_Mutation';
+  data: Array<RoomPlayerModel>;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
 };
 
 export type RoomRoleModel = {
@@ -294,7 +312,12 @@ export type UpdateRoomInput = {
   id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
   rolesConfig: Array<Scalars['ID']['input']>;
-  type: RoomType;
+  werewolfQuantity: Scalars['Float']['input'];
+};
+
+export type UpdateRoomPlayerInput = {
+  roomId: Scalars['ID']['input'];
+  virtualPlayers: Array<Scalars['String']['input']>;
 };
 
 export type UserModel = {

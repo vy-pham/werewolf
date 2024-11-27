@@ -5,11 +5,14 @@ import type {
   CurrentRoomQuery,
   UpdateRoomMutation,
   UpdateRoomMutationVariables,
+  UpdateRoomPlayerMutation,
+  UpdateRoomPlayerMutationVariables,
 } from '../../../../graphql/queries';
 import { Apollo } from 'apollo-angular';
 import { ToastrService } from 'ngx-toastr';
 import {
   MUTATION_CREATE_ROOM,
+  MUTATION_ROOM_PLAYER,
   MUTATION_UPDATE_ROOM,
   QUERY_CURRENT_ROOM,
 } from './room.queries';
@@ -17,6 +20,7 @@ import {
   Roles,
   type CreateRoomInput,
   type UpdateRoomInput,
+  type UpdateRoomPlayerInput,
 } from '../../../../graphql/types';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import type { ExtractDataType } from '../../entities/utils.entities';
@@ -41,7 +45,10 @@ export class RoomService {
     combineLatest([this.roleService.roles$, this.currentRoom$]).subscribe(
       ([roles, room]) => {
         if (room) {
-          this.form.controls.name.setValue(room.name);
+          this.form.patchValue({
+            name: room.name,
+            werewolfQuantity: room.werewolfQuantity,
+          });
         }
         this.form.controls.rolesConfig.clear();
         roles.forEach((role) => {
@@ -80,6 +87,7 @@ export class RoomService {
 
   form = this.formBuilder.group({
     name: ['', [Validators.required]],
+    werewolfQuantity: [1, [Validators.min(1)]],
     rolesConfig: this.formBuilder.array<FormGroup<IRoles>>([]),
   });
 
@@ -141,5 +149,17 @@ export class RoomService {
           }
         })
       );
+  }
+
+  updateRoomPlayers$(input: UpdateRoomPlayerInput) {
+    return this.apollo.mutate<
+      UpdateRoomPlayerMutation,
+      UpdateRoomPlayerMutationVariables
+    >({
+      mutation: MUTATION_ROOM_PLAYER,
+      variables: {
+        input,
+      },
+    });
   }
 }

@@ -25,6 +25,7 @@
   "typescript.preferences.preferTypeOnlyAutoImports": true,
   "typescript.referencesCodeLens.enabled": false,
   "cSpell.words": [
+    "autoincrement",
     "codegen",
     "toastr"
   ],

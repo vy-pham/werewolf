@@ -10,4 +10,7 @@ export class CreateRoomInput {
 
   @Field(() => RoomType)
   type: RoomType;
+
+  @Field(() => Number)
+  werewolfQuantity: number;
 }

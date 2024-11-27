@@ -43,6 +43,12 @@ declare global {
   }
 
   type PrismaService = ReturnType<BasePrismaService['withExtensions']>;
+
+  type ResolverReturnedType<T> = Promise<{
+    data: T;
+    message?: string;
+    total?: number;
+  }>;
 }
 global.Config = envConfig;
 

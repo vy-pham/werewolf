@@ -13,7 +13,6 @@ export class BasePrismaService extends PrismaClient implements OnModuleInit {
   }
 
   withExtensions() {
-    this.room.findUniqueOrThrow;
     return this.$extends({
       model: {
         $allModels: {
@@ -119,7 +118,7 @@ export class BasePrismaService extends PrismaClient implements OnModuleInit {
           ): Promise<Prisma.Result<T, A, 'update'>> {
             const context = Prisma.getExtensionContext(this) as any;
             const data = await context.findFirst({
-              ...args,
+              where: args.where,
             });
             if (isThrow && !data) {
               throw new BadRequestException(

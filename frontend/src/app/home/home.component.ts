@@ -42,8 +42,9 @@ export class HomeComponent {
     this.isShowModal = !this.isShowModal;
   }
   createRoom() {
-    const { name, rolesConfig } = this.roomService.form.getRawValue();
-    if (this.roomService.form.valid && name) {
+    const { name, rolesConfig, werewolfQuantity } =
+      this.roomService.form.getRawValue();
+    if (this.roomService.form.valid && name && werewolfQuantity) {
       this.roomService
         .createRoom$({
           name,
@@ -51,6 +52,7 @@ export class HomeComponent {
             .filter((o) => o.checked)
             .map((o) => o.roleId),
           type: RoomType.Support,
+          werewolfQuantity,
         })
         .subscribe((succeed) => {
           if (succeed) {

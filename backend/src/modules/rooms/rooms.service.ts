@@ -12,11 +12,28 @@ export class RoomService {
     const results = await this.prisma.room.findAndPagination({
       where: {},
       ...pagination,
+      include: {
+        players: {
+          include: {
+            user: true,
+          },
+        },
+        rolesConfig: {
+          include: {
+            role: true,
+          },
+        },
+      },
     });
     return results;
   }
 
-  async createRoom({ name, rolesConfig, type }: CreateRoomInput) {
+  async createRoom({
+    name,
+    rolesConfig,
+    type,
+    werewolfQuantity,
+  }: CreateRoomInput) {
     const user = await this.prisma.user.findUnique({
       where: { id: this.user.id },
     });
@@ -50,6 +67,7 @@ export class RoomService {
       data: {
         name,
         type,
+        werewolfQuantity,
         players: {
           createMany: {
             data: [
@@ -85,12 +103,17 @@ export class RoomService {
     return room;
   }
 
-  async updateRoom({ id, rolesConfig, name }: UpdateRoomInput) {
+  async updateRoom({
+    id,
+    rolesConfig,
+    name,
+    werewolfQuantity,
+  }: UpdateRoomInput) {
     const user = await this.prisma.user.findUnique({
       where: { id: this.user.id },
     });
 
-    const roomPlayer = await this.prisma.roomPlayer.findFirstOrThrow(
+    await this.prisma.roomPlayer.findFirstOrThrow(
       {
         where: {
           userId: user.id,
@@ -122,6 +145,7 @@ export class RoomService {
       },
       {
         name,
+        werewolfQuantity,
         rolesConfig: {
           deleteMany: { roomId: Number(id) },
           createMany: {
@@ -145,16 +169,16 @@ export class RoomService {
         },
       },
       include: {
-        // players: {
-        //   include: {
-        //     user: true,
-        //   },
-        // },
-        // rolesConfig: {
-        //   include: {
-        //     role: true,
-        //   },
-        // },
+        players: {
+          include: {
+            user: true,
+          },
+        },
+        rolesConfig: {
+          include: {
+            role: true,
+          },
+        },
       },
     });
   }

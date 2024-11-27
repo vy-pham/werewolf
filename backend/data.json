@@ -1,0 +1,55 @@
+{
+  "name": "rooms",
+  "alias": "rooms",
+  "args": {},
+  "fieldsByTypeName": {
+    "ResultUnion_RoomModel_List": {},
+    "RoomModel_List": {
+      "data": {
+        "name": "data",
+        "alias": "data",
+        "args": {},
+        "fieldsByTypeName": {
+          "RoomModel": {
+            "id": {
+              "name": "id",
+              "alias": "id",
+              "args": {},
+              "fieldsByTypeName": {}
+            },
+            "players": {
+              "name": "players",
+              "alias": "players",
+              "args": {},
+              "fieldsByTypeName": {
+                "RoomPlayerModel": {
+                  "id": {
+                    "name": "id",
+                    "alias": "id",
+                    "args": {},
+                    "fieldsByTypeName": {}
+                  }
+                }
+              }
+            },
+            "rolesConfig": {
+              "name": "rolesConfig",
+              "alias": "rolesConfig",
+              "args": {},
+              "fieldsByTypeName": {
+                "RoomRoleModel": {
+                  "id": {
+                    "name": "id",
+                    "alias": "id",
+                    "args": {},
+                    "fieldsByTypeName": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -7,10 +7,15 @@ interface BaseResponse {
   statusCode: HttpCode!
 }
 
+input CreateGameInput {
+  roomId: ID!
+}
+
 input CreateRoomInput {
   name: String!
   rolesConfig: [ID!]!
   type: RoomType!
+  werewolfQuantity: Float!
 }
 
 input CreateUserInput {
@@ -31,6 +36,37 @@ input FilterRoomInput {
 
 input FiltersUserInput {
   username: String!
+}
+
+type GameModel {
+  id: ID!
+  players: [GamePlayerModel!]!
+  roomId: Float!
+  status: GameStatus!
+}
+
+type GameModel_Mutation implements BaseResponse {
+  data: GameModel!
+  message: String!
+  statusCode: HttpCode!
+}
+
+type GamePlayerModel {
+  id: ID!
+  role: RoleModel
+  status: GamePlayerStatus!
+  virtual: String
+}
+
+enum GamePlayerStatus {
+  alive
+  dead
+}
+
+enum GameStatus {
+  end
+  playing
+  waiting
 }
 
 enum HttpCode {
@@ -107,10 +143,12 @@ type Me_Single implements BaseResponse {
 }
 
 type Mutation {
+  createGame(input: CreateGameInput!): ResultUnion_GameModel_Mutation!
   createRoom(input: CreateRoomInput!): ResultUnion_RoomModel_Mutation!
   createUser(input: CreateUserInput!): ResultUnion_UserModel_Mutation!
   login(input: LoginUserInput!): ResultUnion_UserToken_Mutation!
   updateRoom(input: UpdateRoomInput!): ResultUnion_RoomModel_Mutation!
+  updateRoomPlayer(input: UpdateRoomPlayerInput!): ResultUnion_RoomPlayerModel_List_Mutation!
 }
 
 type PaginationData {
@@ -134,6 +172,8 @@ type Query {
   users(filter: FiltersUserInput, pagination: PaginationInput): ResultUnion_UserModel_List!
 }
 
+union ResultUnion_GameModel_Mutation = ErrorOutput | GameModel_Mutation
+
 union ResultUnion_Me_Single = ErrorOutput | Me_Single
 
 union ResultUnion_RoleModel_List = ErrorOutput | RoleModel_List
@@ -143,6 +183,8 @@ union ResultUnion_RoomModel_List = ErrorOutput | RoomModel_List
 union ResultUnion_RoomModel_Mutation = ErrorOutput | RoomModel_Mutation
 
 union ResultUnion_RoomModel_Single = ErrorOutput | RoomModel_Single
+
+union ResultUnion_RoomPlayerModel_List_Mutation = ErrorOutput | RoomPlayerModel_List_Mutation
 
 union ResultUnion_UserModel_List = ErrorOutput | UserModel_List
 
@@ -188,6 +230,7 @@ type RoomModel {
   rolesConfig: [RoomRoleModel!]!
   status: RoomStatus!
   type: RoomType!
+  werewolfQuantity: Float!
 }
 
 type RoomModel_List implements BaseResponse {
@@ -216,6 +259,12 @@ type RoomPlayerModel {
   virtual: String
 }
 
+type RoomPlayerModel_List_Mutation implements BaseResponse {
+  data: [RoomPlayerModel!]!
+  message: String!
+  statusCode: HttpCode!
+}
+
 type RoomRoleModel {
   id: ID!
   role: RoleModel!
@@ -241,7 +290,12 @@ input UpdateRoomInput {
   id: ID!
   name: String!
   rolesConfig: [ID!]!
-  type: RoomType!
+  werewolfQuantity: Float!
+}
+
+input UpdateRoomPlayerInput {
+  roomId: ID!
+  virtualPlayers: [String!]!
 }
 
 type UserModel {

@@ -19,4 +19,7 @@ export class RoomModel implements Room {
 
   @Field(() => RoomType)
   type: RoomType;
+
+  @Field(() => Number)
+  werewolfQuantity: number;
 }

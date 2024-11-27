@@ -6,20 +6,20 @@
     <div class="grid grid-cols-3 gap-4">
       <div *ngFor="let item of roomService.currentRoom.players">
         <app-button class="w-full">
-          {{ item.user.username }} - <span *ngIf="item.isHost">Host</span>
+          {{ item.user?.username }} - <span *ngIf="item.isHost">Host</span>
         </app-button>
       </div>
     </div>
   </div>
 
-  <ng-template #support>
-    <div class="grid grid-cols-4 gap-4">
-      <div *ngFor="let player of tempPlayers.controls; index">
-        <app-input [control]="player" />
+  <ng-template #support [formGroup]="formTempPlayers">
+    <div formArrayName="tempPlayers" class="grid grid-cols-4 gap-4">
+      <div *ngFor="let player of tempPlayers.controls; let i = index">
+        <app-input [formControlName]="i" />
       </div>
     </div>
     <div class="grid grid-cols-2 mt-4">
-      <app-button (click)="addPlayer()"> Add players</app-button>
+      <app-button (click)="addTempPlayer()"> Add players</app-button>
       <app-button (click)="addPlayer()">Done </app-button>
     </div>
   </ng-template>
@@ -27,7 +27,12 @@
   <div [formGroup]="roomService.form">
     <h2 class="text-4xl text-center font-bold">Configuration</h2>
     <div class="mt-4">
-      <app-input formControlName="name" />
+      <app-input formControlName="name" label="Room name" />
+      <app-input
+        formControlName="werewolfQuantity"
+        label="Number of werewolf"
+        type="number"
+      />
     </div>
     <div formArrayName="rolesConfig" class="grid grid-cols-3 gap-4 mt-4">
       <div
@@ -43,5 +48,6 @@
       </div>
     </div>
     <app-button (click)="onUpdate()">Update</app-button>
+    <app-button (click)="onUpdate()">Game Start</app-button>
   </div>
 </main>

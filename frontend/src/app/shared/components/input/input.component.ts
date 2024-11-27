@@ -35,7 +35,7 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() placeholder: string = '';
   @Input() type = 'text';
   @Input() errorMessage = '';
-  @Input() formControlName!: string;
+  @Input() formControlName!: string | number;
   @Input() control!: AbstractControl<any, any>;
 
   value: any = '';
@@ -49,9 +49,9 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   ) {}
   ngOnInit() {
     if (this.controlContainer) {
-      if (this.formControlName) {
-        this.control = this.controlContainer.control!.get(
-          this.formControlName
+      if (this.formControlName !== undefined) {
+        this.control = this.controlContainer.control!.get<string>(
+          this.formControlName.toString()
         )!;
       } else {
         console.warn(
