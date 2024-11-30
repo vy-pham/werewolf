@@ -12,6 +12,7 @@ import {
 import { GetRoleNamePipe } from '../shared/pipes/get-role-name.pipe';
 import { RoomType } from '../../graphql/types';
 import { map, switchMap } from 'rxjs';
+import { GameService } from '../shared/services/game/game.service';
 
 @Component({
   selector: 'app-lobby',
@@ -30,13 +31,13 @@ export class LobbyComponent {
   formBuilder = new FormBuilder().nonNullable;
   roomService = inject(RoomService);
   router = inject(Router);
+  gameService = inject(GameService);
   roomType = RoomType;
   formTempPlayers = this.formBuilder.group({
     tempPlayers: this.formBuilder.array<string>([]),
   });
   virtualPlayers$ = this.roomService.currentRoom$.pipe(
     map((room) => {
-      this.tempPlayers.clear();
       return room?.players.filter((o) => o.virtual) || [];
     })
   );
@@ -50,6 +51,7 @@ export class LobbyComponent {
       });
     }
     this.virtualPlayers$.subscribe((players) => {
+      this.tempPlayers.clear();
       players.forEach((player) =>
         this.tempPlayers.push(this.formBuilder.control(player.virtual))
       );
@@ -92,6 +94,18 @@ export class LobbyComponent {
           werewolfQuantity,
         })
         .subscribe();
+    }
+  }
+
+  startGame() {
+    if (this.roomService.currentRoom) {
+      this.gameService
+        .createGame$(this.roomService.currentRoom.id)
+        .subscribe((success) => {
+          if (success) {
+            this.router.navigateByUrl('/game');
+          }
+        });
     }
   }
 }

@@ -20,6 +20,10 @@ export type BaseResponse = {
   statusCode: HttpCode;
 };
 
+export type CreateGameInput = {
+  roomId: Scalars['ID']['input'];
+};
+
 export type CreateRoomInput = {
   name: Scalars['String']['input'];
   rolesConfig: Array<Scalars['ID']['input']>;
@@ -47,6 +51,54 @@ export type FilterRoomInput = {
 export type FiltersUserInput = {
   username: Scalars['String']['input'];
 };
+
+export type GameModel = {
+  __typename?: 'GameModel';
+  id: Scalars['ID']['output'];
+  players: Array<GamePlayerModel>;
+  roomId: Scalars['Float']['output'];
+  status: GameStatus;
+};
+
+export type GameModel_Mutation = BaseResponse & {
+  __typename?: 'GameModel_Mutation';
+  data: GameModel;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export type GameModel_Single = BaseResponse & {
+  __typename?: 'GameModel_Single';
+  data: GameModel;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export type GamePlayerModel = {
+  __typename?: 'GamePlayerModel';
+  id: Scalars['ID']['output'];
+  role?: Maybe<RoleModel>;
+  status: GamePlayerStatus;
+  virtual?: Maybe<Scalars['String']['output']>;
+};
+
+export type GamePlayerModel_List_Mutation = BaseResponse & {
+  __typename?: 'GamePlayerModel_List_Mutation';
+  data: Array<GamePlayerModel>;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export enum GamePlayerStatus {
+  Alive = 'alive',
+  Dead = 'dead'
+}
+
+export enum GameStatus {
+  End = 'end',
+  Playing = 'playing',
+  Waiting = 'waiting'
+}
 
 export enum HttpCode {
   Accepted = 'ACCEPTED',
@@ -120,11 +172,19 @@ export type Me_Single = BaseResponse & {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createGame: ResultUnion_GameModel_Mutation;
   createRoom: ResultUnion_RoomModel_Mutation;
   createUser: ResultUnion_UserModel_Mutation;
   login: ResultUnion_UserToken_Mutation;
+  startGame: ResultUnion_GameModel_Mutation;
+  updateManyGamePlayer: ResultUnion_GamePlayerModel_List_Mutation;
   updateRoom: ResultUnion_RoomModel_Mutation;
   updateRoomPlayer: ResultUnion_RoomPlayerModel_List_Mutation;
+};
+
+
+export type MutationCreateGameArgs = {
+  input: CreateGameInput;
 };
 
 
@@ -140,6 +200,16 @@ export type MutationCreateUserArgs = {
 
 export type MutationLoginArgs = {
   input: LoginUserInput;
+};
+
+
+export type MutationStartGameArgs = {
+  input: StartGameInput;
+};
+
+
+export type MutationUpdateManyGamePlayerArgs = {
+  input: UpdateManyGamePlayer;
 };
 
 
@@ -168,6 +238,7 @@ export type PaginationInput = {
 
 export type Query = {
   __typename?: 'Query';
+  currentGame: ResultUnion_GameModel_Single;
   currentRoom?: Maybe<ResultUnion_RoomModel_Single>;
   me: ResultUnion_Me_Single;
   roles: ResultUnion_RoleModel_List;
@@ -186,6 +257,12 @@ export type QueryUsersArgs = {
   filter?: InputMaybe<FiltersUserInput>;
   pagination?: InputMaybe<PaginationInput>;
 };
+
+export type ResultUnion_GameModel_Mutation = ErrorOutput | GameModel_Mutation;
+
+export type ResultUnion_GameModel_Single = ErrorOutput | GameModel_Single;
+
+export type ResultUnion_GamePlayerModel_List_Mutation = ErrorOutput | GamePlayerModel_List_Mutation;
 
 export type ResultUnion_Me_Single = ErrorOutput | Me_Single;
 
@@ -303,10 +380,23 @@ export enum RoomType {
   Support = 'support'
 }
 
+export type StartGameInput = {
+  gameId: Scalars['ID']['input'];
+};
+
 export enum Status {
   Active = 'active',
   Inactive = 'inactive'
 }
+
+export type UpdateGamePlayer = {
+  id: Scalars['ID']['input'];
+  roleId: Scalars['ID']['input'];
+};
+
+export type UpdateManyGamePlayer = {
+  data: Array<UpdateGamePlayer>;
+};
 
 export type UpdateRoomInput = {
   id: Scalars['ID']['input'];

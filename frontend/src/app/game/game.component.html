@@ -1,0 +1,8 @@
+<main *ngIf="gameService.currentGame">
+  <div *ngFor="let player of formPlayers.controls; let i = index">
+    <div [formGroup]="formPlayers.controls[i]">
+      <input type="text" formControlName="roleId" />
+    </div>
+  </div>
+  <button (click)="startGame()">ABC</button>
+</main>

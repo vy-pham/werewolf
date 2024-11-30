@@ -51,11 +51,23 @@ type GameModel_Mutation implements BaseResponse {
   statusCode: HttpCode!
 }
 
+type GameModel_Single implements BaseResponse {
+  data: GameModel!
+  message: String!
+  statusCode: HttpCode!
+}
+
 type GamePlayerModel {
   id: ID!
   role: RoleModel
   status: GamePlayerStatus!
   virtual: String
+}
+
+type GamePlayerModel_List_Mutation implements BaseResponse {
+  data: [GamePlayerModel!]!
+  message: String!
+  statusCode: HttpCode!
 }
 
 enum GamePlayerStatus {
@@ -147,6 +159,8 @@ type Mutation {
   createRoom(input: CreateRoomInput!): ResultUnion_RoomModel_Mutation!
   createUser(input: CreateUserInput!): ResultUnion_UserModel_Mutation!
   login(input: LoginUserInput!): ResultUnion_UserToken_Mutation!
+  startGame(input: StartGameInput!): ResultUnion_GameModel_Mutation!
+  updateManyGamePlayer(input: UpdateManyGamePlayer!): ResultUnion_GamePlayerModel_List_Mutation!
   updateRoom(input: UpdateRoomInput!): ResultUnion_RoomModel_Mutation!
   updateRoomPlayer(input: UpdateRoomPlayerInput!): ResultUnion_RoomPlayerModel_List_Mutation!
 }
@@ -165,6 +179,7 @@ input PaginationInput {
 }
 
 type Query {
+  currentGame: ResultUnion_GameModel_Single!
   currentRoom: ResultUnion_RoomModel_Single
   me: ResultUnion_Me_Single!
   roles: ResultUnion_RoleModel_List!
@@ -173,6 +188,10 @@ type Query {
 }
 
 union ResultUnion_GameModel_Mutation = ErrorOutput | GameModel_Mutation
+
+union ResultUnion_GameModel_Single = ErrorOutput | GameModel_Single
+
+union ResultUnion_GamePlayerModel_List_Mutation = ErrorOutput | GamePlayerModel_List_Mutation
 
 union ResultUnion_Me_Single = ErrorOutput | Me_Single
 
@@ -281,9 +300,22 @@ enum RoomType {
   support
 }
 
+input StartGameInput {
+  gameId: ID!
+}
+
 enum Status {
   active
   inactive
+}
+
+input UpdateGamePlayer {
+  id: ID!
+  roleId: ID!
+}
+
+input UpdateManyGamePlayer {
+  data: [UpdateGamePlayer!]!
 }
 
 input UpdateRoomInput {

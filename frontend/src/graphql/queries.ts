@@ -7,6 +7,20 @@ export type LoginMutationVariables = Types.Exact<{
 
 export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'ErrorOutput', message: string, statusCode: Types.HttpCode } | { __typename?: 'UserToken_Mutation', message: string, statusCode: Types.HttpCode, data: { __typename?: 'UserToken', token: string } } };
 
+export type GameDataFragment = { __typename?: 'GameModel', id: string, roomId: number, status: Types.GameStatus, players: Array<{ __typename?: 'GamePlayerModel', id: string, status: Types.GamePlayerStatus, virtual?: string | null, role?: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number, side: Types.RoleSide, status: Types.Status } | null }> };
+
+export type CreateGameMutationVariables = Types.Exact<{
+  input: Types.CreateGameInput;
+}>;
+
+
+export type CreateGameMutation = { __typename?: 'Mutation', createGame: { __typename?: 'ErrorOutput', message: string } | { __typename?: 'GameModel_Mutation', message: string, data: { __typename?: 'GameModel', id: string, roomId: number, status: Types.GameStatus, players: Array<{ __typename?: 'GamePlayerModel', id: string, status: Types.GamePlayerStatus, virtual?: string | null, role?: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number, side: Types.RoleSide, status: Types.Status } | null }> } } };
+
+export type CurrentGameQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type CurrentGameQuery = { __typename?: 'Query', currentGame: { __typename?: 'ErrorOutput', message: string } | { __typename?: 'GameModel_Single', message: string, data: { __typename?: 'GameModel', id: string, roomId: number, status: Types.GameStatus, players: Array<{ __typename?: 'GamePlayerModel', id: string, status: Types.GamePlayerStatus, virtual?: string | null, role?: { __typename?: 'RoleModel', description: string, enum: Types.Roles, id: string, name: string, point: number, side: Types.RoleSide, status: Types.Status } | null }> } } };
+
 export type RolesQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 

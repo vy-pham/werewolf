@@ -12,7 +12,6 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
     let message = '';
     let error: any = [];
     let statusCode = HttpStatus.BAD_REQUEST;
-    console.log(exception);
 
     if (exception instanceof HttpException) {
       message = (exception.getResponse() as any).error;
