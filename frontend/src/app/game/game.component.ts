@@ -8,24 +8,41 @@ import {
   ReactiveFormsModule,
   type FormControl,
 } from '@angular/forms';
+import { InputComponent } from '../shared/components/input/input.component';
+import { ButtonComponent } from '../shared/components/button/button.component';
+import { SelectComponent } from '../shared/components/select/select.component';
+import { RoleService } from '../shared/services/role/role.service';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    InputComponent,
+    ButtonComponent,
+    SelectComponent,
+  ],
   templateUrl: './game.component.html',
 })
 export class GameComponent {
   router = inject(Router);
   gameService = inject(GameService);
   formBuilder = new FormBuilder().nonNullable;
+  roleService = inject(RoleService);
 
-  // get players() {
-  // return this.formPlayers.get()
-  // }
   formPlayers = this.formBuilder.array<
-    FormGroup<{ id: FormControl<string>; roleId: FormControl<string> }>
+    FormGroup<{
+      id: FormControl<string>;
+      roleId: FormControl<string>;
+      virtual: FormControl<string>;
+    }>
   >([]);
+
+  roles$ = this.roleService.roles$.pipe(
+    map((roles) => roles.map((role) => ({ value: role.id, label: role.name })))
+  );
 
   ngOnInit() {
     if (!this.gameService.currentGame) {
@@ -39,13 +56,16 @@ export class GameComponent {
     this.gameService.currentGame$.subscribe((currentGame) => {
       if (!currentGame) return;
       const players = currentGame.players;
-      players.forEach((player) => {
-        const formGroup = this.formBuilder.group({
-          id: player.id,
-          roleId: '',
+      players
+        .filter((o) => o.virtual)
+        .forEach((player) => {
+          const formGroup = this.formBuilder.group({
+            id: player.id,
+            roleId: '',
+            virtual: player.virtual || '',
+          });
+          this.formPlayers.push(formGroup);
         });
-        this.formPlayers.push(formGroup);
-      });
     });
   }
 

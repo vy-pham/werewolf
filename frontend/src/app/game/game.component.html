@@ -1,8 +1,19 @@
 <main *ngIf="gameService.currentGame">
   <div *ngFor="let player of formPlayers.controls; let i = index">
-    <div [formGroup]="formPlayers.controls[i]">
-      <input type="text" formControlName="roleId" />
+    <div
+      class="mt-4 grid grid-cols-2 gap-4"
+      [formGroup]="formPlayers.controls[i]"
+    >
+      <div>
+        <app-input type="text" formControlName="virtual" />
+      </div>
+      <div>
+        <app-select
+          formControlName="roleId"
+          [options]="(roles$ | async) || []"
+        />
+      </div>
     </div>
   </div>
-  <button (click)="startGame()">ABC</button>
+  <app-button (click)="startGame()">ABC</app-button>
 </main>
