@@ -3,13 +3,15 @@ import {
   Component,
   EventEmitter,
   forwardRef,
+  HostListener,
   Input,
   Output,
+  ElementRef,
 } from '@angular/core';
 import {
   ReactiveFormsModule,
   NG_VALUE_ACCESSOR,
-  type ControlValueAccessor,
+  ControlValueAccessor,
 } from '@angular/forms';
 import { ClassNamePipe } from '../../pipes/class-name.pipe';
 
@@ -29,11 +31,22 @@ import { ClassNamePipe } from '../../pipes/class-name.pipe';
 export class SelectComponent implements ControlValueAccessor {
   @Input() options: { label: string; value: string }[] = [];
   @Output() selectedValueChange = new EventEmitter<any>();
-  selectedValue: any;
+  selectedLabel: string | undefined;
+  selectedValue: string | undefined;
   onChange: any = () => {};
   onTouched: any = () => {};
+  showDropdown = false;
+
+  constructor(private el: ElementRef) {}
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.el.nativeElement.contains(event.target)) {
+      this.showDropdown = false;
+    }
+  }
 
   writeValue(value: any): void {
+    this.selectedLabel = this.options.find((o) => o.value === value)?.label;
     this.selectedValue = value;
   }
   registerOnChange(fn: any): void {
@@ -46,9 +59,13 @@ export class SelectComponent implements ControlValueAccessor {
 
   setDisabledState?(isDisabled: boolean): void {}
 
-  onSelectionChange(event: any) {
-    let value = event.target.value;
+  toggleDropdown() {
+    this.showDropdown = !this.showDropdown;
+  }
+
+  onSelectionChange(value: string) {
     this.selectedValue = value;
+    this.selectedLabel = this.options.find((o) => o.value === value)?.label;
     this.onChange(value);
     this.onTouched();
     this.selectedValueChange.emit(value);

@@ -1,19 +1,18 @@
-<main *ngIf="gameService.currentGame">
-  <div *ngFor="let player of formPlayers.controls; let i = index">
+<main class="mt-4" *ngIf="gameService.currentGame">
+  <section class="grid grid-cols-4 gap-4">
     <div
-      class="mt-4 grid grid-cols-2 gap-4"
-      [formGroup]="formPlayers.controls[i]"
+      class="border border-stone-500 p-2"
+      *ngFor="let player of gameService.currentGame.players"
     >
-      <div>
-        <app-input type="text" formControlName="virtual" />
-      </div>
-      <div>
-        <app-select
-          formControlName="roleId"
-          [options]="(roles$ | async) || []"
-        />
-      </div>
+      <p class="text-center">{{ player.virtual }}</p>
+      <p class="text-center border-t">{{ player.role.name }}</p>
     </div>
-  </div>
-  <app-button (click)="startGame()">ABC</app-button>
+  </section>
+
+  <section class="mt-4 border-stone-200 border-t-2">
+    <h1 class="text-center text-4xl">
+      Round {{ gameService.currentRound?.sequence }}
+    </h1>
+    <app-button (click)="nextRound()">Next round</app-button>
+  </section>
 </main>

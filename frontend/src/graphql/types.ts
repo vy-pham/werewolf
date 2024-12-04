@@ -31,6 +31,10 @@ export type CreateRoomInput = {
   werewolfQuantity: Scalars['Float']['input'];
 };
 
+export type CreateRoundInput = {
+  gameId: Scalars['ID']['input'];
+};
+
 export type CreateUserInput = {
   /** Password */
   password: Scalars['String']['input'];
@@ -77,7 +81,7 @@ export type GameModel_Single = BaseResponse & {
 export type GamePlayerModel = {
   __typename?: 'GamePlayerModel';
   id: Scalars['ID']['output'];
-  role?: Maybe<RoleModel>;
+  role: RoleModel;
   status: GamePlayerStatus;
   virtual?: Maybe<Scalars['String']['output']>;
 };
@@ -92,6 +96,25 @@ export type GamePlayerModel_List_Mutation = BaseResponse & {
 export enum GamePlayerStatus {
   Alive = 'alive',
   Dead = 'dead'
+}
+
+export type GameRoundModel = {
+  __typename?: 'GameRoundModel';
+  id: Scalars['ID']['output'];
+  sequence: Scalars['Float']['output'];
+  time: GameRoundTime;
+};
+
+export type GameRoundModel_Mutation = BaseResponse & {
+  __typename?: 'GameRoundModel_Mutation';
+  data: GameRoundModel;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
+
+export enum GameRoundTime {
+  Day = 'day',
+  Night = 'night'
 }
 
 export enum GameStatus {
@@ -174,12 +197,13 @@ export type Mutation = {
   __typename?: 'Mutation';
   createGame: ResultUnion_GameModel_Mutation;
   createRoom: ResultUnion_RoomModel_Mutation;
+  createRound: ResultUnion_GameRoundModel_Mutation;
   createUser: ResultUnion_UserModel_Mutation;
   login: ResultUnion_UserToken_Mutation;
   startGame: ResultUnion_GameModel_Mutation;
   updateManyGamePlayer: ResultUnion_GamePlayerModel_List_Mutation;
+  updateManyRoomPlayer: ResultUnion_RoomPlayerModel_List_Mutation;
   updateRoom: ResultUnion_RoomModel_Mutation;
-  updateRoomPlayer: ResultUnion_RoomPlayerModel_List_Mutation;
 };
 
 
@@ -190,6 +214,11 @@ export type MutationCreateGameArgs = {
 
 export type MutationCreateRoomArgs = {
   input: CreateRoomInput;
+};
+
+
+export type MutationCreateRoundArgs = {
+  input: CreateRoundInput;
 };
 
 
@@ -213,13 +242,13 @@ export type MutationUpdateManyGamePlayerArgs = {
 };
 
 
-export type MutationUpdateRoomArgs = {
-  input: UpdateRoomInput;
+export type MutationUpdateManyRoomPlayerArgs = {
+  input: UpdateManyRoomPlayer;
 };
 
 
-export type MutationUpdateRoomPlayerArgs = {
-  input: UpdateRoomPlayerInput;
+export type MutationUpdateRoomArgs = {
+  input: UpdateRoomInput;
 };
 
 export type PaginationData = {
@@ -263,6 +292,8 @@ export type ResultUnion_GameModel_Mutation = ErrorOutput | GameModel_Mutation;
 export type ResultUnion_GameModel_Single = ErrorOutput | GameModel_Single;
 
 export type ResultUnion_GamePlayerModel_List_Mutation = ErrorOutput | GamePlayerModel_List_Mutation;
+
+export type ResultUnion_GameRoundModel_Mutation = ErrorOutput | GameRoundModel_Mutation;
 
 export type ResultUnion_Me_Single = ErrorOutput | Me_Single;
 
@@ -352,6 +383,7 @@ export type RoomPlayerModel = {
   __typename?: 'RoomPlayerModel';
   id: Scalars['ID']['output'];
   isHost: Scalars['Boolean']['output'];
+  role?: Maybe<RoleModel>;
   user?: Maybe<UserModel>;
   virtual?: Maybe<Scalars['String']['output']>;
 };
@@ -398,6 +430,11 @@ export type UpdateManyGamePlayer = {
   data: Array<UpdateGamePlayer>;
 };
 
+export type UpdateManyRoomPlayer = {
+  data: Array<UpdateRoomPlayer>;
+  roomId: Scalars['ID']['input'];
+};
+
 export type UpdateRoomInput = {
   id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
@@ -405,9 +442,10 @@ export type UpdateRoomInput = {
   werewolfQuantity: Scalars['Float']['input'];
 };
 
-export type UpdateRoomPlayerInput = {
-  roomId: Scalars['ID']['input'];
-  virtualPlayers: Array<Scalars['String']['input']>;
+export type UpdateRoomPlayer = {
+  id?: InputMaybe<Scalars['ID']['input']>;
+  roleId: Scalars['ID']['input'];
+  virtual: Scalars['String']['input'];
 };
 
 export type UserModel = {

@@ -16,6 +16,7 @@ import GraphQLJSON from 'graphql-type-json';
 import {
   GamePlayerStatus,
   GameRoundActionTargetStatus,
+  GameRoundTime,
   GameStatus,
   Roles,
   RoleSide,
@@ -40,6 +41,7 @@ registerEnumType(Roles, { name: 'Roles' });
 registerEnumType(RoleSide, { name: 'RoleSide' });
 registerEnumType(GameStatus, { name: 'GameStatus' });
 registerEnumType(GamePlayerStatus, { name: 'GamePlayerStatus' });
+registerEnumType(GameRoundTime, { name: 'GameRoundTime' });
 registerEnumType(GameRoundActionTargetStatus, {
   name: 'GameRoundActionTargetStatus',
 });

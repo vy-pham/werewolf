@@ -11,8 +11,8 @@ export class GamePlayerModel
   @Field(() => String, { nullable: true })
   virtual?: string;
 
-  @Field(() => RoleModel, { nullable: true })
-  role?: RoleModel;
+  @Field(() => RoleModel)
+  role: RoleModel;
 
   @Field(() => GamePlayerStatus)
   status: GamePlayerStatus;

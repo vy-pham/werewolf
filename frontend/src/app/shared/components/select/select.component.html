@@ -1,5 +1,24 @@
-<select class="w-full p-2 rounded-lg" (change)="onSelectionChange($event)">
-  <option *ngFor="let option of options" [value]="option.value">
-    {{ option.label }}
-  </option>
-</select>
+<div
+  (click)="toggleDropdown()"
+  class="w-full p-2 bg-amber-200 rounded-lg relative"
+>
+  <span class="text-cyan-950">{{ selectedLabel || "Select" }}</span>
+  <div
+    [class]="
+      'absolute z-10 ease-in duration-150 bg-amber-200 top-full left-0 w-full rounded-lg'
+        | className
+          : (showDropdown ? 'opacity-100 ' : 'opacity-0 pointer-events-none')
+    "
+  >
+    <div
+      (click)="onSelectionChange(option.value)"
+      [class]="
+        'p-2 text-cyan-950'
+          | className : (selectedValue === option.value ? 'bg-amber-300' : '')
+      "
+      *ngFor="let option of options"
+    >
+      {{ option.label }}
+    </div>
+  </div>
+</div>

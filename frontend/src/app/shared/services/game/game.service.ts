@@ -1,9 +1,15 @@
 import { inject, Injectable } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { CREATE_GAME_MUTATION, CURRENT_GAME_QUERY } from './game.queries';
+import {
+  CREATE_GAME_MUTATION,
+  CURRENT_GAME_QUERY,
+  MUTATION_CREATE_ROUND,
+} from './game.queries';
 import type {
   CreateGameMutation,
   CreateGameMutationVariables,
+  CreateRoundMutation,
+  CreateRoundMutationVariables,
   CurrentGameQuery,
 } from '../../../../graphql/queries';
 import { BehaviorSubject, map } from 'rxjs';
@@ -11,6 +17,7 @@ import { ToastrService } from 'ngx-toastr';
 import type { ExtractDataType } from '../../entities/utils.entities';
 
 type CurrentGame = ExtractDataType<CreateGameMutation['createGame']>;
+type CurrentRound = ExtractDataType<CreateRoundMutation['createRound']>;
 
 @Injectable({ providedIn: 'root' })
 export class GameService {
@@ -24,6 +31,15 @@ export class GameService {
     return this.currentGame$.value;
   }
   currentGame$ = new BehaviorSubject<null | CurrentGame>(null);
+
+  set currentRound(v: CurrentRound | null) {
+    this.currentRound$.next(v);
+  }
+  get currentRound() {
+    return this.currentRound$.value;
+  }
+  currentRound$ = new BehaviorSubject<null | CurrentRound>(null);
+
   getCurrentGame$ = this.apollo
     .query<CurrentGameQuery>({
       query: CURRENT_GAME_QUERY,
@@ -55,6 +71,28 @@ export class GameService {
             return true;
           } else {
             this.toastr.error(data?.createGame.message || 'Unknown Error');
+            return false;
+          }
+        })
+      );
+  }
+
+  createRound$(gameId: string) {
+    return this.apollo
+      .mutate<CreateRoundMutation, CreateRoundMutationVariables>({
+        mutation: MUTATION_CREATE_ROUND,
+        variables: {
+          input: { gameId },
+        },
+      })
+      .pipe(
+        map(({ data }) => {
+          if (data?.createRound.__typename === 'GameRoundModel_Mutation') {
+            this.toastr.success(data.createRound.message);
+            this.currentRound = data.createRound.data;
+            return true;
+          } else {
+            this.toastr.error(data?.createRound.message || 'Unknown Error');
             return false;
           }
         })

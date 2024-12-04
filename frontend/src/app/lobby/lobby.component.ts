@@ -7,12 +7,14 @@ import { InputComponent } from '../shared/components/input/input.component';
 import {
   FormBuilder,
   ReactiveFormsModule,
-  type FormArray,
+  type FormControl,
+  type FormGroup,
 } from '@angular/forms';
 import { GetRoleNamePipe } from '../shared/pipes/get-role-name.pipe';
 import { RoomType } from '../../graphql/types';
 import { map, switchMap } from 'rxjs';
 import { GameService } from '../shared/services/game/game.service';
+import { SelectComponent } from '../shared/components/select/select.component';
 
 @Component({
   selector: 'app-lobby',
@@ -21,6 +23,7 @@ import { GameService } from '../shared/services/game/game.service';
     CommonModule,
     ButtonComponent,
     InputComponent,
+    SelectComponent,
     ReactiveFormsModule,
     GetRoleNamePipe,
   ],
@@ -33,17 +36,28 @@ export class LobbyComponent {
   router = inject(Router);
   gameService = inject(GameService);
   roomType = RoomType;
-  formTempPlayers = this.formBuilder.group({
-    tempPlayers: this.formBuilder.array<string>([]),
-  });
+  tempPlayers = this.formBuilder.array<
+    FormGroup<{
+      virtual: FormControl<string>;
+      roleId: FormControl<string>;
+      id: FormControl<string>;
+    }>
+  >([]);
   virtualPlayers$ = this.roomService.currentRoom$.pipe(
     map((room) => {
       return room?.players.filter((o) => o.virtual) || [];
     })
   );
-  get tempPlayers(): FormArray {
-    return this.formTempPlayers.get('tempPlayers') as FormArray;
-  }
+
+  roles$ = this.roomService.currentRoom$.pipe(
+    map((room) =>
+      room?.rolesConfig.map((roleConfig) => ({
+        label: roleConfig.role.name,
+        value: roleConfig.role.id,
+      }))
+    )
+  );
+
   ngOnInit() {
     if (!this.roomService.currentRoom) {
       this.roomService.getCurrentRoom$.subscribe((result) => {
@@ -52,23 +66,36 @@ export class LobbyComponent {
     }
     this.virtualPlayers$.subscribe((players) => {
       this.tempPlayers.clear();
-      players.forEach((player) =>
-        this.tempPlayers.push(this.formBuilder.control(player.virtual))
-      );
+      players.forEach((player) => {
+        const groupPlayer = this.formBuilder.group({
+          virtual: player.virtual || '',
+          roleId: player.role?.id || '',
+          id: player.id,
+        });
+        this.tempPlayers.push(groupPlayer);
+      });
     });
   }
   addTempPlayer() {
-    this.tempPlayers.push(this.formBuilder.control(''));
+    const groupPlayer = this.formBuilder.group({
+      virtual: '',
+      roleId: '',
+      id: '-1',
+    });
+    this.tempPlayers.push(groupPlayer);
   }
 
   addPlayer() {
     if (this.roomService.currentRoom) {
-      this.formTempPlayers.markAsUntouched();
+      this.tempPlayers.markAsUntouched();
       this.roomService
         .updateRoomPlayers$({
           roomId: this.roomService.currentRoom.id,
-          virtualPlayers:
-            this.formTempPlayers.controls.tempPlayers.value.filter((o) => o),
+          data: this.tempPlayers.value.map((o) => ({
+            id: o.id,
+            roleId: o.roleId!,
+            virtual: o.virtual!,
+          })),
         })
         .pipe(switchMap(() => this.roomService.getCurrentRoom$))
         .subscribe();

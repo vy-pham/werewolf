@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Room, RoomStatus, RoomPlayer, RoomType } from '@prisma/client';
+import { Room, RoomStatus, RoomType } from '@prisma/client';
 import { RoomPlayerModel } from '../room-player/room-player.model';
 import { RoomRoleModel } from '../room-role/room-role.model';
 @ObjectType()
@@ -12,7 +12,7 @@ export class RoomModel implements Room {
   status: RoomStatus;
 
   @Field(() => [RoomPlayerModel])
-  players: RoomPlayer[];
+  players: RoomPlayerModel[];
 
   @Field(() => [RoomRoleModel])
   rolesConfig: RoomRoleModel[];

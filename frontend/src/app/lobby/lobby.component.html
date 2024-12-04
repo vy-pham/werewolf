@@ -12,10 +12,21 @@
     </div>
   </div>
 
-  <ng-template #support [formGroup]="formTempPlayers">
-    <div formArrayName="tempPlayers" class="grid grid-cols-4 gap-4">
-      <div *ngFor="let player of tempPlayers.controls; let i = index">
-        <app-input [formControlName]="i" />
+  <ng-template #support>
+    <div class="grid grid-cols-4 gap-4">
+      <div
+        [formGroup]="player"
+        *ngFor="let player of tempPlayers.controls; let i = index"
+      >
+        <div>
+          <app-input formControlName="virtual" />
+        </div>
+        <div class="mt-1">
+          <app-select
+            [options]="(roles$ | async) || []"
+            formControlName="roleId"
+          />
+        </div>
       </div>
     </div>
     <div class="grid grid-cols-2 mt-4">

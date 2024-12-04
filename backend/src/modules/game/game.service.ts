@@ -37,18 +37,20 @@ export class GameService {
     );
 
     const roomPlayers = await this.prismaService.roomPlayer.findMany({
-      where: { roomId: room.id },
+      where: { roomId: room.id, virtual: { not: null } },
     });
 
     const createGame = await this.prismaService.game.create({
       data: {
         roomId,
+        status: GameStatus.playing,
         players: {
           createMany: {
             data: roomPlayers.map((player) => {
               return {
                 userId: player.userId,
                 virtual: player.virtual,
+                roleId: player.roleId,
               };
             }),
           },

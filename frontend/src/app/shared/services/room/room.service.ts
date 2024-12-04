@@ -3,24 +3,24 @@ import type {
   CreateRoomMutation,
   CreateRoomMutationVariables,
   CurrentRoomQuery,
+  UpdateManyRoomPlayerMutation,
+  UpdateManyRoomPlayerMutationVariables,
   UpdateRoomMutation,
   UpdateRoomMutationVariables,
-  UpdateRoomPlayerMutation,
-  UpdateRoomPlayerMutationVariables,
 } from '../../../../graphql/queries';
 import { Apollo } from 'apollo-angular';
 import { ToastrService } from 'ngx-toastr';
 import {
   MUTATION_CREATE_ROOM,
-  MUTATION_ROOM_PLAYER,
+  MUTATION_MANY_ROOM_PLAYER,
   MUTATION_UPDATE_ROOM,
   QUERY_CURRENT_ROOM,
 } from './room.queries';
 import {
   Roles,
   type CreateRoomInput,
+  type UpdateManyRoomPlayer,
   type UpdateRoomInput,
-  type UpdateRoomPlayerInput,
 } from '../../../../graphql/types';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import type { ExtractDataType } from '../../entities/utils.entities';
@@ -151,12 +151,12 @@ export class RoomService {
       );
   }
 
-  updateRoomPlayers$(input: UpdateRoomPlayerInput) {
+  updateRoomPlayers$(input: UpdateManyRoomPlayer) {
     return this.apollo.mutate<
-      UpdateRoomPlayerMutation,
-      UpdateRoomPlayerMutationVariables
+      UpdateManyRoomPlayerMutation,
+      UpdateManyRoomPlayerMutationVariables
     >({
-      mutation: MUTATION_ROOM_PLAYER,
+      mutation: MUTATION_MANY_ROOM_PLAYER,
       variables: {
         input,
       },

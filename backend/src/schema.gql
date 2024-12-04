@@ -18,6 +18,10 @@ input CreateRoomInput {
   werewolfQuantity: Float!
 }
 
+input CreateRoundInput {
+  gameId: ID!
+}
+
 input CreateUserInput {
   """Password"""
   password: String!
@@ -59,7 +63,7 @@ type GameModel_Single implements BaseResponse {
 
 type GamePlayerModel {
   id: ID!
-  role: RoleModel
+  role: RoleModel!
   status: GamePlayerStatus!
   virtual: String
 }
@@ -73,6 +77,23 @@ type GamePlayerModel_List_Mutation implements BaseResponse {
 enum GamePlayerStatus {
   alive
   dead
+}
+
+type GameRoundModel {
+  id: ID!
+  sequence: Float!
+  time: GameRoundTime!
+}
+
+type GameRoundModel_Mutation implements BaseResponse {
+  data: GameRoundModel!
+  message: String!
+  statusCode: HttpCode!
+}
+
+enum GameRoundTime {
+  day
+  night
 }
 
 enum GameStatus {
@@ -157,12 +178,13 @@ type Me_Single implements BaseResponse {
 type Mutation {
   createGame(input: CreateGameInput!): ResultUnion_GameModel_Mutation!
   createRoom(input: CreateRoomInput!): ResultUnion_RoomModel_Mutation!
+  createRound(input: CreateRoundInput!): ResultUnion_GameRoundModel_Mutation!
   createUser(input: CreateUserInput!): ResultUnion_UserModel_Mutation!
   login(input: LoginUserInput!): ResultUnion_UserToken_Mutation!
   startGame(input: StartGameInput!): ResultUnion_GameModel_Mutation!
   updateManyGamePlayer(input: UpdateManyGamePlayer!): ResultUnion_GamePlayerModel_List_Mutation!
+  updateManyRoomPlayer(input: UpdateManyRoomPlayer!): ResultUnion_RoomPlayerModel_List_Mutation!
   updateRoom(input: UpdateRoomInput!): ResultUnion_RoomModel_Mutation!
-  updateRoomPlayer(input: UpdateRoomPlayerInput!): ResultUnion_RoomPlayerModel_List_Mutation!
 }
 
 type PaginationData {
@@ -192,6 +214,8 @@ union ResultUnion_GameModel_Mutation = ErrorOutput | GameModel_Mutation
 union ResultUnion_GameModel_Single = ErrorOutput | GameModel_Single
 
 union ResultUnion_GamePlayerModel_List_Mutation = ErrorOutput | GamePlayerModel_List_Mutation
+
+union ResultUnion_GameRoundModel_Mutation = ErrorOutput | GameRoundModel_Mutation
 
 union ResultUnion_Me_Single = ErrorOutput | Me_Single
 
@@ -274,6 +298,7 @@ type RoomModel_Single implements BaseResponse {
 type RoomPlayerModel {
   id: ID!
   isHost: Boolean!
+  role: RoleModel
   user: UserModel
   virtual: String
 }
@@ -318,6 +343,11 @@ input UpdateManyGamePlayer {
   data: [UpdateGamePlayer!]!
 }
 
+input UpdateManyRoomPlayer {
+  data: [UpdateRoomPlayer!]!
+  roomId: ID!
+}
+
 input UpdateRoomInput {
   id: ID!
   name: String!
@@ -325,9 +355,10 @@ input UpdateRoomInput {
   werewolfQuantity: Float!
 }
 
-input UpdateRoomPlayerInput {
-  roomId: ID!
-  virtualPlayers: [String!]!
+input UpdateRoomPlayer {
+  id: ID
+  roleId: ID!
+  virtual: String!
 }
 
 type UserModel {

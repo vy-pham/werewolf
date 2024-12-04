@@ -55,3 +55,21 @@ export const CURRENT_GAME_QUERY = gql`
   }
   ${GAME_FRAGMENT}
 `;
+
+export const MUTATION_CREATE_ROUND = gql`
+  mutation CreateRound($input: CreateRoundInput!) {
+    createRound(input: $input) {
+      ... on ErrorOutput {
+        message
+      }
+      ... on GameRoundModel_Mutation {
+        data {
+          id
+          sequence
+          time
+        }
+        message
+      }
+    }
+  }
+`;

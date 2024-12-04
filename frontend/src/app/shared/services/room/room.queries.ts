@@ -10,6 +10,10 @@ const RoomFragment = gql`
       id
       isHost
       virtual
+      role {
+        id
+        name
+      }
       user {
         email
         id
@@ -81,12 +85,26 @@ export const QUERY_CURRENT_ROOM = gql`
   ${RoomFragment}
 `;
 
-export const MUTATION_ROOM_PLAYER = gql`
-  mutation UpdateRoomPlayer($input: UpdateRoomPlayerInput!) {
-    updateRoomPlayer(input: $input) {
+export const MUTATION_MANY_ROOM_PLAYER = gql`
+  mutation UpdateManyRoomPlayer($input: UpdateManyRoomPlayer!) {
+    updateManyRoomPlayer(input: $input) {
+      ... on ErrorOutput {
+        message
+      }
       ... on RoomPlayerModel_List_Mutation {
+        message
         data {
           id
+          isHost
+          role {
+            description
+            enum
+            id
+            name
+            point
+            side
+            status
+          }
           virtual
         }
       }
