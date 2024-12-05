@@ -46,6 +46,7 @@ type GameModel {
   id: ID!
   players: [GamePlayerModel!]!
   roomId: Float!
+  rounds: [GameRoundModel!]!
   status: GameStatus!
 }
 
@@ -79,7 +80,21 @@ enum GamePlayerStatus {
   dead
 }
 
+type GameRoundActionModel {
+  actor: GamePlayerModel!
+  id: ID!
+  target: GamePlayerModel!
+  targetStatus: GameRoundActionTargetStatus!
+  turnOf: Roles!
+}
+
+enum GameRoundActionTargetStatus {
+  alive
+  dead
+}
+
 type GameRoundModel {
+  actions: GameRoundActionModel!
   id: ID!
   sequence: Float!
   time: GameRoundTime!

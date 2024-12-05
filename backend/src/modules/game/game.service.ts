@@ -2,6 +2,7 @@ import { InjectPrisma } from 'src/decorators/inject-prisma.decorator';
 import type { CreateGameInput } from './input/create-game.input';
 import { GameStatus, RoomStatus } from '@prisma/client';
 import { Inject } from '@nestjs/common';
+import { GAME_INCLUDE } from './game.constant';
 
 export class GameService {
   @Inject(TOKEN.USER) user: JWTPayload;
@@ -56,13 +57,7 @@ export class GameService {
           },
         },
       },
-      include: {
-        players: {
-          include: {
-            role: true,
-          },
-        },
-      },
+      include: GAME_INCLUDE,
     });
     return createGame;
   }
@@ -71,11 +66,7 @@ export class GameService {
     const data = await this.prismaService.game.findFirstAndUpdate(
       {
         where: { id: gameId, status: GameStatus.waiting },
-        include: {
-          players: {
-            include: { role: true },
-          },
-        },
+        include: GAME_INCLUDE,
       },
       {
         status: GameStatus.playing,
@@ -92,6 +83,8 @@ export class GameService {
         message: 'Game not found',
       },
     );
+    data.players;
+    data.rounds;
     return data;
   }
 
@@ -113,11 +106,7 @@ export class GameService {
           roomId: findRoomPlayer.roomId,
           status: { not: GameStatus.end },
         },
-        include: {
-          players: {
-            include: { role: true },
-          },
-        },
+        include: GAME_INCLUDE,
       },
       {
         throwCase: 'IF_NOT_EXISTS',

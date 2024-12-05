@@ -15,6 +15,7 @@ import type {
 import { BehaviorSubject, map } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import type { ExtractDataType } from '../../entities/utils.entities';
+import { Roles } from '../../../../graphql/types';
 
 type CurrentGame = ExtractDataType<CreateGameMutation['createGame']>;
 type CurrentRound = ExtractDataType<CreateRoundMutation['createRound']>;
@@ -23,6 +24,13 @@ type CurrentRound = ExtractDataType<CreateRoundMutation['createRound']>;
 export class GameService {
   apollo = inject(Apollo);
   toastr = inject(ToastrService);
+  ordered = [
+    Roles.Guard,
+    Roles.Werewolf,
+    Roles.Seer,
+    Roles.Witch,
+    Roles.Hunter,
+  ];
 
   set currentGame(v: CurrentGame | null) {
     this.currentGame$.next(v);
@@ -40,6 +48,24 @@ export class GameService {
   }
   currentRound$ = new BehaviorSubject<null | CurrentRound>(null);
 
+  set actions(v: { type: Roles }[]) {
+    this.actions$.next(v);
+  }
+  get actions() {
+    return this.actions$.value;
+  }
+  actions$ = new BehaviorSubject<{ type: Roles }[]>([]);
+
+  get nextAction() {
+    const lastAction = this.actions[this.actions.length - 1];
+    if (!lastAction) {
+      return this.ordered[0];
+    } else {
+      const index = this.ordered.findIndex((o) => o === lastAction.type);
+      return this.ordered[index];
+    }
+  }
+
   getCurrentGame$ = this.apollo
     .query<CurrentGameQuery>({
       query: CURRENT_GAME_QUERY,
@@ -48,6 +74,10 @@ export class GameService {
       map(({ data }) => {
         if (data.currentGame?.__typename === 'GameModel_Single') {
           this.currentGame = data.currentGame.data || null;
+          this.currentRound =
+            data.currentGame.data.rounds[
+              data.currentGame.data.rounds.length - 1
+            ] || null;
         } else {
           this.currentGame = null;
         }

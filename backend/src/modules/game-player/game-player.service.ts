@@ -1,5 +1,6 @@
 import { InjectPrisma } from 'src/decorators/inject-prisma.decorator';
 import { UpdateManyGamePlayer } from './input/update-many-game-player.input';
+import { GAME_PLAYER_INCLUDE } from './game-player.constant';
 
 export class GamePlayerService {
   @InjectPrisma() prisma: PrismaService;
@@ -9,9 +10,7 @@ export class GamePlayerService {
         return this.prisma.gamePlayer.update({
           where: { id },
           data: { roleId },
-          include: {
-            role: true,
-          },
+          include: GAME_PLAYER_INCLUDE,
         });
       }),
     );

@@ -1,6 +1,7 @@
 import { InjectPrisma } from 'src/decorators/inject-prisma.decorator';
 import type { CreateRoundInput } from './input/create-round.input';
 import { GameRoundTime } from '@prisma/client';
+import { GAME_ROUND_INCLUDE } from './game-round.constant';
 
 export class GameRoundService {
   @InjectPrisma() prisma: PrismaService;
@@ -25,14 +26,13 @@ export class GameRoundService {
           createData.time = GameRoundTime.night;
           createData.sequence = createData.sequence + 1;
           break;
-
-        default:
-          break;
       }
     }
 
-    return await this.prisma.gameRound.create({
+    const data = await this.prisma.gameRound.create({
       data: createData,
+      include: GAME_ROUND_INCLUDE,
     });
+    return data;
   }
 }

@@ -61,6 +61,7 @@ export type GameModel = {
   id: Scalars['ID']['output'];
   players: Array<GamePlayerModel>;
   roomId: Scalars['Float']['output'];
+  rounds: Array<GameRoundModel>;
   status: GameStatus;
 };
 

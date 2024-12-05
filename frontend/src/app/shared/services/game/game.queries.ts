@@ -17,6 +17,11 @@ export const GAME_FRAGMENT = gql`
       status
       virtual
     }
+    rounds {
+      id
+      sequence
+      time
+    }
     roomId
     status
   }

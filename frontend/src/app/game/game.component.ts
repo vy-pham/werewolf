@@ -32,4 +32,11 @@ export class GameComponent {
     if (!this.gameService.currentGame) return;
     this.gameService.createRound$(this.gameService.currentGame.id).subscribe();
   }
+
+  nextAction() {
+    this.gameService.actions = [
+      ...this.gameService.actions,
+      { type: this.gameService.ordered[1] },
+    ];
+  }
 }

@@ -14,5 +14,9 @@
       Round {{ gameService.currentRound?.sequence }}
     </h1>
     <app-button (click)="nextRound()">Next round</app-button>
+    <app-button *ngIf="gameService.currentRound" (click)="nextAction()"
+      >Next action ( {{ gameService.nextAction }} )</app-button
+    >
   </section>
+  <section></section>
 </main>

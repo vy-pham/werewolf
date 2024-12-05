@@ -1,6 +1,7 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Game, GameStatus } from '@prisma/client';
 import { GamePlayerModel } from '../game-player/game-player.model';
+import { GameRoundModel } from '../game-round/game-round.model';
 
 @ObjectType()
 export class GameModel implements Game {
@@ -12,4 +13,6 @@ export class GameModel implements Game {
   players: GamePlayerModel[];
   @Field(() => GameStatus)
   status: GameStatus;
+  @Field(() => [GameRoundModel])
+  rounds: GameRoundModel[];
 }

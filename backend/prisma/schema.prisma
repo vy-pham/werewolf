@@ -112,17 +112,17 @@ enum GamePlayerStatus {
 }
 
 model GamePlayer {
-  id      Int               @id @default(autoincrement())
-  game    Game              @relation(fields: [gameId], references: [id])
-  gameId  Int               @map("game_id")
-  user    User?             @relation(fields: [userId], references: [id])
-  userId  Int?              @map("user_id")
-  virtual String?
-  role    Role              @relation(fields: [roleId], references: [id])
-  roleId  Int               @map("role_id")
-  status  GamePlayerStatus  @default(alive)
-  actor   GameRoundAction[] @relation("actor")
-  target  GameRoundAction[] @relation("target")
+  id       Int               @id @default(autoincrement())
+  game     Game              @relation(fields: [gameId], references: [id])
+  gameId   Int               @map("game_id")
+  user     User?             @relation(fields: [userId], references: [id])
+  userId   Int?              @map("user_id")
+  virtual  String?
+  role     Role              @relation(fields: [roleId], references: [id])
+  roleId   Int               @map("role_id")
+  status   GamePlayerStatus  @default(alive)
+  actorOf  GameRoundAction[] @relation("actor")
+  targetOf GameRoundAction[] @relation("target")
 }
 
 enum GameRoundTime {
@@ -148,8 +148,9 @@ model GameRoundAction {
   id           Int                         @id @default(autoincrement())
   gameRound    GameRound                   @relation(fields: [gameRoundId], references: [id])
   gameRoundId  Int                         @map("game_round_id")
-  actor        GamePlayer                  @relation(name: "actor", fields: [actorId], references: [id])
-  actorId      Int                         @map("actor_id")
+  turnOf       Roles                       @map("turn_of")
+  actor        GamePlayer?                 @relation(name: "actor", fields: [actorId], references: [id])
+  actorId      Int?                        @map("actor_id")
   target       GamePlayer?                 @relation(name: "target", fields: [targetId], references: [id])
   targetId     Int?                        @map("target_id")
   targetStatus GameRoundActionTargetStatus @map("target_status")
