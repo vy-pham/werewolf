@@ -9,5 +9,9 @@ export class GameRoundActionInput {
   @NumberTransform()
   @Field(() => ID)
   roundId: number;
-  targetId;
+  @Field(() => ID, { nullable: true })
+  actorId?: number;
+  @NumberTransform()
+  @Field(() => ID, { nullable: true })
+  targetId?: number;
 }

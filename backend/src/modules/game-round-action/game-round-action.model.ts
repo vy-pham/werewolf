@@ -3,6 +3,7 @@ import {
   GameRoundAction,
   GameRoundActionTargetStatus,
   Roles,
+  type GamePlayerStatus,
 } from '@prisma/client';
 import { GamePlayerModel } from '../game-player/game-player.model';
 
@@ -10,6 +11,8 @@ import { GamePlayerModel } from '../game-player/game-player.model';
 export class GameRoundActionModel
   implements Omit<GameRoundAction, 'actorId' | 'targetId' | 'gameRoundId'>
 {
+  booleanResult: boolean;
+  statusResult: GamePlayerStatus;
   @Field(() => ID)
   id: number;
   @Field(() => GamePlayerModel)

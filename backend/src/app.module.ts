@@ -97,18 +97,36 @@ class AppController {
 export class AppModule {
   @InjectPrisma() prisma: PrismaService;
   async onModuleInit() {
-    ROLES.map(async (role) => {
-      const findRole = await this.prisma.role.findFirst({
-        where: { enum: role.enum },
-      });
-      if (findRole) {
-        this.prisma.role.update({
-          where: { id: findRole.id },
-          data: role,
+    await Promise.all(
+      ROLES.map(async (role) => {
+        const roleData = {
+          name: role.name,
+          enum: role.enum,
+          point: role.point,
+          side: role.side,
+          description: role.description,
+        };
+        const createRole = await this.prisma.role.upsert({
+          where: { enum: role.enum },
+          create: roleData,
+          update: roleData,
         });
-      } else {
-        await this.prisma.role.create({ data: role });
-      }
-    });
+
+        await Promise.all(
+          role.abilities.map(async (ability) => {
+            await this.prisma.roleAbilities.upsert({
+              where: {
+                roleIdName: { roleId: createRole.id, name: ability.name },
+              },
+              create: {
+                ...ability,
+                roleId: createRole.id,
+              },
+              update: ability,
+            });
+          }),
+        );
+      }),
+    );
   }
 }

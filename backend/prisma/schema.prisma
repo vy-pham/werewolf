@@ -37,16 +37,29 @@ enum RoleSide {
 }
 
 model Role {
-  id          Int          @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   name        String
   description String?
   point       Int
-  enum        Roles        @unique
-  side        RoleSide     @default(villager)
-  status      Status       @default(active)
+  enum        Roles           @unique
+  side        RoleSide        @default(villager)
+  status      Status          @default(active)
   RoomRole    RoomRole[]
   GamePlayer  GamePlayer[]
   RoomPlayer  RoomPlayer[]
+  abilities   RoleAbilities[]
+}
+
+model RoleAbilities {
+  id           Int    @id @default(autoincrement())
+  roleId       Int    @map("role_id")
+  role         Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  name         String
+  description  String
+  totalUses    Int    @map("total_uses")
+  usesPerRound Int    @map("uses_per_round")
+
+  @@unique(name: "roleIdName", map: "role_id_name", [roleId, name])
 }
 
 enum RoomStatus {
@@ -125,6 +138,10 @@ model GamePlayer {
   targetOf GameRoundAction[] @relation("target")
 }
 
+model GameRoleAbilities {
+  id Int @id @default(autoincrement())
+}
+
 enum GameRoundTime {
   day
   night
@@ -145,13 +162,15 @@ enum GameRoundActionTargetStatus {
 }
 
 model GameRoundAction {
-  id           Int                         @id @default(autoincrement())
-  gameRound    GameRound                   @relation(fields: [gameRoundId], references: [id])
-  gameRoundId  Int                         @map("game_round_id")
-  turnOf       Roles                       @map("turn_of")
-  actor        GamePlayer?                 @relation(name: "actor", fields: [actorId], references: [id])
-  actorId      Int?                        @map("actor_id")
-  target       GamePlayer?                 @relation(name: "target", fields: [targetId], references: [id])
-  targetId     Int?                        @map("target_id")
-  targetStatus GameRoundActionTargetStatus @map("target_status")
+  id            Int                         @id @default(autoincrement())
+  gameRound     GameRound                   @relation(fields: [gameRoundId], references: [id])
+  gameRoundId   Int                         @map("game_round_id")
+  turnOf        Roles                       @map("turn_of")
+  actor         GamePlayer?                 @relation(name: "actor", fields: [actorId], references: [id])
+  actorId       Int?                        @map("actor_id")
+  target        GamePlayer?                 @relation(name: "target", fields: [targetId], references: [id])
+  targetId      Int?                        @map("target_id")
+  targetStatus  GameRoundActionTargetStatus @map("target_status")
+  booleanResult Boolean?
+  statusResult  GamePlayerStatus?
 }

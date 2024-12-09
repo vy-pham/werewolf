@@ -56,13 +56,24 @@ export class GameService {
   }
   actions$ = new BehaviorSubject<{ type: Roles }[]>([]);
 
-  get nextAction() {
-    const lastAction = this.actions[this.actions.length - 1];
-    if (!lastAction) {
+  get lastAction() {
+    return this.actions[this.actions.length - 1];
+  }
+  get currentAction() {
+    if (!this.lastAction) {
       return this.ordered[0];
     } else {
-      const index = this.ordered.findIndex((o) => o === lastAction.type);
+      const index = this.ordered.findIndex((o) => o === this.lastAction.type);
       return this.ordered[index];
+    }
+  }
+
+  get nextAction() {
+    if (!this.lastAction) {
+      return this.ordered[1];
+    } else {
+      const index = this.ordered.findIndex((o) => o === this.lastAction.type);
+      return this.ordered[index + 1];
     }
   }
 

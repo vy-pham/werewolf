@@ -5,11 +5,13 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ButtonComponent } from '../shared/components/button/button.component';
 import { RoleService } from '../shared/services/role/role.service';
+import { BehaviorSubject } from 'rxjs';
+import { ClassNamePipe } from '../shared/pipes/class-name.pipe';
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, ClassNamePipe],
   templateUrl: './game.component.html',
 })
 export class GameComponent {
@@ -17,6 +19,14 @@ export class GameComponent {
   gameService = inject(GameService);
   formBuilder = new FormBuilder().nonNullable;
   roleService = inject(RoleService);
+
+  set selectedTarget(v: string | null) {
+    this.selectedTarget$.next(v);
+  }
+  get selectedTarget() {
+    return this.selectedTarget$.value;
+  }
+  selectedTarget$ = new BehaviorSubject<string | null>(null);
 
   ngOnInit() {
     if (!this.gameService.currentGame) {
@@ -38,5 +48,10 @@ export class GameComponent {
       ...this.gameService.actions,
       { type: this.gameService.ordered[1] },
     ];
+  }
+
+  selectTarget(playerId: string) {
+    if (this.selectedTarget === playerId) this.selectedTarget = null;
+    else this.selectedTarget = playerId;
   }
 }

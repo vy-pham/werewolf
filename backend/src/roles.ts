@@ -7,6 +7,14 @@ export const ROLES = [
     point: -10,
     enum: Roles.werewolf,
     side: RoleSide.werewolf,
+    abilities: [
+      {
+        name: 'Kill',
+        description: 'Kill a villager at night.',
+        totalUses: -1,
+        usesPerRound: 1,
+      },
+    ],
   },
   {
     name: 'Villager',
@@ -15,6 +23,14 @@ export const ROLES = [
     point: 1,
     enum: Roles.villager,
     side: RoleSide.villager,
+    abilities: [
+      {
+        name: 'Lynch',
+        description: 'Lynch a player during the day.',
+        totalUses: -1,
+        usesPerRound: 1,
+      },
+    ],
   },
   {
     name: 'Seer',
@@ -23,6 +39,14 @@ export const ROLES = [
     point: 3,
     enum: Roles.seer,
     side: RoleSide.villager,
+    abilities: [
+      {
+        name: 'Check',
+        description: "View a player's role.",
+        totalUses: -1,
+        usesPerRound: 1,
+      },
+    ],
   },
   {
     name: 'Guard',
@@ -31,6 +55,14 @@ export const ROLES = [
     point: 4,
     enum: Roles.guard,
     side: RoleSide.villager,
+    abilities: [
+      {
+        name: 'Protect',
+        description: 'Protect a player from being killed.',
+        totalUses: -1,
+        usesPerRound: 1,
+      },
+    ],
   },
   {
     name: 'Hunter',
@@ -39,6 +71,14 @@ export const ROLES = [
     point: 2,
     enum: Roles.hunter,
     side: RoleSide.villager,
+    abilities: [
+      {
+        name: 'Kill',
+        description: 'Kill another player upon death.',
+        totalUses: 1,
+        usesPerRound: 1,
+      },
+    ],
   },
   {
     name: 'Witch',
@@ -47,5 +87,19 @@ export const ROLES = [
     point: 4,
     enum: Roles.witch,
     side: RoleSide.villager,
+    abilities: [
+      {
+        name: 'Heal',
+        description: 'Heal a player who has been attacked.',
+        totalUses: 1,
+        usesPerRound: 1,
+      },
+      {
+        name: 'Kill',
+        description: 'Kill any player.',
+        totalUses: 1,
+        usesPerRound: 1,
+      },
+    ],
   },
 ];
