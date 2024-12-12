@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Apollo } from 'apollo-angular';
 import {
+  CREATE_ACTION,
   CREATE_GAME_MUTATION,
   CURRENT_GAME_QUERY,
   MUTATION_CREATE_ROUND,
@@ -8,6 +9,8 @@ import {
 import type {
   CreateGameMutation,
   CreateGameMutationVariables,
+  CreateGameRoundActionMutation,
+  CreateGameRoundActionMutationVariables,
   CreateRoundMutation,
   CreateRoundMutationVariables,
   CurrentGameQuery,
@@ -15,7 +18,7 @@ import type {
 import { BehaviorSubject, map } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import type { ExtractDataType } from '../../entities/utils.entities';
-import { Roles } from '../../../../graphql/types';
+import { Roles, type GameRoundActionInput } from '../../../../graphql/types';
 
 type CurrentGame = ExtractDataType<CreateGameMutation['createGame']>;
 type CurrentRound = ExtractDataType<CreateRoundMutation['createRound']>;
@@ -138,5 +141,15 @@ export class GameService {
           }
         })
       );
+  }
+
+  createAction$(input: GameRoundActionInput) {
+    return this.apollo.mutate<
+      CreateGameRoundActionMutation,
+      CreateGameRoundActionMutationVariables
+    >({
+      mutation: CREATE_ACTION,
+      variables: { input },
+    });
   }
 }

@@ -8,4 +8,9 @@ export const GAME_INCLUDE = {
   players: {
     include: GAME_PLAYER_INCLUDE,
   },
+  abilities: {
+    include: {
+      ability: true,
+    },
+  },
 };

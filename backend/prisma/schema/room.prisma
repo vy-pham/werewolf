@@ -1,0 +1,41 @@
+enum RoomStatus {
+  waiting
+  playing
+  finished
+}
+
+model RoomRole {
+  id     Int  @id @default(autoincrement())
+  roomId Int  @map("room_id")
+  roleId Int  @map("role_id")
+  role   Role @relation(fields: [roleId], references: [id])
+  room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+enum RoomType {
+  support
+  multiplayer
+}
+
+model Room {
+  id               Int          @id @default(autoincrement())
+  name             String
+  status           RoomStatus   @default(waiting)
+  type             RoomType     @default(support)
+  players          RoomPlayer[]
+  rolesConfig      RoomRole[]
+  werewolfQuantity Int          @default(1) @map("werewolf_quantity")
+  game             Game[]
+}
+
+model RoomPlayer {
+  id      Int     @id @default(autoincrement())
+  isHost  Boolean @default(false) @map("is_host")
+  roomId  Int     @map("room_id")
+  roleId  Int?    @map("role_id")
+  userId  Int?    @unique @map("user_id")
+  virtual String?
+  user    User?   @relation(fields: [userId], references: [id])
+  role    Role?   @relation(fields: [roleId], references: [id])
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}

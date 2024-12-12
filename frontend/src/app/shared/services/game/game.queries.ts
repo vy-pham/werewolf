@@ -22,6 +22,21 @@ export const GAME_FRAGMENT = gql`
       sequence
       time
     }
+    abilities {
+      ability {
+        description
+        id
+        name
+        roleId
+        totalUses
+        usesPerRound
+      }
+      abilityId
+      gameId
+      id
+      totalUses
+      usesThisRound
+    }
     roomId
     status
   }
@@ -74,6 +89,38 @@ export const MUTATION_CREATE_ROUND = gql`
           time
         }
         message
+      }
+    }
+  }
+`;
+
+export const CREATE_ACTION = gql`
+  mutation CreateGameRoundAction($input: GameRoundActionInput!) {
+    createGameRoundAction(input: $input) {
+      ... on ErrorOutput {
+        message
+      }
+      ... on GameRoundActionModel_Mutation {
+        data {
+          booleanResult
+          id
+          statusResult
+          target {
+            id
+            role {
+              description
+              enum
+              id
+              name
+              point
+              side
+              status
+            }
+            status
+            virtual
+          }
+          turnOf
+        }
       }
     }
   }

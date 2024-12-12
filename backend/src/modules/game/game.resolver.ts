@@ -5,7 +5,6 @@ import { Input } from 'src/decorators/input.decorator';
 import { CreateGameInput } from './input/create-game.input';
 import { Inject } from '@nestjs/common';
 import { GameService } from './game.service';
-import { StartGameInput } from './input/start-game.input';
 import { QuerySingle } from 'src/decorators/query-single.decorator';
 @Resolver()
 export class GameResolver {
@@ -20,18 +19,6 @@ export class GameResolver {
       message: 'Create game successfully',
     };
   }
-
-  @Mutation(GameModel)
-  async startGame(
-    @Input() input: StartGameInput,
-  ): ResolverReturnedType<GameModel> {
-    const data = await this.gameService.startGame(input);
-    return {
-      data,
-      message: 'Game start successfully',
-    };
-  }
-
   @QuerySingle(GameModel)
   async currentGame(): ResolverReturnedType<GameModel> {
     const data = await this.gameService.getCurrentGame();

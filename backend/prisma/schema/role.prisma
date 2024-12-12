@@ -1,0 +1,42 @@
+enum Roles {
+  werewolf
+  villager
+  seer
+  guard
+  hunter
+  witch
+}
+
+enum RoleSide {
+  werewolf
+  villager
+}
+
+model Role {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  point       Int
+  enum        Roles         @unique
+  side        RoleSide      @default(villager)
+  status      Status        @default(active)
+  RoomRole    RoomRole[]
+  GamePlayer  GamePlayer[]
+  RoomPlayer  RoomPlayer[]
+  abilities   RoleAbility[]
+}
+
+model RoleAbility {
+  id           Int               @id @default(autoincrement())
+  roleId       Int               @map("role_id")
+  role         Role              @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  name         String
+  description  String
+  totalUses    Int               @map("total_uses")
+  usesPerRound Int               @map("uses_per_round")
+  applyStatus  GamePlayerStatus? @default(alive)
+
+  GameAbility GameAbility[]
+
+  @@unique(name: "roleIdName", map: "role_id_name", [roleId, name])
+}

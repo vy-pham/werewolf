@@ -1,4 +1,4 @@
-import { Roles, RoleSide } from '@prisma/client';
+import { GamePlayerStatus, Roles, RoleSide } from '@prisma/client';
 
 export const ROLES = [
   {
@@ -13,6 +13,7 @@ export const ROLES = [
         description: 'Kill a villager at night.',
         totalUses: -1,
         usesPerRound: 1,
+        applyStatus: GamePlayerStatus.dead,
       },
     ],
   },
@@ -29,6 +30,7 @@ export const ROLES = [
         description: 'Lynch a player during the day.',
         totalUses: -1,
         usesPerRound: 1,
+        applyStatus: GamePlayerStatus.dead,
       },
     ],
   },
@@ -45,6 +47,7 @@ export const ROLES = [
         description: "View a player's role.",
         totalUses: -1,
         usesPerRound: 1,
+        applyStatus: null,
       },
     ],
   },
@@ -61,6 +64,7 @@ export const ROLES = [
         description: 'Protect a player from being killed.',
         totalUses: -1,
         usesPerRound: 1,
+        applyStatus: GamePlayerStatus.guarded,
       },
     ],
   },
@@ -77,6 +81,7 @@ export const ROLES = [
         description: 'Kill another player upon death.',
         totalUses: 1,
         usesPerRound: 1,
+        applyStatus: GamePlayerStatus.dead,
       },
     ],
   },
@@ -93,12 +98,14 @@ export const ROLES = [
         description: 'Heal a player who has been attacked.',
         totalUses: 1,
         usesPerRound: 1,
+        applyStatus: GamePlayerStatus.alive,
       },
       {
         name: 'Kill',
         description: 'Kill any player.',
         totalUses: 1,
         usesPerRound: 1,
+        applyStatus: GamePlayerStatus.dead,
       },
     ],
   },

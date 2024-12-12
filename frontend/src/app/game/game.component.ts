@@ -54,4 +54,8 @@ export class GameComponent {
     if (this.selectedTarget === playerId) this.selectedTarget = null;
     else this.selectedTarget = playerId;
   }
+
+  commitAction() {
+    this.gameService.createAction$({}).subscribe();
+  }
 }

@@ -1,7 +1,8 @@
 import { InjectPrisma } from 'src/decorators/inject-prisma.decorator';
 import type { GameRoundActionInput } from './input/game-round-action.input';
-import { GameRoundTime, Roles } from '@prisma/client';
+import { GamePlayerStatus, GameRoundTime, Roles } from '@prisma/client';
 import { BadRequestException } from '@nestjs/common';
+import { GAME_ROUND_ACTION_INCLUDE } from './game-round-action.constant';
 
 export class GameRoundActionService {
   @InjectPrisma() prisma: PrismaService;
@@ -16,8 +17,8 @@ export class GameRoundActionService {
   async createAction({
     roundId,
     turnOf,
-    actorId,
     targetId,
+    abilityId,
   }: GameRoundActionInput) {
     const round = await this.prisma.gameRound.findFirstOrThrow(
       {
@@ -55,5 +56,80 @@ export class GameRoundActionService {
     if (currentTurn !== turnOf) {
       throw new BadRequestException('No pending role for this round');
     }
+
+    const playerAbility = await this.prisma.gameAbility.findFirstOrThrow(
+      {
+        where: {
+          gameId: round.gameId,
+          abilityId,
+          totalUses: { not: 0 },
+          usesThisRound: { not: 0 },
+        },
+        include: {
+          ability: true,
+        },
+      },
+      {
+        throwCase: 'IF_NOT_EXISTS',
+      },
+    );
+
+    let targetStatus: GamePlayerStatus | undefined;
+    let booleanResult: boolean | undefined;
+    switch (turnOf) {
+      case Roles.witch:
+      case Roles.werewolf:
+      case Roles.villager:
+      case Roles.guard:
+        targetStatus = GamePlayerStatus.guarded;
+        break;
+      case Roles.seer:
+        booleanResult = await this.prisma.gamePlayer.exists({
+          id: targetId,
+          role: {
+            enum: Roles.werewolf,
+          },
+        });
+        break;
+      default:
+        break;
+    }
+    if (targetStatus && targetId) {
+      await this.prisma.gamePlayer.findFirstAndUpdate(
+        {
+          where: {
+            id: targetId,
+          },
+        },
+        {
+          status: targetStatus,
+        },
+        {
+          isThrow: true,
+        },
+      );
+    }
+
+    await this.prisma.gameAbility.findFirstAndUpdate(
+      {
+        where: { id: playerAbility.id },
+      },
+      {
+        totalUses: playerAbility.totalUses - 1,
+        usesThisRound: playerAbility.usesThisRound - 1,
+      },
+    );
+
+    return await this.prisma.gameRoundAction.create({
+      data: {
+        turnOf,
+        gameRoundId: roundId,
+        targetId,
+        statusResult: targetStatus,
+        booleanResult,
+        abilityId,
+      },
+      include: GAME_ROUND_ACTION_INCLUDE,
+    });
   }
 }

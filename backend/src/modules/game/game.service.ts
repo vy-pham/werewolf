@@ -41,6 +41,17 @@ export class GameService {
       where: { roomId: room.id, virtual: { not: null } },
     });
 
+    const roomRoles = await this.prismaService.roomRole.findMany({
+      where: { roomId },
+      include: {
+        role: {
+          include: {
+            abilities: true,
+          },
+        },
+      },
+    });
+
     const createGame = await this.prismaService.game.create({
       data: {
         roomId,
@@ -56,36 +67,25 @@ export class GameService {
             }),
           },
         },
+        abilities: {
+          createMany: {
+            data: roomRoles
+              .map((roomRole) => {
+                return roomRole.role.abilities.map((ability) => {
+                  return {
+                    abilityId: ability.id,
+                    totalUses: ability.totalUses,
+                    usesThisRound: ability.usesPerRound,
+                  };
+                });
+              })
+              .flat(),
+          },
+        },
       },
       include: GAME_INCLUDE,
     });
     return createGame;
-  }
-
-  async startGame({ gameId }: any) {
-    const data = await this.prismaService.game.findFirstAndUpdate(
-      {
-        where: { id: gameId, status: GameStatus.waiting },
-        include: GAME_INCLUDE,
-      },
-      {
-        status: GameStatus.playing,
-        room: {
-          update: {
-            data: {
-              status: RoomStatus.playing,
-            },
-          },
-        },
-      },
-      {
-        isThrow: true,
-        message: 'Game not found',
-      },
-    );
-    data.players;
-    data.rounds;
-    return data;
   }
 
   async getCurrentGame() {

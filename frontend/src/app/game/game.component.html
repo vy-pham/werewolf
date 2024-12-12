@@ -29,8 +29,11 @@
     <div class="grid grid-cols-4 gap-4 cursor-pointer">
       <div
         [class]="
-          'border border-stone-500 p-2'
-            | className : selectedTarget === player.id && 'border-lime-300'
+          'border p-2'
+            | className
+              : (selectedTarget === player.id
+                  ? 'border-lime-300'
+                  : 'border-stone-500')
         "
         *ngFor="let player of gameService.currentGame.players"
         (click)="selectTarget(player.id)"
@@ -41,7 +44,9 @@
     </div>
 
     <div class="mt-4">
-      <app-button *ngIf="selectedTarget">Commit action</app-button>
+      <app-button (click)="commitAction()" *ngIf="selectedTarget"
+        >Commit action</app-button
+      >
     </div>
   </section>
 </main>

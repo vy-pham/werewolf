@@ -56,8 +56,19 @@ export type FiltersUserInput = {
   username: Scalars['String']['input'];
 };
 
+export type GameAbilityModel = {
+  __typename?: 'GameAbilityModel';
+  ability: RoleAbilityModel;
+  abilityId: Scalars['ID']['output'];
+  gameId: Scalars['ID']['output'];
+  id: Scalars['ID']['output'];
+  totalUses: Scalars['Float']['output'];
+  usesThisRound: Scalars['Float']['output'];
+};
+
 export type GameModel = {
   __typename?: 'GameModel';
+  abilities: Array<GameAbilityModel>;
   id: Scalars['ID']['output'];
   players: Array<GamePlayerModel>;
   roomId: Scalars['Float']['output'];
@@ -96,11 +107,36 @@ export type GamePlayerModel_List_Mutation = BaseResponse & {
 
 export enum GamePlayerStatus {
   Alive = 'alive',
-  Dead = 'dead'
+  Dead = 'dead',
+  Guarded = 'guarded'
 }
+
+export type GameRoundActionInput = {
+  abilityId: Scalars['ID']['input'];
+  roundId: Scalars['ID']['input'];
+  targetId?: InputMaybe<Scalars['ID']['input']>;
+  turnOf: Roles;
+};
+
+export type GameRoundActionModel = {
+  __typename?: 'GameRoundActionModel';
+  booleanResult: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  statusResult: GamePlayerStatus;
+  target: GamePlayerModel;
+  turnOf: Roles;
+};
+
+export type GameRoundActionModel_Mutation = BaseResponse & {
+  __typename?: 'GameRoundActionModel_Mutation';
+  data: GameRoundActionModel;
+  message: Scalars['String']['output'];
+  statusCode: HttpCode;
+};
 
 export type GameRoundModel = {
   __typename?: 'GameRoundModel';
+  actions: GameRoundActionModel;
   id: Scalars['ID']['output'];
   sequence: Scalars['Float']['output'];
   time: GameRoundTime;
@@ -197,11 +233,11 @@ export type Me_Single = BaseResponse & {
 export type Mutation = {
   __typename?: 'Mutation';
   createGame: ResultUnion_GameModel_Mutation;
+  createGameRoundAction: ResultUnion_GameRoundActionModel_Mutation;
   createRoom: ResultUnion_RoomModel_Mutation;
   createRound: ResultUnion_GameRoundModel_Mutation;
   createUser: ResultUnion_UserModel_Mutation;
   login: ResultUnion_UserToken_Mutation;
-  startGame: ResultUnion_GameModel_Mutation;
   updateManyGamePlayer: ResultUnion_GamePlayerModel_List_Mutation;
   updateManyRoomPlayer: ResultUnion_RoomPlayerModel_List_Mutation;
   updateRoom: ResultUnion_RoomModel_Mutation;
@@ -210,6 +246,11 @@ export type Mutation = {
 
 export type MutationCreateGameArgs = {
   input: CreateGameInput;
+};
+
+
+export type MutationCreateGameRoundActionArgs = {
+  input: GameRoundActionInput;
 };
 
 
@@ -230,11 +271,6 @@ export type MutationCreateUserArgs = {
 
 export type MutationLoginArgs = {
   input: LoginUserInput;
-};
-
-
-export type MutationStartGameArgs = {
-  input: StartGameInput;
 };
 
 
@@ -294,6 +330,8 @@ export type ResultUnion_GameModel_Single = ErrorOutput | GameModel_Single;
 
 export type ResultUnion_GamePlayerModel_List_Mutation = ErrorOutput | GamePlayerModel_List_Mutation;
 
+export type ResultUnion_GameRoundActionModel_Mutation = ErrorOutput | GameRoundActionModel_Mutation;
+
 export type ResultUnion_GameRoundModel_Mutation = ErrorOutput | GameRoundModel_Mutation;
 
 export type ResultUnion_Me_Single = ErrorOutput | Me_Single;
@@ -313,6 +351,16 @@ export type ResultUnion_UserModel_List = ErrorOutput | UserModel_List;
 export type ResultUnion_UserModel_Mutation = ErrorOutput | UserModel_Mutation;
 
 export type ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation;
+
+export type RoleAbilityModel = {
+  __typename?: 'RoleAbilityModel';
+  description: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  roleId: Scalars['ID']['output'];
+  totalUses: Scalars['Float']['output'];
+  usesPerRound: Scalars['Float']['output'];
+};
 
 export type RoleModel = {
   __typename?: 'RoleModel';
@@ -412,10 +460,6 @@ export enum RoomType {
   Multiplayer = 'multiplayer',
   Support = 'support'
 }
-
-export type StartGameInput = {
-  gameId: Scalars['ID']['input'];
-};
 
 export enum Status {
   Active = 'active',

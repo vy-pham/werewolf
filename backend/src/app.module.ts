@@ -15,7 +15,6 @@ import { HttpExceptionFilter } from './interceptors/exception.interceptor';
 import GraphQLJSON from 'graphql-type-json';
 import {
   GamePlayerStatus,
-  GameRoundActionTargetStatus,
   GameRoundTime,
   GameStatus,
   Roles,
@@ -42,10 +41,6 @@ registerEnumType(RoleSide, { name: 'RoleSide' });
 registerEnumType(GameStatus, { name: 'GameStatus' });
 registerEnumType(GamePlayerStatus, { name: 'GamePlayerStatus' });
 registerEnumType(GameRoundTime, { name: 'GameRoundTime' });
-registerEnumType(GameRoundActionTargetStatus, {
-  name: 'GameRoundActionTargetStatus',
-});
-
 @Controller()
 class AppController {
   @Inject(REQUEST) request: Request;
@@ -114,7 +109,7 @@ export class AppModule {
 
         await Promise.all(
           role.abilities.map(async (ability) => {
-            await this.prisma.roleAbilities.upsert({
+            await this.prisma.roleAbility.upsert({
               where: {
                 roleIdName: { roleId: createRole.id, name: ability.name },
               },

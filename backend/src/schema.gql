@@ -42,7 +42,17 @@ input FiltersUserInput {
   username: String!
 }
 
+type GameAbilityModel {
+  ability: RoleAbilityModel!
+  abilityId: ID!
+  gameId: ID!
+  id: ID!
+  totalUses: Float!
+  usesThisRound: Float!
+}
+
 type GameModel {
+  abilities: [GameAbilityModel!]!
   id: ID!
   players: [GamePlayerModel!]!
   roomId: Float!
@@ -78,19 +88,28 @@ type GamePlayerModel_List_Mutation implements BaseResponse {
 enum GamePlayerStatus {
   alive
   dead
+  guarded
 }
 
-type GameRoundActionModel {
-  actor: GamePlayerModel!
-  id: ID!
-  target: GamePlayerModel!
-  targetStatus: GameRoundActionTargetStatus!
+input GameRoundActionInput {
+  abilityId: ID!
+  roundId: ID!
+  targetId: ID
   turnOf: Roles!
 }
 
-enum GameRoundActionTargetStatus {
-  alive
-  dead
+type GameRoundActionModel {
+  booleanResult: Boolean!
+  id: ID!
+  statusResult: GamePlayerStatus!
+  target: GamePlayerModel!
+  turnOf: Roles!
+}
+
+type GameRoundActionModel_Mutation implements BaseResponse {
+  data: GameRoundActionModel!
+  message: String!
+  statusCode: HttpCode!
 }
 
 type GameRoundModel {
@@ -192,11 +211,11 @@ type Me_Single implements BaseResponse {
 
 type Mutation {
   createGame(input: CreateGameInput!): ResultUnion_GameModel_Mutation!
+  createGameRoundAction(input: GameRoundActionInput!): ResultUnion_GameRoundActionModel_Mutation!
   createRoom(input: CreateRoomInput!): ResultUnion_RoomModel_Mutation!
   createRound(input: CreateRoundInput!): ResultUnion_GameRoundModel_Mutation!
   createUser(input: CreateUserInput!): ResultUnion_UserModel_Mutation!
   login(input: LoginUserInput!): ResultUnion_UserToken_Mutation!
-  startGame(input: StartGameInput!): ResultUnion_GameModel_Mutation!
   updateManyGamePlayer(input: UpdateManyGamePlayer!): ResultUnion_GamePlayerModel_List_Mutation!
   updateManyRoomPlayer(input: UpdateManyRoomPlayer!): ResultUnion_RoomPlayerModel_List_Mutation!
   updateRoom(input: UpdateRoomInput!): ResultUnion_RoomModel_Mutation!
@@ -230,6 +249,8 @@ union ResultUnion_GameModel_Single = ErrorOutput | GameModel_Single
 
 union ResultUnion_GamePlayerModel_List_Mutation = ErrorOutput | GamePlayerModel_List_Mutation
 
+union ResultUnion_GameRoundActionModel_Mutation = ErrorOutput | GameRoundActionModel_Mutation
+
 union ResultUnion_GameRoundModel_Mutation = ErrorOutput | GameRoundModel_Mutation
 
 union ResultUnion_Me_Single = ErrorOutput | Me_Single
@@ -249,6 +270,15 @@ union ResultUnion_UserModel_List = ErrorOutput | UserModel_List
 union ResultUnion_UserModel_Mutation = ErrorOutput | UserModel_Mutation
 
 union ResultUnion_UserToken_Mutation = ErrorOutput | UserToken_Mutation
+
+type RoleAbilityModel {
+  description: String!
+  id: ID!
+  name: String!
+  roleId: ID!
+  totalUses: Float!
+  usesPerRound: Float!
+}
 
 type RoleModel {
   description: String!
@@ -338,10 +368,6 @@ enum RoomStatus {
 enum RoomType {
   multiplayer
   support
-}
-
-input StartGameInput {
-  gameId: ID!
 }
 
 enum Status {
