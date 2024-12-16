@@ -1,26 +1,55 @@
 import { gql } from 'apollo-angular';
 
-export const GAME_FRAGMENT = gql`
-  fragment GameData on GameModel {
+export const PLAYER_FRAGMENT = gql`
+  fragment Player on GamePlayerModel {
     id
-    players {
+    role {
+      description
+      enum
       id
-      role {
-        description
-        enum
-        id
-        name
-        point
-        side
-        status
-      }
+      name
+      point
+      side
       status
+    }
+    status
+    virtual
+  }
+`;
+
+export const ACTION_FRAGMENT = gql`
+  fragment Action on GameRoundActionModel {
+    booleanResult
+    id
+    statusResult
+    target {
+      id
       virtual
     }
+    turnOf
+  }
+`;
+
+export const ROUND_FRAGMENT = gql`
+  fragment Round on GameRoundModel {
+    id
+    sequence
+    time
+    actions {
+      ...Action
+    }
+  }
+  ${ACTION_FRAGMENT}
+`;
+
+export const GAME_FRAGMENT = gql`
+  fragment Game on GameModel {
+    id
+    players {
+      ...Player
+    }
     rounds {
-      id
-      sequence
-      time
+      ...Round
     }
     abilities {
       ability {
@@ -40,6 +69,8 @@ export const GAME_FRAGMENT = gql`
     roomId
     status
   }
+  ${ROUND_FRAGMENT}
+  ${PLAYER_FRAGMENT}
 `;
 
 export const CREATE_GAME_MUTATION = gql`
@@ -51,7 +82,7 @@ export const CREATE_GAME_MUTATION = gql`
       ... on GameModel_Mutation {
         message
         data {
-          ...GameData
+          ...Game
         }
       }
     }
@@ -68,7 +99,7 @@ export const CURRENT_GAME_QUERY = gql`
       ... on GameModel_Single {
         message
         data {
-          ...GameData
+          ...Game
         }
       }
     }
@@ -84,14 +115,13 @@ export const MUTATION_CREATE_ROUND = gql`
       }
       ... on GameRoundModel_Mutation {
         data {
-          id
-          sequence
-          time
+          ...Round
         }
         message
       }
     }
   }
+  ${ROUND_FRAGMENT}
 `;
 
 export const CREATE_ACTION = gql`
@@ -121,6 +151,7 @@ export const CREATE_ACTION = gql`
           }
           turnOf
         }
+        message
       }
     }
   }

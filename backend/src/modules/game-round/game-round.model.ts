@@ -12,6 +12,6 @@ export class GameRoundModel implements Omit<GameRound, 'gameId'> {
   @Field()
   sequence: number;
 
-  @Field(() => GameRoundActionModel)
+  @Field(() => [GameRoundActionModel])
   actions: GameRoundActionModel[];
 }

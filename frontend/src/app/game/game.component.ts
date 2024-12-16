@@ -34,6 +34,7 @@ export class GameComponent {
         if (!data) {
           this.router.navigateByUrl('/');
         }
+        console.log(this.gameService.currentRound);
       });
     }
   }
@@ -43,19 +44,17 @@ export class GameComponent {
     this.gameService.createRound$(this.gameService.currentGame.id).subscribe();
   }
 
-  nextAction() {
-    this.gameService.actions = [
-      ...this.gameService.actions,
-      { type: this.gameService.ordered[1] },
-    ];
-  }
+  // nextAction() {
+  //   this.gameService.actions = [
+  //     ...this.gameService.actions,
+  //     { type: this.gameService.ordered[1] },
+  //   ];
+  // }
 
   selectTarget(playerId: string) {
     if (this.selectedTarget === playerId) this.selectedTarget = null;
     else this.selectedTarget = playerId;
   }
 
-  commitAction() {
-    this.gameService.createAction$({}).subscribe();
-  }
+  commitAction() {}
 }

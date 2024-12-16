@@ -120,9 +120,9 @@ export type GameRoundActionInput = {
 
 export type GameRoundActionModel = {
   __typename?: 'GameRoundActionModel';
-  booleanResult: Scalars['Boolean']['output'];
+  booleanResult?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
-  statusResult: GamePlayerStatus;
+  statusResult?: Maybe<GamePlayerStatus>;
   target: GamePlayerModel;
   turnOf: Roles;
 };
@@ -136,7 +136,7 @@ export type GameRoundActionModel_Mutation = BaseResponse & {
 
 export type GameRoundModel = {
   __typename?: 'GameRoundModel';
-  actions: GameRoundActionModel;
+  actions: Array<GameRoundActionModel>;
   id: Scalars['ID']['output'];
   sequence: Scalars['Float']['output'];
   time: GameRoundTime;

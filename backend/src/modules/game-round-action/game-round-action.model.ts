@@ -6,9 +6,9 @@ import { GamePlayerModel } from '../game-player/game-player.model';
 export class GameRoundActionModel
   implements Omit<GameRoundAction, 'targetId' | 'gameRoundId' | 'abilityId'>
 {
-  @Field(() => Boolean)
+  @Field(() => Boolean, { nullable: true })
   booleanResult: boolean;
-  @Field(() => GamePlayerStatus)
+  @Field(() => GamePlayerStatus, { nullable: true })
   statusResult: GamePlayerStatus;
   @Field(() => ID)
   id: number;

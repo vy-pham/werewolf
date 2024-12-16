@@ -11,17 +11,17 @@
 
   <section class="mt-4 border-stone-200 border-t-2">
     <h1 class="text-center text-4xl">
-      Round {{ gameService.currentRound?.sequence }}
+      Round {{ gameService.currentRound?.sequence }} /
+      {{ gameService.currentRound?.time }}
     </h1>
     <app-button (click)="nextRound()">Next round</app-button>
-    <app-button *ngIf="gameService.currentRound" (click)="nextAction()"
-      >Next action ( {{ gameService.nextAction }} )</app-button
-    >
+    <!-- <app-button *ngIf="gameService.currentRound" (click)="nextAction()">
+      Next action ( {{ gameService.nextAction }} )
+    </app-button> -->
   </section>
   <section>
-    <h1 class="text-center text-4xl">{{ gameService.currentRound?.time }}</h1>
     <h1 class="text-center text-4xl">
-      Current turn {{ gameService.currentAction }}
+      <!-- Current turn {{ gameService.currentAction }} -->
     </h1>
   </section>
   <section>

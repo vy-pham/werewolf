@@ -7,6 +7,7 @@ import {
   MUTATION_CREATE_ROUND,
 } from './game.queries';
 import type {
+  ActionFragment,
   CreateGameMutation,
   CreateGameMutationVariables,
   CreateGameRoundActionMutation,
@@ -14,71 +15,76 @@ import type {
   CreateRoundMutation,
   CreateRoundMutationVariables,
   CurrentGameQuery,
+  GameFragment,
+  PlayerFragment,
+  RoundFragment,
 } from '../../../../graphql/queries';
 import { BehaviorSubject, map } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import type { ExtractDataType } from '../../entities/utils.entities';
 import { Roles, type GameRoundActionInput } from '../../../../graphql/types';
-
-type CurrentGame = ExtractDataType<CreateGameMutation['createGame']>;
-type CurrentRound = ExtractDataType<CreateRoundMutation['createRound']>;
 
 @Injectable({ providedIn: 'root' })
 export class GameService {
   apollo = inject(Apollo);
   toastr = inject(ToastrService);
-  ordered = [
-    Roles.Guard,
-    Roles.Werewolf,
-    Roles.Seer,
-    Roles.Witch,
-    Roles.Hunter,
-  ];
+  ordered = {
+    [Roles.Guard]: 0,
+    [Roles.Werewolf]: 1,
+    [Roles.Seer]: 2,
+    [Roles.Witch]: 3,
+    [Roles.Hunter]: 4,
+  };
 
-  set currentGame(v: CurrentGame | null) {
+  get players() {
+    return this.players$.value;
+  }
+  set players(v: PlayerFragment[]) {
+    this.players$.next(v);
+  }
+  players$ = new BehaviorSubject<PlayerFragment[]>([]);
+
+  //====================================
+
+  set currentGame(v: GameFragment | null) {
     this.currentGame$.next(v);
   }
   get currentGame() {
     return this.currentGame$.value;
   }
-  currentGame$ = new BehaviorSubject<null | CurrentGame>(null);
+  currentGame$ = new BehaviorSubject<null | GameFragment>(null);
 
-  set currentRound(v: CurrentRound | null) {
+  //====================================
+
+  set currentRound(v: RoundFragment | null) {
     this.currentRound$.next(v);
   }
   get currentRound() {
     return this.currentRound$.value;
   }
-  currentRound$ = new BehaviorSubject<null | CurrentRound>(null);
+  currentRound$ = new BehaviorSubject<null | RoundFragment>(null);
 
-  set actions(v: { type: Roles }[]) {
-    this.actions$.next(v);
-  }
-  get actions() {
-    return this.actions$.value;
-  }
-  actions$ = new BehaviorSubject<{ type: Roles }[]>([]);
+  //====================================
 
-  get lastAction() {
-    return this.actions[this.actions.length - 1];
+  set currentAction(v: ActionFragment | null) {
+    this.currentAction$.next(v);
   }
   get currentAction() {
-    if (!this.lastAction) {
-      return this.ordered[0];
-    } else {
-      const index = this.ordered.findIndex((o) => o === this.lastAction.type);
-      return this.ordered[index];
+    return this.currentAction$.value;
+  }
+  currentAction$ = new BehaviorSubject<null | ActionFragment>(null);
+
+  //====================================
+
+  get currentTurn() {
+    if (!this.currentAction) {
+      return {
+        turnOf: Roles.Guard,
+        ability: this.currentGame?.abilities.find((o) => o.ability.roleId),
+      };
     }
   }
 
-  get nextAction() {
-    if (!this.lastAction) {
-      return this.ordered[1];
-    } else {
-      const index = this.ordered.findIndex((o) => o === this.lastAction.type);
-      return this.ordered[index + 1];
-    }
-  }
+  //====================================
 
   getCurrentGame$ = this.apollo
     .query<CurrentGameQuery>({
@@ -88,10 +94,9 @@ export class GameService {
       map(({ data }) => {
         if (data.currentGame?.__typename === 'GameModel_Single') {
           this.currentGame = data.currentGame.data || null;
-          this.currentRound =
-            data.currentGame.data.rounds[
-              data.currentGame.data.rounds.length - 1
-            ] || null;
+          this.currentRound = this.currentGame.rounds.slice(-1)[0];
+          this.currentAction = this.currentRound.actions.slice(-1)[0];
+          this.players = this.currentGame.players;
         } else {
           this.currentGame = null;
         }
@@ -112,6 +117,8 @@ export class GameService {
           if (data?.createGame.__typename === 'GameModel_Mutation') {
             this.toastr.success(data.createGame.message);
             this.currentGame = data.createGame.data;
+            this.currentRound = this.currentGame.rounds.slice(-1)[0];
+            this.currentAction = this.currentRound.actions.slice(-1)[0];
             return true;
           } else {
             this.toastr.error(data?.createGame.message || 'Unknown Error');
@@ -134,6 +141,7 @@ export class GameService {
           if (data?.createRound.__typename === 'GameRoundModel_Mutation') {
             this.toastr.success(data.createRound.message);
             this.currentRound = data.createRound.data;
+            this.currentAction = this.currentRound.actions.slice(-1)[0];
             return true;
           } else {
             this.toastr.error(data?.createRound.message || 'Unknown Error');
@@ -144,12 +152,26 @@ export class GameService {
   }
 
   createAction$(input: GameRoundActionInput) {
-    return this.apollo.mutate<
-      CreateGameRoundActionMutation,
-      CreateGameRoundActionMutationVariables
-    >({
-      mutation: CREATE_ACTION,
-      variables: { input },
-    });
+    return this.apollo
+      .mutate<
+        CreateGameRoundActionMutation,
+        CreateGameRoundActionMutationVariables
+      >({
+        mutation: CREATE_ACTION,
+        variables: { input },
+      })
+      .pipe(
+        map(({ data }) => {
+          if (
+            data?.createGameRoundAction.__typename ===
+            'GameRoundActionModel_Mutation'
+          ) {
+            this.toastr.success(data.createGameRoundAction.message);
+            this.currentAction = data.createGameRoundAction.data;
+          } else {
+            this.toastr.error(data?.createGameRoundAction.message);
+          }
+        })
+      );
   }
 }

@@ -99,9 +99,9 @@ input GameRoundActionInput {
 }
 
 type GameRoundActionModel {
-  booleanResult: Boolean!
+  booleanResult: Boolean
   id: ID!
-  statusResult: GamePlayerStatus!
+  statusResult: GamePlayerStatus
   target: GamePlayerModel!
   turnOf: Roles!
 }
@@ -113,7 +113,7 @@ type GameRoundActionModel_Mutation implements BaseResponse {
 }
 
 type GameRoundModel {
-  actions: GameRoundActionModel!
+  actions: [GameRoundActionModel!]!
   id: ID!
   sequence: Float!
   time: GameRoundTime!
