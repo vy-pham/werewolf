@@ -5,7 +5,6 @@ import { ModalComponent } from '../shared/components/modal/modal.component';
 import { RoleService } from '../shared/services/role/role.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { InputComponent } from '../shared/components/input/input.component';
-import { GetRoleNamePipe } from '../shared/pipes/get-role-name.pipe';
 import { RoomService } from '../shared/services/room/room.service';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -13,7 +12,6 @@ import { RoomType } from '../../graphql/types';
 
 @Component({
   selector: 'app-home',
-  standalone: true,
   imports: [
     ButtonComponent,
     CommonModule,
@@ -21,9 +19,9 @@ import { RoomType } from '../../graphql/types';
     ReactiveFormsModule,
     FormsModule,
     InputComponent,
-    GetRoleNamePipe,
   ],
   templateUrl: './home.component.html',
+  standalone: true,
 })
 export class HomeComponent {
   roomService = inject(RoomService);
@@ -42,20 +40,18 @@ export class HomeComponent {
     this.isShowModal = !this.isShowModal;
   }
   createRoom() {
-    const { name, rolesConfig, werewolfQuantity } =
-      this.roomService.form.getRawValue();
+    const { name, werewolfQuantity } = this.roomService.form.getRawValue();
+
     if (this.roomService.form.valid && name && werewolfQuantity) {
       this.roomService
         .createRoom$({
           name,
-          rolesConfig: rolesConfig
-            .filter((o) => o.checked)
-            .map((o) => o.roleId),
           type: RoomType.Support,
           werewolfQuantity,
         })
         .subscribe((succeed) => {
           if (succeed) {
+            console.log({ succeed });
             this.router.navigateByUrl('/lobby');
           }
         });

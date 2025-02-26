@@ -2,22 +2,22 @@ import { Component, inject } from '@angular/core';
 import { HeaderService } from './header.service';
 import { ButtonComponent } from '../button/button.component';
 import { ModalComponent } from '../modal/modal.component';
-import { InputComponent } from '../input/input.component';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { InputComponent } from '../input/input.component';
 
 @Component({
   imports: [
     ButtonComponent,
     ModalComponent,
-    InputComponent,
     CommonModule,
     ReactiveFormsModule,
+    InputComponent,
   ],
   providers: [HeaderService],
   selector: 'app-header',
-  standalone: true,
   templateUrl: './header.component.html',
+  standalone: true,
 })
 export class HeaderComponent {
   headerService = inject(HeaderService);

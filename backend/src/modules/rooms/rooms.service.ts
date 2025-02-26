@@ -28,12 +28,7 @@ export class RoomService {
     return results;
   }
 
-  async createRoom({
-    name,
-    rolesConfig,
-    type,
-    werewolfQuantity,
-  }: CreateRoomInput) {
+  async createRoom({ name, type, werewolfQuantity }: CreateRoomInput) {
     const user = await this.prisma.user.findUnique({
       where: { id: this.user.id },
     });
@@ -78,13 +73,6 @@ export class RoomService {
             ],
           },
         },
-        rolesConfig: {
-          createMany: {
-            data: rolesConfig.map((o) => ({
-              roleId: Number(o),
-            })),
-          },
-        },
       },
       include: {
         players: {
@@ -103,12 +91,7 @@ export class RoomService {
     return room;
   }
 
-  async updateRoom({
-    id,
-    rolesConfig,
-    name,
-    werewolfQuantity,
-  }: UpdateRoomInput) {
+  async updateRoom({ id, name, werewolfQuantity }: UpdateRoomInput) {
     const user = await this.prisma.user.findUnique({
       where: { id: this.user.id },
     });
@@ -147,14 +130,6 @@ export class RoomService {
       {
         name,
         werewolfQuantity,
-        rolesConfig: {
-          deleteMany: { roomId: Number(id) },
-          createMany: {
-            data: rolesConfig.map((o) => ({
-              roleId: Number(o),
-            })),
-          },
-        },
       },
     );
     return room;

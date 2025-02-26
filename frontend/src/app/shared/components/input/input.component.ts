@@ -8,18 +8,17 @@ import {
   SkipSelf,
   type OnInit,
 } from '@angular/core';
-import {
-  NG_VALUE_ACCESSOR,
-  ReactiveFormsModule,
-  ControlContainer,
-  type ControlValueAccessor,
-  type AbstractControl,
-} from '@angular/forms';
 import { ClassNamePipe } from '../../pipes/class-name.pipe';
+import {
+  ReactiveFormsModule,
+  NG_VALUE_ACCESSOR,
+  ControlValueAccessor,
+  AbstractControl,
+  ControlContainer,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-input',
-  standalone: true,
   imports: [ReactiveFormsModule, CommonModule, ClassNamePipe],
   providers: [
     {
@@ -29,6 +28,7 @@ import { ClassNamePipe } from '../../pipes/class-name.pipe';
     },
   ],
   templateUrl: './input.component.html',
+  standalone: true,
 })
 export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() label: string = '';

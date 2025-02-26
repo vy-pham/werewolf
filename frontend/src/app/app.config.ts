@@ -24,13 +24,21 @@ export const appConfig: ApplicationConfig = {
     provideApollo(() => {
       const httpLink = inject(HttpLink);
       const authLink = setContext((_, { headers }) => {
-        const token = JSON.parse(localStorage.getItem('token') as string);
+        const store = localStorage.getItem('token');
+        let token: string | null = null;
+        if (store) {
+          token = JSON.parse(store);
+        }
 
-        return {
-          headers: {
+        if (token) {
+          headers = {
             ...headers,
             authorization: token ? `Bearer ${token}` : '',
-          },
+          };
+        }
+
+        return {
+          headers: headers,
         };
       });
 

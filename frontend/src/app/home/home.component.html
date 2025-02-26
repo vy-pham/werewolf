@@ -11,7 +11,7 @@
       formControlName="name"
       errorMessage="Name is required"
     />
-    <div class="grid grid-cols-3 gap-x-4" formArrayName="rolesConfig">
+    <!-- <div class="grid grid-cols-3 gap-x-4" formArrayName="rolesConfig">
       <div
         *ngFor="
           let roleGroup of roomService.form.controls.rolesConfig.controls;
@@ -23,7 +23,7 @@
           <label [for]="i">{{ roleGroup.value.roleId | getRoleName }}</label>
         </div>
       </div>
-    </div>
+    </div> -->
     <app-button (click)="createRoom()"> Create room</app-button>
   </app-modal>
   <h1 class="w-full text-center text-4xl font-bold mt-4">Roles</h1>

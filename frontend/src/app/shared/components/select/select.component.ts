@@ -17,7 +17,6 @@ import { ClassNamePipe } from '../../pipes/class-name.pipe';
 
 @Component({
   selector: 'app-select',
-  standalone: true,
   imports: [ReactiveFormsModule, CommonModule, ClassNamePipe],
   providers: [
     {
@@ -27,6 +26,7 @@ import { ClassNamePipe } from '../../pipes/class-name.pipe';
     },
   ],
   templateUrl: './select.component.html',
+  standalone: true,
 })
 export class SelectComponent implements ControlValueAccessor {
   @Input() options: { label: string; value: string }[] = [];

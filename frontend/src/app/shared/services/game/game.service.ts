@@ -82,6 +82,7 @@ export class GameService {
         ability: this.currentGame?.abilities.find((o) => o.ability.roleId),
       };
     }
+    return null;
   }
 
   //====================================

@@ -45,7 +45,7 @@
         type="number"
       />
     </div>
-    <div formArrayName="rolesConfig" class="grid grid-cols-3 gap-4 mt-4">
+    <!-- <div formArrayName="rolesConfig" class="grid grid-cols-3 gap-4 mt-4">
       <div
         *ngFor="
           let roleGroup of roomService.form.controls.rolesConfig.controls;
@@ -57,7 +57,7 @@
           <label [for]="i">{{ roleGroup.value.roleId | getRoleName }}</label>
         </div>
       </div>
-    </div>
+    </div> -->
     <app-button (click)="onUpdate()">Update</app-button>
     <app-button (click)="startGame()">Game Start</app-button>
   </div>

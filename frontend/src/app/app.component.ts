@@ -7,10 +7,10 @@ import { RoleService } from './shared/services/role/role.service';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [RouterOutlet, HeaderComponent],
   providers: [],
   templateUrl: './app.component.html',
+  standalone: true,
 })
 export class AppComponent {
   storageService = inject(StorageService);

@@ -9,10 +9,9 @@ import { BehaviorSubject } from 'rxjs';
 import { ClassNamePipe } from '../shared/pipes/class-name.pipe';
 
 @Component({
-  selector: 'app-game',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, ClassNamePipe],
-  templateUrl: './game.component.html',
+    selector: 'app-game',
+    imports: [CommonModule, ReactiveFormsModule, ButtonComponent, ClassNamePipe],
+    templateUrl: './game.component.html'
 })
 export class GameComponent {
   router = inject(Router);

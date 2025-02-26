@@ -26,7 +26,6 @@ export type CreateGameInput = {
 
 export type CreateRoomInput = {
   name: Scalars['String']['input'];
-  rolesConfig: Array<Scalars['ID']['input']>;
   type: RoomType;
   werewolfQuantity: Scalars['Float']['input'];
 };
@@ -483,7 +482,6 @@ export type UpdateManyRoomPlayer = {
 export type UpdateRoomInput = {
   id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
-  rolesConfig: Array<Scalars['ID']['input']>;
   werewolfQuantity: Scalars['Float']['input'];
 };
 

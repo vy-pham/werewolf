@@ -4,10 +4,10 @@ import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-modal',
-  standalone: true,
   imports: [CommonModule, ButtonComponent],
   templateUrl: './modal.component.html',
-  styleUrl: './modal.component.scss'
+  styleUrl: './modal.component.scss',
+  standalone: true,
 })
 export class ModalComponent {
   @Input() isShow?: boolean = true;

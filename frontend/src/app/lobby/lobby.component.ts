@@ -18,7 +18,6 @@ import { SelectComponent } from '../shared/components/select/select.component';
 
 @Component({
   selector: 'app-lobby',
-  standalone: true,
   imports: [
     CommonModule,
     ButtonComponent,
@@ -29,6 +28,7 @@ import { SelectComponent } from '../shared/components/select/select.component';
   ],
   providers: [RoomService],
   templateUrl: './lobby.component.html',
+  standalone: true,
 })
 export class LobbyComponent {
   formBuilder = new FormBuilder().nonNullable;
@@ -103,21 +103,17 @@ export class LobbyComponent {
   }
 
   onUpdate() {
-    const { rolesConfig, name, werewolfQuantity } = this.roomService.form.value;
+    const { name, werewolfQuantity } = this.roomService.form.value;
     if (
       this.roomService.form.valid &&
       this.roomService.currentRoom &&
       werewolfQuantity &&
-      rolesConfig &&
       name
     ) {
       this.roomService
         .updateRoom$({
           id: this.roomService.currentRoom.id,
           name,
-          rolesConfig: rolesConfig
-            .filter((o) => o.checked)
-            .map((o) => o.roleId!),
           werewolfQuantity,
         })
         .subscribe();

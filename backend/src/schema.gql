@@ -13,7 +13,6 @@ input CreateGameInput {
 
 input CreateRoomInput {
   name: String!
-  rolesConfig: [ID!]!
   type: RoomType!
   werewolfQuantity: Float!
 }
@@ -392,7 +391,6 @@ input UpdateManyRoomPlayer {
 input UpdateRoomInput {
   id: ID!
   name: String!
-  rolesConfig: [ID!]!
   werewolfQuantity: Float!
 }
 
