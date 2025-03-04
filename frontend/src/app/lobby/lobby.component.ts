@@ -10,11 +10,11 @@ import {
   type FormControl,
   type FormGroup,
 } from '@angular/forms';
-import { GetRoleNamePipe } from '../shared/pipes/get-role-name.pipe';
-import { RoomType } from '../../graphql/types';
+import { GameStatus, RoomType } from '../../graphql/types';
 import { map, switchMap } from 'rxjs';
 import { GameService } from '../shared/services/game/game.service';
 import { SelectComponent } from '../shared/components/select/select.component';
+import { RoleService } from '../shared/services/role/role.service';
 
 @Component({
   selector: 'app-lobby',
@@ -24,7 +24,6 @@ import { SelectComponent } from '../shared/components/select/select.component';
     InputComponent,
     SelectComponent,
     ReactiveFormsModule,
-    GetRoleNamePipe,
   ],
   providers: [RoomService],
   templateUrl: './lobby.component.html',
@@ -35,7 +34,9 @@ export class LobbyComponent {
   roomService = inject(RoomService);
   router = inject(Router);
   gameService = inject(GameService);
+  roleService = inject(RoleService);
   roomType = RoomType;
+  gameStatus = GameStatus;
   tempPlayers = this.formBuilder.array<
     FormGroup<{
       virtual: FormControl<string>;
@@ -49,11 +50,11 @@ export class LobbyComponent {
     })
   );
 
-  roles$ = this.roomService.currentRoom$.pipe(
-    map((room) =>
-      room?.rolesConfig.map((roleConfig) => ({
-        label: roleConfig.role.name,
-        value: roleConfig.role.id,
+  roles$ = this.roleService.roles$.pipe(
+    map((roles) =>
+      roles.map((role) => ({
+        label: role.name,
+        value: role.id,
       }))
     )
   );
@@ -61,7 +62,8 @@ export class LobbyComponent {
   ngOnInit() {
     if (!this.roomService.currentRoom) {
       this.roomService.getCurrentRoom$.subscribe((result) => {
-        if (!result) this.router.navigateByUrl('/');
+        if (!result) return this.router.navigateByUrl('/');
+        return this.gameService.getCurrentGame$.subscribe();
       });
     }
     this.virtualPlayers$.subscribe((players) => {

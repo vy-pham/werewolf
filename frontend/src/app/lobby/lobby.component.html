@@ -58,7 +58,17 @@
         </div>
       </div>
     </div> -->
-    <app-button (click)="onUpdate()">Update</app-button>
-    <app-button (click)="startGame()">Game Start</app-button>
+    <ng-container
+      *ngIf="
+        gameService.currentGame?.status === gameStatus.Playing;
+        else waiting
+      "
+    >
+      <h1>Current Round : {{ gameService.currentRound?.time }}</h1>
+    </ng-container>
+    <ng-template #waiting>
+      <app-button (click)="onUpdate()">Update</app-button>
+      <app-button (click)="startGame()">Game Start</app-button>
+    </ng-template>
   </div>
 </main>

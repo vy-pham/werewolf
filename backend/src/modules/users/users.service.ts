@@ -38,7 +38,6 @@ export class UserService {
 
   async createUser({ username, password }: CreateUserInput) {
     await this.prisma.user.exists({ username }, { throwCase: 'IF_EXISTS' });
-
     const data = await this.prisma.user.create({
       data: {
         username,

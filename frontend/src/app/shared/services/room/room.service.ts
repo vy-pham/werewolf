@@ -100,6 +100,7 @@ export class RoomService {
       map(({ data }) => {
         if (data.currentRoom?.__typename === 'RoomModel_Single') {
           this.currentRoom = data.currentRoom.data || null;
+          console.log(this.currentRoom);
         } else {
           this.currentRoom = null;
         }
@@ -120,6 +121,7 @@ export class RoomService {
           if (data?.createRoom.__typename === 'RoomModel_Mutation') {
             this.toastr.success(data.createRoom.message);
             this.currentRoom = data.createRoom.data;
+
             return true;
           } else {
             this.toastr.error(data?.createRoom.message || 'Unknown Error');

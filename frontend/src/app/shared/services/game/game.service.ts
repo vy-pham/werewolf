@@ -21,19 +21,12 @@ import type {
 } from '../../../../graphql/queries';
 import { BehaviorSubject, map } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { Roles, type GameRoundActionInput } from '../../../../graphql/types';
+import { type GameRoundActionInput } from '../../../../graphql/types';
 
 @Injectable({ providedIn: 'root' })
 export class GameService {
   apollo = inject(Apollo);
   toastr = inject(ToastrService);
-  ordered = {
-    [Roles.Guard]: 0,
-    [Roles.Werewolf]: 1,
-    [Roles.Seer]: 2,
-    [Roles.Witch]: 3,
-    [Roles.Hunter]: 4,
-  };
 
   get players() {
     return this.players$.value;
@@ -75,16 +68,6 @@ export class GameService {
 
   //====================================
 
-  get currentTurn() {
-    if (!this.currentAction) {
-      return {
-        turnOf: Roles.Guard,
-        ability: this.currentGame?.abilities.find((o) => o.ability.roleId),
-      };
-    }
-    return null;
-  }
-
   //====================================
 
   getCurrentGame$ = this.apollo
@@ -96,7 +79,9 @@ export class GameService {
         if (data.currentGame?.__typename === 'GameModel_Single') {
           this.currentGame = data.currentGame.data || null;
           this.currentRound = this.currentGame.rounds.slice(-1)[0];
-          this.currentAction = this.currentRound.actions.slice(-1)[0];
+          if (this.currentRound) {
+            this.currentAction = this.currentRound.actions.slice(-1)[0];
+          }
           this.players = this.currentGame.players;
         } else {
           this.currentGame = null;
@@ -119,7 +104,9 @@ export class GameService {
             this.toastr.success(data.createGame.message);
             this.currentGame = data.createGame.data;
             this.currentRound = this.currentGame.rounds.slice(-1)[0];
-            this.currentAction = this.currentRound.actions.slice(-1)[0];
+            if (this.currentRound) {
+              this.currentAction = this.currentRound.actions.slice(-1)[0];
+            }
             return true;
           } else {
             this.toastr.error(data?.createGame.message || 'Unknown Error');

@@ -41,14 +41,12 @@ export class GameService {
       where: { roomId: room.id, virtual: { not: null } },
     });
 
-    const roomRoles = await this.prismaService.roomRole.findMany({
-      where: { roomId },
+    const roleIds = roomPlayers.map((o) => o.roleId);
+
+    const roomRoles = await this.prismaService.role.findMany({
+      where: { id: { in: roleIds } },
       include: {
-        role: {
-          include: {
-            abilities: true,
-          },
-        },
+        abilities: true,
       },
     });
 
@@ -71,7 +69,7 @@ export class GameService {
           createMany: {
             data: roomRoles
               .map((roomRole) => {
-                return roomRole.role.abilities.map((ability) => {
+                return roomRole.abilities.map((ability) => {
                   return {
                     abilityId: ability.id,
                     totalUses: ability.totalUses,
