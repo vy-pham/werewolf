@@ -433,26 +433,31 @@ apps/web/src/
 
 ## 9. Mobile — `apps/mobile`
 
-| Mảng             | Lựa chọn                                                                                                                                                        |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework        | **Expo** (SDK mới nhất) + **Expo Router** (file-based)                                                                                                          |
-| Build            | **EAS Build** + **Expo Dev Client** (bắt buộc vì LiveKit/WebRTC là native module); EAS Update cho OTA                                                           |
-| Styling          | **NativeWind** (Tailwind cho RN) → dùng chung design token với web                                                                                              |
-| State/Realtime   | Zustand, TanStack Query, socket.io-client: **cùng pattern và hook logic với web**                                                                               |
-| Voice            | `@livekit/react-native` + expo plugin; xử lý audio session (loa ngoài, tai nghe, Bluetooth)                                                                     |
-| Lưu token        | `expo-secure-store`                                                                                                                                             |
-| Đăng nhập Google | `@react-native-google-signin/google-signin` (native, chạy với Dev Client), lấy ID token rồi gửi lên `POST /auth/google`                                         |
-| i18n             | i18next + `expo-localization`: lựa chọn đã lưu → `getLocales()` (languageCode `vi` hoặc regionCode `VN` thì dùng `vi`) → `en`                                   |
-| Khác             | `expo-haptics` (rung khi tới lượt), `expo-notifications`, `expo-keep-awake` (không tắt màn hình khi đang chơi), `expo-linking` (deep link `werewolf://r/:code`) |
+| Mảng         | Lựa chọn (đã cài đặt ở M5)                                                                                                                               |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework    | **Expo SDK 58** + **Expo Router** (`src/app/index.tsx`, `src/app/r/[code].tsx`)                                                                          |
+| Build        | **EAS Build**: profile `development` (dev client, APK), `preview`, `production` trong `eas.json`. **Không chạy trên Expo Go** (LiveKit là module native) |
+| Styling      | `StyleSheet` + palette trong `src/components/theme.ts` (cùng màu với web). NativeWind để sau nếu thật sự cần                                             |
+| Logic client | **`packages/client-core`** (dùng chung với web): session, REST có refresh token, Socket.IO, game store, voice manager, helper UI                         |
+| Voice        | `livekit-client` + `@livekit/react-native` (`registerGlobals`, `AudioSession`) + expo plugins, trong `src/lib/voice-platform.native.ts`                  |
+| Lưu token    | `expo-secure-store` (bản web export dùng localStorage)                                                                                                   |
+| Đăng nhập    | Khách. Google trên mobile cần OAuth client ID Android/iOS (chưa làm)                                                                                     |
+| i18n         | i18next + `expo-localization`; lựa chọn lưu trong SecureStore                                                                                            |
+| Khác         | `expo-haptics` (rung khi tới lượt), `expo-keep-awake` (chỉ native), `Share` / `expo-clipboard` (mời bạn), deep link `werewolf://r/CODE`                  |
 
-Chia sẻ code: logic không phụ thuộc UI (store, socket client, hook xử lý event, format) đặt ở `packages/shared` hoặc viết giống nhau trong `features/*`. **Không chia sẻ component UI** giữa web và RN để tránh phức tạp. Nếu sau này thấy trùng nhiều mới cân nhắc tách `packages/client-core`.
+Chia sẻ code: **mọi logic không phụ thuộc UI nằm ở `packages/client-core`**. Mỗi app chỉ có `lib/client.ts` để nối phần riêng của nền tảng: chỗ lưu token, cách phát âm thanh, URL API. Component UI **không** dùng chung, vì web dùng DOM + Tailwind còn mobile dùng React Native.
+
+Kiểm thử mobile:
+
+- App mobile export ra web được (react-native-web). Test Playwright `e2e/mobile-web.spec.ts` cho host dùng app mobile và 5 người chơi web cùng chơi hết một trận (`pnpm --filter @werewolf/web e2e:mobile`). Phần UI dùng `testID` có mã hóa trạng thái, ví dụ `action-panel-WOLF_VOTE-open`.
+- Voice native chỉ kiểm tra được trên thiết bị thật hoặc emulator, bằng bản dev build từ EAS.
 
 ## 10. Hạ tầng & môi trường
 
 `infra/docker-compose.yml` cho dev:
 
 - `mongo` (replica set `rs0`, 1 node) — port 27017
-- `livekit` (`livekit/livekit-server --dev`) — 7880 (HTTP/WS), 7881 (TCP), UDP 50000-50100
+- `livekit` (`livekit/livekit-server --dev`) — 7880 (HTTP/WS), 7881 (TCP), 7882 (UDP). `--node-ip` mặc định `127.0.0.1`; khi thử bằng điện thoại thì đặt `LIVEKIT_NODE_IP=<IP LAN của máy>`
 - (Release 2) `captions` — build từ `apps/captions`
 
 ENV chính của server: `MONGO_URI`, `JWT_SECRET`, `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `CAPTIONS_INTERNAL_SECRET`, `CORS_ORIGINS`.

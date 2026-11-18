@@ -1,3 +1,4 @@
+import { countVotes } from '@werewolf/client-core';
 import type { PlayerView } from '@werewolf/shared';
 import { useTranslation } from 'react-i18next';
 import { Badge, cn } from '../../components/ui';
@@ -10,14 +11,6 @@ interface Props {
   selectedId: string | null;
   onSelect: (id: string) => void;
 }
-
-const countVotes = (votes: Record<string, string | null> | null) => {
-  const counts: Record<string, number> = {};
-  for (const target of Object.values(votes ?? {})) {
-    if (target) counts[target] = (counts[target] ?? 0) + 1;
-  }
-  return counts;
-};
 
 export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
   const { t } = useTranslation();

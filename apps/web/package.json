@@ -10,12 +10,14 @@
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:mobile": "playwright test -c playwright.mobile.config.ts"
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
     "@tanstack/react-query": "^5.108.0",
     "@tanstack/react-router": "^1.170.46",
+    "@werewolf/client-core": "workspace:*",
     "@werewolf/game-engine": "workspace:*",
     "@werewolf/i18n": "workspace:*",
     "@werewolf/shared": "workspace:*",

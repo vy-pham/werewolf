@@ -1,3 +1,4 @@
+import { phaseStepKey, targetable } from '@werewolf/client-core';
 import type { PlayerView, RoomRules } from '@werewolf/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,32 +10,6 @@ import { EventLog } from './EventLog';
 import { useNames } from './names';
 import { PhaseHeader } from './PhaseHeader';
 import { PlayerGrid } from './PlayerGrid';
-
-/**
- * Client-side hint of who can be targeted, so obviously invalid cards are disabled.
- * The engine on the server is the authority and rejects anything else.
- */
-function targetable(view: PlayerView, rules: RoomRules | undefined, id: string): boolean {
-  const me = view.me;
-  const action = me?.pendingAction;
-  if (!me || !action || action === 'END_TURN') return false;
-  if (me.submitted && action !== 'WOLF_VOTE' && action !== 'DAY_VOTE') return false;
-  const target = view.players.find((p) => p.id === id);
-  if (!target?.alive) return false;
-  const self = id === me.id;
-  switch (action) {
-    case 'WOLF_VOTE':
-      return target.role !== 'werewolf';
-    case 'GUARD_PROTECT':
-      return (!self || rules?.guardCanSelfProtect !== false) && id !== me.guardLastTargetId;
-    case 'DAY_VOTE':
-      return !self && (!view.candidates || view.candidates.includes(id));
-    case 'WITCH_ACT':
-      return !self && !me.witch?.poisonUsed;
-    default:
-      return !self;
-  }
-}
 
 export function GameScreen({
   gameId,
@@ -48,7 +23,7 @@ export function GameScreen({
   const { t } = useTranslation();
   const name = useNames();
   // A selection belongs to one phase step; a new phase or step starts with nothing selected.
-  const phaseKey = `${view.round}-${view.phase.name}-${view.phase.step}-${view.phase.revote}`;
+  const phaseKey = phaseStepKey(view);
   const [selection, setSelection] = useState<{ key: string; id: string | null }>({
     key: phaseKey,
     id: null,

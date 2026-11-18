@@ -1,0 +1,20 @@
+{
+  "name": "@werewolf/client-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@werewolf/shared": "workspace:*",
+    "i18next": "^27.1.5",
+    "livekit-client": "^2.24.1",
+    "socket.io-client": "^4.8.4",
+    "zustand": "^5.1.0"
+  }
+}

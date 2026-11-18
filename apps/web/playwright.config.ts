@@ -6,6 +6,8 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  // The cross-client test needs the Expo web export: see playwright.mobile.config.ts.
+  testIgnore: 'mobile-web.spec.ts',
   fullyParallel: false,
   workers: 1,
   timeout: 300_000,

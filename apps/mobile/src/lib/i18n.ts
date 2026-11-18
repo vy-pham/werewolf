@@ -3,19 +3,26 @@ import { type Locale, resolveLocale } from '@werewolf/shared';
 import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { appStorage } from './storage';
 
-// TODO(M5): persist the user's choice (expo-secure-store / profile) and pass it as `saved`.
-const initial = resolveLocale(null, getLocales());
+const STORAGE_KEY = 'werewolf-locale';
 
+// Start with the device language, then switch to the saved choice once storage has answered.
 void i18n.use(initReactI18next).init({
   resources,
-  lng: initial,
+  lng: resolveLocale(null, getLocales()),
   fallbackLng: 'en',
   interpolation: { escapeValue: false },
 });
 
+void Promise.resolve(appStorage.getItem(STORAGE_KEY)).then((saved) => {
+  const locale = resolveLocale(saved, getLocales());
+  if (locale !== i18n.language) void i18n.changeLanguage(locale);
+});
+
 export function setLocale(locale: Locale) {
   void i18n.changeLanguage(locale);
+  void Promise.resolve(appStorage.setItem(STORAGE_KEY, locale)).catch(() => undefined);
 }
 
 export { i18n };
