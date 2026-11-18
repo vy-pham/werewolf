@@ -76,7 +76,7 @@ MVP roles: villager, werewolf, seer, guard, witch, hunter. Village wins when all
 
 ## Common commands
 
-`pnpm infra:up` (docker services) · `pnpm dev` (server + web) · `pnpm dev:mobile` · `pnpm test` · `pnpm typecheck` · `pnpm lint` (Biome) · `pnpm format`
+`pnpm dev:local` (server on an in-memory MongoDB + web, **no Docker**) · `pnpm infra:up` + `pnpm dev` (with Docker / a real Mongo) · `pnpm dev:mobile` · `pnpm test` · `pnpm typecheck` · `pnpm lint` (Biome) · `pnpm format` · `pnpm --filter @werewolf/web e2e` (Playwright: 8 browsers play a full game, about 2.5 min)
 
 ## Gotchas
 
@@ -87,12 +87,16 @@ MVP roles: villager, werewolf, seer, guard, witch, hunter. Village wins when all
 - The user's permission settings block writing `.env*` files. Server env vars are documented in `README.md`, and `apps/server/src/config/env.ts` validates them.
 - Server integration tests (`apps/server/src/test/`) use **mongodb-memory-server** (no Docker needed). The binary is downloaded once in `global-setup.ts` and cached in CI. They also use real socket.io clients (`TestClient`), a `FakeClock` + `ManualScheduler` (`scheduler.fire(gameId)` jumps to the phase end), and `rateLimit: false`.
 - With `nodeLinker: hoisted`, pnpm occasionally leaves a dependency nested (seen with `tslib`). If you hit "Cannot find module" for a declared dependency, run `pnpm install --force`.
+- **One React for the whole repo.** `react` / `react-dom` are pinned to the Expo SDK version (`overrides` in `pnpm-workspace.yaml`, exact versions in web, `react-dom` added to mobile via `expo install`). Two copies crash hooks at runtime ("Cannot read properties of null (reading 'useEffect')"). Bump them only together with the Expo SDK.
+- **Zod patch schemas:** never use `.partial()` on schemas that have `.default()`, because Zod fills in defaults and a patch silently resets other fields. Use `RoomRulesPatchSchema` / `PhaseTimersPatchSchema` (`patchOf` in shared `settings.ts`). On the server, write only the patched paths (`$set: { 'settings.timers.x': … }`), never the whole object.
+- Web: game UI is driven by `PlayerView` (`me.pendingAction`, `submitted`, `channels`). `data-testid` attributes on cards and panels are used by the Playwright bot, so keep them when refactoring.
 
 ## Current status
 
 - 2026-11-18: docs defined; **M0 done** (monorepo, tooling, CI, skeletons). The server has `/health` + Socket.IO `server:hello`. Web and mobile show a placeholder home with a language switch and server status.
 - **M1 done**: full game engine for the 6 MVP roles, with turn-based speech (94 tests, ~98% statements / 93% branches).
 - **M2 done**: guest + Google auth (JWT access + rotating refresh), `/me`, rooms (REST + socket: join/leave/ready/settings/kick/start), games over Socket.IO with the engine, `InProcessScheduler` + timer recovery on boot, `game:sync` reconnect, turn-based text chat with a 24h TTL, user stats. 22 integration tests: full game, chat, restart.
-- Not done yet: reports (P1), voice (M4), web UI (M3).
-- Next: **M3**, the web MVP (lobby, room, game screen, chat). See `docs/03-technical-design.md` §11 for all milestones.
+- **M3 done**: web MVP (guest/Google login, lobby, room with host settings, game screen with action panel per role, turn-based chat, event log, results), all text in en/vi. A Playwright e2e test has 8 browsers play a full game. Fixed along the way: duplicate React; patch defaults resetting settings; lost settings updates.
+- Not done yet: reports (P1), voice (M4), mobile UI (M5). The e2e test is not in CI yet (it needs a browser download and about 2.5 min).
+- Next: **M4**, voice with LiveKit (server tokens + permission sync from `voicePermissions`, web client). See `docs/03-technical-design.md` §11 for all milestones.
 - If code and docs disagree, ask the user which one is correct and then update the other to match.

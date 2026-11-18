@@ -11,7 +11,9 @@
   "auth": {
     "playAsGuest": "Chơi với tư cách khách",
     "signInWithGoogle": "Đăng nhập bằng Google",
-    "nickname": "Biệt danh"
+    "nickname": "Biệt danh",
+    "nicknamePlaceholder": "3–20 ký tự",
+    "signOut": "Đăng xuất"
   },
   "roles": {
     "villager": "Dân làng",
@@ -22,7 +24,170 @@
     "hunter": "Thợ săn"
   },
   "status": {
-    "serverOnline": "Máy chủ đang hoạt động",
-    "serverOffline": "Mất kết nối máy chủ"
+    "serverOnline": "Đã kết nối",
+    "serverOffline": "Mất kết nối"
+  },
+  "lobby": {
+    "joinTitle": "Vào phòng",
+    "join": "Vào",
+    "createTitle": "Tạo phòng",
+    "publicRoom": "Công khai (ai cũng thấy trong danh sách)",
+    "create": "Tạo phòng",
+    "publicRooms": "Phòng công khai",
+    "players": "{{count}}/{{max}} người",
+    "noPublicRooms": "Chưa có phòng công khai nào. Tạo một phòng nhé!"
+  },
+  "room": {
+    "code": "Mã phòng",
+    "copyLink": "Sao chép link mời",
+    "linkCopied": "Đã sao chép link mời",
+    "leave": "Rời phòng",
+    "players": "Người chơi ({{count}}/{{max}})",
+    "host": "Chủ phòng",
+    "ready": "Sẵn sàng",
+    "notReady": "Chưa sẵn sàng",
+    "kick": "Mời ra",
+    "start": "Bắt đầu",
+    "unready": "Hủy sẵn sàng",
+    "markReady": "Tôi sẵn sàng",
+    "needPlayers": "Cần ít nhất {{count}} người chơi",
+    "waitingReady": "Đang chờ mọi người sẵn sàng",
+    "backHome": "Về trang chủ"
+  },
+  "settings": {
+    "title": "Cài đặt phòng",
+    "rules": "Luật",
+    "rule": {
+      "witchCanSelfHeal": "Phù thủy được tự cứu",
+      "guardCanSelfProtect": "Bảo vệ được tự bảo vệ",
+      "noKillFirstNight": "Đêm đầu sói không được cắn",
+      "revealRoleOnDeath": "Công khai vai khi chết",
+      "revote": "Hòa phiếu thì bỏ phiếu lại (tối đa {{count}} lần)"
+    },
+    "timers": "Thời gian (giây)",
+    "timer": {
+      "speakingSeconds": "Lượt nói mỗi người",
+      "voteSeconds": "Bỏ phiếu",
+      "nightActionSeconds": "Hành động ban đêm",
+      "defenseSeconds": "Biện hộ (0 = tắt)"
+    },
+    "roles": "Bộ vai ({{count}})",
+    "customizeRoles": "Tự chỉnh",
+    "usePreset": "Dùng bộ gợi ý",
+    "presetHint": "Khi bắt đầu, bộ vai gợi ý theo số người chơi sẽ được dùng."
+  },
+  "phase": {
+    "LOBBY": "Sảnh chờ",
+    "ROLE_REVEAL": "Xem vai của bạn",
+    "NIGHT_1": "Ban đêm — sói, bảo vệ và tiên tri thức dậy",
+    "NIGHT_2": "Ban đêm — phù thủy thức dậy",
+    "DAWN": "Bình minh",
+    "HUNTER_SHOT": "Thợ săn ngắm bắn",
+    "DISCUSSION": "Thảo luận",
+    "VOTE": "Bỏ phiếu",
+    "DEFENSE": "Lời biện hộ",
+    "EXECUTION": "Xử tử",
+    "GAME_OVER": "Kết thúc"
+  },
+  "game": {
+    "round": "Vòng {{count}}",
+    "speaking": "{{name}} đang nói ({{turn}}/{{total}})",
+    "revote": "Bỏ phiếu lại lần {{count}} — chỉ những người đang hòa",
+    "accused": "Bị đưa lên: {{name}}",
+    "hunterShooting": "{{name}} đang chọn người để bắn",
+    "yourRole": "Vai của bạn",
+    "youAreDead": "Bạn đã chết",
+    "you": "bạn",
+    "speakingNow": "Đang nói",
+    "dead": "Đã chết",
+    "onTrial": "Bị đưa lên",
+    "votes": "{{count}} phiếu",
+    "seerResults": "Những gì bạn đã soi"
+  },
+  "action": {
+    "waiting": "Chưa đến lượt bạn. Hãy chờ.",
+    "deadSpectator": "Bạn đã chết. Bạn vẫn có thể nói chuyện với những người chết khác.",
+    "done": "Xong. Đang chờ người khác…",
+    "selected": "Đã chọn: {{name}}",
+    "pickTarget": "Chạm vào một người chơi để chọn.",
+    "changeHint": "Đã ghi nhận phiếu. Bạn vẫn có thể đổi.",
+    "confirm": "Xác nhận",
+    "skip": "Bỏ qua",
+    "endTurn": "Tôi nói xong",
+    "witchVictim": "Đêm nay sói đã cắn {{name}}.",
+    "witchNoVictim": "Đêm nay sói không cắn ai.",
+    "witchHeal": "Dùng bình cứu",
+    "witchPoisonUsed": "Bạn đã dùng bình độc.",
+    "witchPoison": "Độc: {{name}}",
+    "witchPickPoison": "Chạm vào một người để đầu độc (không bắt buộc).",
+    "title": {
+      "WOLF_VOTE": "Chọn con mồi",
+      "GUARD_PROTECT": "Bảo vệ một người",
+      "SEER_CHECK": "Soi một người",
+      "WITCH_ACT": "Bình thuốc của bạn",
+      "DAY_VOTE": "Bỏ phiếu",
+      "HUNTER_SHOOT": "Kéo một người chết theo",
+      "END_TURN": "Đến lượt bạn nói"
+    },
+    "help": {
+      "WOLF_VOTE": "Bầy sói cắn người có nhiều phiếu sói nhất. Bạn có thể đổi lựa chọn.",
+      "GUARD_PROTECT": "Người được bảo vệ sẽ sống sót nếu bị sói cắn đêm nay. Không được bảo vệ một người hai đêm liền.",
+      "SEER_CHECK": "Bạn sẽ biết người đó có phải sói hay không.",
+      "WITCH_ACT": "Cứu nạn nhân và/hoặc đầu độc một người. Mỗi bình chỉ dùng được một lần trong cả trận.",
+      "DAY_VOTE": "Người nhiều phiếu nhất bị xử tử. Bạn có thể đổi phiếu cho tới khi hết giờ.",
+      "HUNTER_SHOOT": "Bạn sắp chết. Hãy chọn một người chết cùng bạn.",
+      "END_TURN": "Mọi người đang nghe bạn. Nói xong thì bấm nút."
+    }
+  },
+  "log": {
+    "title": "Diễn biến",
+    "roleAssigned": "Bạn là {{role}}.",
+    "died": "{{name}} đã chết.",
+    "diedWithRole": "{{name}} đã chết. Người đó là {{role}}.",
+    "noDeaths": "Đêm qua không ai chết.",
+    "seerWolf": "{{name}} là sói!",
+    "seerNotWolf": "{{name}} không phải sói.",
+    "voteExecuted": "Dân làng xử tử {{name}}.",
+    "voteRevote": "Hòa phiếu! Dân làng bỏ phiếu lại.",
+    "voteNobody": "Hôm nay không ai bị xử tử.",
+    "hunterShot": "{{hunter}} bắn {{name}}.",
+    "hunterMissed": "{{hunter}} không bắn ai.",
+    "winner": {
+      "village": "Dân làng chiến thắng!",
+      "wolves": "Bầy sói chiến thắng!"
+    }
+  },
+  "chat": {
+    "channel": {
+      "lobby": "Sảnh",
+      "main": "Làng",
+      "wolves": "Bầy sói",
+      "dead": "Nghĩa địa"
+    },
+    "placeholder": "Nói gì đó…",
+    "notYourTurn": "Chưa đến lượt bạn nói",
+    "send": "Gửi"
+  },
+  "gameOver": {
+    "youWon": "Bạn thắng!",
+    "youLost": "Bạn thua.",
+    "backToRoom": "Về phòng"
+  },
+  "errors": {
+    "UNAUTHORIZED": "Vui lòng đăng nhập lại.",
+    "FORBIDDEN": "Bạn không được phép làm việc này.",
+    "NOT_FOUND": "Không tìm thấy.",
+    "VALIDATION_FAILED": "Một số giá trị không hợp lệ.",
+    "RATE_LIMITED": "Nhanh quá — chậm lại một chút nhé.",
+    "CONFLICT": "Việc này không thể thực hiện lúc này.",
+    "ROOM_FULL": "Phòng đã đầy.",
+    "ROOM_NOT_IN_LOBBY": "Trận đấu đã bắt đầu.",
+    "NOT_HOST": "Chỉ chủ phòng mới làm được việc này.",
+    "INVALID_ROLE_SET": "Bộ vai không khớp với số người chơi.",
+    "NOT_YOUR_TURN": "Chưa đến lượt bạn.",
+    "INVALID_TARGET": "Bạn không thể chọn người này.",
+    "ABILITY_USED": "Bạn đã dùng khả năng này rồi.",
+    "PLAYER_DEAD": "Người chết không thể hành động.",
+    "INTERNAL": "Có lỗi xảy ra. Vui lòng thử lại."
   }
 }

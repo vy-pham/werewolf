@@ -9,6 +9,7 @@
     "dev": "turbo run dev --filter=@werewolf/server --filter=@werewolf/web",
     "dev:server": "turbo run dev --filter=@werewolf/server",
     "dev:web": "turbo run dev --filter=@werewolf/web",
+    "dev:local": "turbo run dev:local",
     "dev:mobile": "pnpm --filter @werewolf/mobile start",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",

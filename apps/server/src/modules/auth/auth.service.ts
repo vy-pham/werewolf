@@ -37,7 +37,7 @@ export class AuthService {
           lastSeenAt: new Date(),
         },
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     ).lean<UserDoc>();
     if (!user) throw new AppError('INTERNAL', 'Could not create user');
     return this.issue(user, userAgent);
@@ -65,7 +65,7 @@ export class AuthService {
     const user = await User.findByIdAndUpdate(
       session.userId,
       { $set: { lastSeenAt: new Date() } },
-      { new: true },
+      { returnDocument: 'after' },
     ).lean<UserDoc>();
     if (!user) throw new AppError('UNAUTHORIZED', 'User no longer exists');
     return this.issue(user, userAgent);

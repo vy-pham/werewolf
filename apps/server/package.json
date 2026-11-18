@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/main.ts",
+    "dev:local": "tsx watch src/dev-memory.ts",
     "build": "tsup",
     "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json",

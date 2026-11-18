@@ -176,7 +176,7 @@ export class RoomsService {
             members: { userId: actor.userId, displayName: actor.displayName, seat, ready: false },
           },
         },
-        { new: true },
+        { returnDocument: 'after' },
       ).lean<RoomDoc>();
       if (updated) {
         await this.broadcast(String(updated._id));
@@ -214,13 +214,31 @@ export class RoomsService {
     await this.broadcast(roomId);
   }
 
+  /**
+   * Validates the merged result, but writes ONLY the fields present in the patch. Writing the
+   * whole settings object would let concurrent updates (a host editing several fields quickly)
+   * overwrite each other.
+   */
   async updateSettings(actor: Actor, roomId: string, patch: RoomSettingsPatch): Promise<RoomView> {
     const room = await this.requireHostInLobby(actor, roomId);
-    const settings = mergeSettings(room.settings, patch);
+    const merged = mergeSettings(room.settings, patch);
+    const $set: Record<string, unknown> = {};
+    for (const key of Object.keys(patch.rules ?? {}) as (keyof RoomSettings['rules'])[]) {
+      $set[`settings.rules.${key}`] = merged.rules[key];
+    }
+    for (const key of Object.keys(patch.timers ?? {}) as (keyof RoomSettings['timers'])[]) {
+      $set[`settings.timers.${key}`] = merged.timers[key];
+    }
+    if (patch.roles) $set['settings.roles'] = merged.roles;
+    if (patch.voice !== undefined) $set['settings.voice'] = merged.voice;
+    if (patch.captions !== undefined) $set['settings.captions'] = merged.captions;
+    if (patch.autoRoles !== undefined) $set.autoRoles = patch.autoRoles;
+    else if (patch.roles) $set.autoRoles = false;
+
     const updated = await Room.findOneAndUpdate(
       { _id: room._id, status: 'lobby' },
-      { $set: { settings, autoRoles: room.autoRoles && !patch.roles } },
-      { new: true },
+      { $set },
+      { returnDocument: 'after' },
     ).lean<RoomDoc>();
     if (!updated) throw new AppError('ROOM_NOT_IN_LOBBY', 'The game has started');
     await this.broadcast(roomId);
@@ -261,7 +279,7 @@ export class RoomsService {
     const locked = await Room.findOneAndUpdate(
       { _id: room._id, status: 'lobby' },
       { $set: { status: 'in_game' } },
-      { new: true },
+      { returnDocument: 'after' },
     ).lean<RoomDoc>();
     if (!locked) throw new AppError('CONFLICT', 'The game has already started');
 

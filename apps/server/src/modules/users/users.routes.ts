@@ -17,7 +17,7 @@ export const usersRoutes: FastifyPluginAsyncZod = async (app) => {
       const user = await User.findByIdAndUpdate(
         req.user.userId,
         { $set: { ...req.body, lastSeenAt: new Date() } },
-        { new: true },
+        { returnDocument: 'after' },
       ).lean<UserDoc>();
       if (!user) throw new AppError('NOT_FOUND', 'User not found');
       return toUserView(user);

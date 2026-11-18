@@ -2,6 +2,7 @@ import { type GameCommandType, type PlayerView, ROLE_TEAM, type RoleId } from '@
 import { currentSpeaker } from './phases';
 import { clone, findPlayer, hasKey, wolvesMayKill } from './state';
 import type { GameState, PlayerState } from './types';
+import { voicePermissions } from './voice';
 
 /**
  * Whether `viewer` may know `target`'s role. Dead players do NOT see every role: a dead hunter
@@ -87,5 +88,6 @@ export function projectFor(s: GameState, viewerId: string | null): PlayerView {
     speakerOrder: s.phase.name === 'DISCUSSION' ? [...s.day.speakerOrder] : null,
     speakerId: currentSpeaker(s),
     winner: s.winner,
+    channels: voicePermissions(s, viewerId),
   };
 }

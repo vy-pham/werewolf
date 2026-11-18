@@ -2,9 +2,9 @@ import { z } from 'zod';
 import { SUPPORTED_LOCALES } from './locale';
 import type { MAX_PLAYERS } from './roles';
 import {
-  PhaseTimersSchema,
+  PhaseTimersPatchSchema,
   RoleCountsSchema,
-  RoomRulesSchema,
+  RoomRulesPatchSchema,
   type RoomSettings,
 } from './settings';
 
@@ -59,10 +59,12 @@ export const RoomCodeSchema = z
 /** Partial settings a host may send; merged into the current settings and re-validated. */
 export const RoomSettingsPatchSchema = z.object({
   roles: RoleCountsSchema.optional(),
-  rules: RoomRulesSchema.partial().optional(),
-  timers: PhaseTimersSchema.partial().optional(),
+  rules: RoomRulesPatchSchema.optional(),
+  timers: PhaseTimersPatchSchema.optional(),
   voice: z.boolean().optional(),
   captions: z.boolean().optional(),
+  /** true = use the preset for the player count at start (clears custom roles). */
+  autoRoles: z.boolean().optional(),
 });
 export type RoomSettingsPatch = z.infer<typeof RoomSettingsPatchSchema>;
 

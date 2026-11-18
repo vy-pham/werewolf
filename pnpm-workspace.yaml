@@ -4,3 +4,9 @@ packages:
 
 # Expo/Metro works best with a hoisted node_modules layout in pnpm monorepos
 nodeLinker: hoisted
+
+# One React for the whole repo, pinned to the version the Expo SDK requires (apps/mobile).
+# Two copies break hooks at runtime in the hoisted layout. Bump together with the Expo SDK.
+overrides:
+  react: 19.3.0
+  react-dom: 19.3.0

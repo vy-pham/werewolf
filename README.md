@@ -39,7 +39,8 @@ Yêu cầu: **Node ≥ 22.13** (khuyên dùng 24, xem `.nvmrc`), pnpm 10, Docker
 
 ```bash
 pnpm install
-pnpm infra:up          # Mongo (rs0) + LiveKit dev
+pnpm dev:local         # KHÔNG cần Docker: server + MongoDB trong bộ nhớ + web (:5173)
+pnpm infra:up          # (tùy chọn) Mongo (rs0) + LiveKit dev bằng Docker
 # tạo apps/server/.env theo bảng bên dưới
 pnpm dev               # server :4000 + web :5173
 pnpm dev:mobile        # Expo (Metro)
@@ -68,4 +69,5 @@ Web: `VITE_API_URL` (mặc định `http://localhost:4000`). Mobile: `EXPO_PUBLI
 - ✅ M0: monorepo, tooling, CI, khung server / web / mobile / shared / game-engine / i18n
 - ✅ M1: game engine đủ 6 vai, lọc thông tin theo người xem, quyền voice theo phase + nói theo lượt (94 test, coverage ~98%)
 - ✅ M2: backend core: đăng nhập khách + Google, phòng, game qua Socket.IO, timer có khôi phục khi restart, chat theo lượt, reconnect (22 test tích hợp)
-- ⏭️ M3: web MVP (sảnh, phòng, màn chơi, chat)
+- ✅ M3: web MVP: đăng nhập, sảnh, phòng chờ, màn chơi, chat theo lượt, kết quả; test Playwright 8 trình duyệt chơi hết một trận
+- ⏭️ M4: voice (LiveKit)

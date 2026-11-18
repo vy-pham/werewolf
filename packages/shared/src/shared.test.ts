@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { RoomSettingsPatchSchema } from './api';
 import { parseLocaleTag, resolveLocale } from './locale';
 import { defaultRoomSettings } from './settings';
 
@@ -31,5 +32,23 @@ describe('defaultRoomSettings', () => {
     });
     expect(s.timers.speakingSeconds).toBe(30);
     expect(s.voice).toBe(true);
+  });
+});
+
+describe('RoomSettingsPatchSchema', () => {
+  it('does not fill in defaults for fields the patch did not mention', () => {
+    expect(RoomSettingsPatchSchema.parse({ timers: { speakingSeconds: 10 } })).toEqual({
+      timers: { speakingSeconds: 10 },
+    });
+    expect(RoomSettingsPatchSchema.parse({ rules: { revealRoleOnDeath: true } })).toEqual({
+      rules: { revealRoleOnDeath: true },
+    });
+  });
+
+  it('still validates values and rejects unknown keys', () => {
+    expect(RoomSettingsPatchSchema.safeParse({ timers: { speakingSeconds: 1 } }).success).toBe(
+      false,
+    );
+    expect(RoomSettingsPatchSchema.safeParse({ rules: { nope: true } }).success).toBe(false);
   });
 });
