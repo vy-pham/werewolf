@@ -75,21 +75,23 @@ LOBBY → ROLE_REVEAL (10s)
 ```
 
 - Đêm 1 vẫn có sói cắn, trừ khi bật ⚙️ `noKillFirstNight` (mặc định `false`).
-- Chuyển phase sớm: khi **mọi người cần hành động** trong phase đã gửi hành động (hoặc bấm "bỏ qua").
+- Chuyển phase sớm (chỉ áp dụng cho các step ban đêm và HUNTER_SHOT): khi **mọi người cần hành động** đã gửi hành động (hoặc bấm "bỏ qua"). VOTE luôn chạy hết giờ để người chơi còn đổi phiếu được; DISCUSSION, DAWN, DEFENSE, EXECUTION cũng chạy hết giờ.
+- **Chống lộ thông tin qua thời gian**: nếu người giữ vai đặc biệt (bảo vệ, tiên tri, phù thủy) đã chết và vai đang ẩn (`revealRoleOnDeath = false`), step đó **chờ hết giờ** chứ không kết thúc sớm. Nếu kết thúc sớm, người chơi sẽ đoán ra vai đó đã chết. Tương tự, step 2 (phù thủy) **luôn diễn ra nếu bộ vai có phù thủy**, kể cả khi phù thủy đã chết hoặc đã hết bình.
 - Hết giờ mà chưa hành động: coi như bỏ qua. Riêng sói: chưa ai chọn thì đêm đó không ai bị cắn.
+- Ràng buộc mục tiêu: sói không cắn được sói; tiên tri không soi chính mình; phù thủy không độc chính mình; thợ săn không bắn chính mình; không ai bỏ phiếu cho chính mình. Mọi mục tiêu phải còn sống.
 
 ## 5. Giải quyết đêm (thứ tự resolve)
 
 1. **Sói**: mục tiêu là người có nhiều phiếu nhất trong bầy. Hòa phiếu thì ⚙️ `wolfTieBreak`: `random` (mặc định) hoặc `none`.
 2. **Bảo vệ**: nếu bảo vệ đúng mục tiêu của sói thì mục tiêu đó không chết vì sói cắn.
 3. **Phù thủy** (step 2) được xem mục tiêu của sói **trước khi áp dụng bảo vệ**, để không lộ ai đã được bảo vệ. Cứu thì mục tiêu sống. Độc thì người bị độc chết, **bảo vệ không chặn được độc**.
-4. **Tiên tri**: nhận kết quả ngay sau step 1 qua event riêng, chỉ mình tiên tri thấy.
+4. **Tiên tri**: nhận kết quả **ngay khi soi** qua event riêng, chỉ mình tiên tri thấy. Kết quả không phụ thuộc hành động của vai khác nên không cần chờ hết step 1.
 5. Tổng hợp danh sách chết, công bố ở DAWN theo **thứ tự xáo trộn**, không nói nguyên nhân chết. ⚙️ `revealRoleOnDeath` (mặc định `false`) quyết định có công khai vai của người chết hay không. Dù tắt, vai của mọi người vẫn được công khai ở GAME_OVER.
 
 ## 6. Bỏ phiếu ban ngày
 
-- Mỗi người sống có 1 phiếu, được đổi tới hết giờ, được bỏ trắng (`skip`).
-- Người có số phiếu cao nhất **và** lớn hơn số phiếu trắng thì bị xử tử.
+- Mỗi người sống có 1 phiếu, được đổi tới hết giờ, được bỏ trắng (`skip`). Người không bỏ phiếu là **vắng mặt**, không tính là phiếu trắng.
+- Người có số phiếu cao nhất **và** lớn hơn số phiếu trắng thì bị xử tử. Chỉ coi là hòa khi số phiếu cao nhất lớn hơn số phiếu trắng mà có từ 2 người trở lên cùng đứng đầu.
 - Hòa phiếu thì ⚙️ `voteTieBreak`:
   - `none` (mặc định): không ai chết, chuyển sang đêm.
   - `revote`: bỏ phiếu lại, **chỉ được bầu cho những người đang hòa** (vẫn được bỏ trắng), timer bằng `voteSeconds`. Hòa tiếp thì lặp lại, tối đa ⚙️ `maxRevotes` lần (mặc định 3). Sau lần cuối vẫn hòa thì không ai chết.
@@ -97,7 +99,14 @@ LOBBY → ROLE_REVEAL (10s)
 
 ## 7. Thợ săn
 
-Khi thợ săn chết (do sói, xử tử, hoặc độc nếu ⚙️ cho phép), engine chèn phase `HUNTER_SHOT` (15 s). Thợ săn chọn 1 người còn sống, người đó chết ngay. Hết giờ thì không bắn. Nếu nhiều người chết cùng lúc, mọi cái chết được công bố trước rồi mới tới lượt thợ săn bắn.
+Khi thợ săn chết (do sói, xử tử, hoặc độc nếu ⚙️ cho phép), engine chèn phase `HUNTER_SHOT` (15 s). Thợ săn chọn 1 người còn sống, người đó chết ngay. Hết giờ thì không bắn. Nếu nhiều người chết cùng lúc, mọi cái chết được công bố trước rồi mới tới lượt thợ săn bắn. Kiểm tra thắng thua diễn ra **sau** phát bắn, vì phát bắn có thể đổi kết quả.
+
+## 7b. Ai biết gì
+
+- Mỗi người biết vai của mình. Sói biết toàn bộ bầy sói (kể cả sói đã chết).
+- Vai của người chết chỉ công khai khi bật `revealRoleOnDeath`. Ở GAME_OVER thì công khai tất cả.
+- **Người chết không được biết thêm vai nào**: thợ săn đã chết vẫn còn phải bắn, và người chết có thể báo cho người sống qua kênh ngoài game.
+- Phiếu ban ngày công khai. Phiếu của sói chỉ bầy sói thấy. Kết quả soi chỉ tiên tri thấy. Nạn nhân của sói chỉ phù thủy thấy, và chỉ trong step 2.
 
 ## 8. Quyền giao tiếp theo phase (áp dụng cho cả voice, chat và phụ đề)
 

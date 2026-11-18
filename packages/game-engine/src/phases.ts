@@ -1,0 +1,255 @@
+import type { DeathCause, PhaseName, RoleId } from '@werewolf/shared';
+import { pick, shuffle } from './rng';
+import {
+  ALL,
+  aliveWolves,
+  emit,
+  emptyDay,
+  emptyNight,
+  findPlayer,
+  hasKey,
+  holderOf,
+  toPlayer,
+  wolvesMayKill,
+} from './state';
+import type { GameState, Tx } from './types';
+import { checkWinner } from './winner';
+
+function durationSeconds(s: GameState, name: PhaseName, step: number): number {
+  const t = s.timers;
+  switch (name) {
+    case 'ROLE_REVEAL':
+      return t.roleRevealSeconds;
+    case 'NIGHT':
+      return step === 1 ? t.nightActionSeconds : t.witchSeconds;
+    case 'DAWN':
+    case 'EXECUTION':
+      return t.dawnSeconds;
+    case 'HUNTER_SHOT':
+      return t.hunterSeconds;
+    case 'DISCUSSION':
+      return t.discussionSeconds;
+    case 'VOTE':
+      return t.voteSeconds;
+    case 'DEFENSE':
+      return t.defenseSeconds;
+    case 'LOBBY':
+    case 'GAME_OVER':
+      return 0;
+  }
+}
+
+export function enterPhase(tx: Tx, name: PhaseName, opts: { step?: number; revote?: number } = {}) {
+  const step = opts.step ?? 1;
+  const revote = opts.revote ?? 0;
+  const endsAt = tx.ctx.now + durationSeconds(tx.s, name, step) * 1000;
+  tx.s.phase = { name, step, endsAt, revote };
+  emit(tx, 'PHASE_CHANGED', ALL, { name, step, round: tx.s.round, endsAt, revote });
+}
+
+// ── Night ────────────────────────────────────────────────────────────────────
+
+export function startNight(tx: Tx) {
+  tx.s.round += 1;
+  tx.s.night = emptyNight();
+  tx.s.day = emptyDay();
+  enterPhase(tx, 'NIGHT');
+}
+
+/**
+ * Has the holder of a unique night role finished? A dead holder counts as finished only when
+ * deaths reveal roles; otherwise we wait for the timer so that an early end cannot leak that
+ * this role is dead (docs/04-game-rules.md §4).
+ */
+function slotDone(s: GameState, role: RoleId): boolean {
+  if (!s.roleCounts[role]) return true;
+  const holder = holderOf(s, role);
+  if (!holder) return true;
+  if (holder.alive) return s.night.submitted.includes(holder.id);
+  return s.rules.revealRoleOnDeath;
+}
+
+export function nightStepComplete(s: GameState): boolean {
+  if (s.phase.step === 2) return slotDone(s, 'witch');
+  const wolvesDone =
+    !wolvesMayKill(s) || aliveWolves(s).every((w) => hasKey(s.night.wolfVotes, w.id));
+  return wolvesDone && slotDone(s, 'guard') && slotDone(s, 'seer');
+}
+
+function resolveWolfTarget(tx: Tx): string | null {
+  const { s } = tx;
+  if (!wolvesMayKill(s)) return null;
+  const counts = new Map<string, number>();
+  for (const wolf of aliveWolves(s)) {
+    const target = s.night.wolfVotes[wolf.id];
+    if (target) counts.set(target, (counts.get(target) ?? 0) + 1);
+  }
+  const top = Math.max(0, ...counts.values());
+  if (top === 0) return null;
+  const leaders = [...counts].filter(([, n]) => n === top).map(([id]) => id);
+  if (leaders.length === 1) return leaders[0] ?? null;
+  return s.rules.wolfTieBreak === 'random' ? pick(leaders.sort(), tx.ctx.rng) : null;
+}
+
+/** Called when the current night step is complete or its timer expired. */
+export function finishNightStep(tx: Tx) {
+  const { s } = tx;
+  if (s.phase.step === 1) {
+    s.night.wolfTargetId = resolveWolfTarget(tx);
+    // Step 2 runs whenever the role set has a witch (even a dead one) so its presence is not leaked.
+    if (s.roleCounts.witch) {
+      enterPhase(tx, 'NIGHT', { step: 2 });
+      const witch = holderOf(s, 'witch');
+      if (witch?.alive) {
+        emit(tx, 'WITCH_INFO', toPlayer(witch.id), { victimId: s.night.wolfTargetId });
+      }
+      return;
+    }
+  }
+  resolveNight(tx);
+}
+
+function resolveNight(tx: Tx) {
+  const { s } = tx;
+  const { night, memory } = s;
+  const deaths = new Map<string, DeathCause>();
+
+  const victim = night.wolfTargetId;
+  if (victim && victim !== night.guardTargetId && !night.witchHeal) deaths.set(victim, 'wolves');
+  // Guard protection does not block poison.
+  if (night.witchPoisonId) deaths.set(night.witchPoisonId, 'poison');
+
+  memory.guardLastTargetId = night.guardTargetId;
+  if (night.witchHeal) memory.witchHealUsed = true;
+  if (night.witchPoisonId) memory.witchPoisonUsed = true;
+
+  enterPhase(tx, 'DAWN');
+  // Shuffled so the announcement order does not reveal the cause of death.
+  const ids = shuffle([...deaths.keys()].sort(), tx.ctx.rng);
+  if (ids.length === 0) emit(tx, 'NO_DEATHS', ALL, {});
+  for (const id of ids) killPlayer(tx, id, deaths.get(id) ?? 'wolves');
+}
+
+// ── Deaths, hunter, win check ────────────────────────────────────────────────
+
+export function killPlayer(tx: Tx, playerId: string, cause: DeathCause) {
+  const { s } = tx;
+  const p = findPlayer(s, playerId);
+  if (!p?.alive) return;
+  p.alive = false;
+  p.death = { round: s.round, cause };
+  emit(tx, 'PLAYER_DIED', ALL, {
+    playerId: p.id,
+    role: s.rules.revealRoleOnDeath ? p.role : null,
+  });
+  const canShoot = cause !== 'hunter' && (cause !== 'poison' || s.rules.hunterShootsWhenPoisoned);
+  if (p.role === 'hunter' && canShoot) s.hunter.pendingId = p.id;
+}
+
+/** After DAWN or EXECUTION: let a dying hunter shoot, then check the winner and move on. */
+export function continueAfterDeaths(tx: Tx, next: 'DISCUSSION' | 'NIGHT') {
+  if (tx.s.hunter.pendingId) {
+    tx.s.hunter.next = next;
+    enterPhase(tx, 'HUNTER_SHOT');
+    return;
+  }
+  checkWinnerOr(tx, next);
+}
+
+export function resolveHunterShot(tx: Tx, targetId: string | null) {
+  const { s } = tx;
+  const hunterId = s.hunter.pendingId;
+  if (!hunterId) return;
+  s.hunter.pendingId = null;
+  emit(tx, 'HUNTER_SHOT', ALL, { hunterId, targetId });
+  if (targetId) killPlayer(tx, targetId, 'hunter');
+  checkWinnerOr(tx, s.hunter.next);
+}
+
+function checkWinnerOr(tx: Tx, next: 'DISCUSSION' | 'NIGHT') {
+  const { s } = tx;
+  const winner = checkWinner(s.players);
+  if (winner) {
+    s.winner = winner;
+    enterPhase(tx, 'GAME_OVER');
+    emit(tx, 'GAME_OVER', ALL, {
+      winner,
+      roles: Object.fromEntries(s.players.map((p) => [p.id, p.role])),
+    });
+    return;
+  }
+  if (next === 'DISCUSSION') enterPhase(tx, 'DISCUSSION');
+  else startNight(tx);
+}
+
+// ── Day ──────────────────────────────────────────────────────────────────────
+
+export function startVote(tx: Tx, candidates: string[] | null = null, revote = 0) {
+  tx.s.day = { votes: {}, candidates, accusedId: null };
+  enterPhase(tx, 'VOTE', { revote });
+}
+
+function resolveVote(tx: Tx) {
+  const { s } = tx;
+  const tally: Record<string, number> = {};
+  let skips = 0;
+  for (const voter of s.players.filter((p) => p.alive)) {
+    if (!hasKey(s.day.votes, voter.id)) continue; // abstained
+    const target = s.day.votes[voter.id];
+    if (target) tally[target] = (tally[target] ?? 0) + 1;
+    else skips++;
+  }
+  const top = Math.max(0, ...Object.values(tally));
+  const leaders = Object.keys(tally)
+    .filter((id) => tally[id] === top)
+    .sort();
+  const decisive = top > 0 && top > skips;
+  const executedId = decisive && leaders.length === 1 ? (leaders[0] ?? null) : null;
+  const tie = decisive && leaders.length > 1 ? leaders : [];
+  const revote =
+    tie.length > 0 && s.rules.voteTieBreak === 'revote' && s.phase.revote < s.rules.maxRevotes;
+
+  emit(tx, 'VOTE_RESULT', ALL, { tally, skips, executedId, tie, revote });
+
+  if (executedId) {
+    s.day.accusedId = executedId;
+    if (s.timers.defenseSeconds > 0) enterPhase(tx, 'DEFENSE');
+    else startExecution(tx);
+  } else if (revote) {
+    startVote(tx, tie, s.phase.revote + 1);
+  } else {
+    startNight(tx);
+  }
+}
+
+function startExecution(tx: Tx) {
+  enterPhase(tx, 'EXECUTION');
+  if (tx.s.day.accusedId) killPlayer(tx, tx.s.day.accusedId, 'execution');
+}
+
+// ── Timeouts ─────────────────────────────────────────────────────────────────
+
+/** Default behaviour when a phase timer expires: missing actions count as "skip". */
+export function onTimeout(tx: Tx) {
+  switch (tx.s.phase.name) {
+    case 'ROLE_REVEAL':
+      return startNight(tx);
+    case 'NIGHT':
+      return finishNightStep(tx);
+    case 'DAWN':
+      return continueAfterDeaths(tx, 'DISCUSSION');
+    case 'DISCUSSION':
+      return startVote(tx);
+    case 'VOTE':
+      return resolveVote(tx);
+    case 'DEFENSE':
+      return startExecution(tx);
+    case 'EXECUTION':
+      return continueAfterDeaths(tx, 'NIGHT');
+    case 'HUNTER_SHOT':
+      return resolveHunterShot(tx, null);
+    case 'LOBBY':
+    case 'GAME_OVER':
+      return;
+  }
+}

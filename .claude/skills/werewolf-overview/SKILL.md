@@ -46,14 +46,14 @@ Docs are in Vietnamese and are the source of truth. Read only what the task need
 
 ## Where to put things
 
-| Task              | Location                                                                                                                               |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| New role          | `packages/game-engine/src/roles/<role>.ts` + register + tests + rules doc + `packages/shared` RoleId + i18n strings                    |
-| New socket event  | `packages/shared/src/socket.ts` (schema + event map) → `apps/server/src/modules/<feature>/<feature>.socket.ts` → client handlers       |
-| New REST endpoint | `apps/server/src/modules/<feature>/<feature>.routes.ts` (thin) + `<feature>.service.ts` (logic)                                        |
-| New Mongo model   | `apps/server/src/modules/<feature>/<name>.model.ts`; declare indexes in the schema; update DB section of `docs/03-technical-design.md` |
-| Web screen        | `apps/web/src/routes/*` + `apps/web/src/features/<feature>/*`                                                                          |
-| Mobile screen     | `apps/mobile/app/*` (Expo Router) + `apps/mobile/src/features/<feature>/*`                                                             |
+| Task              | Location                                                                                                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| New role          | `packages/shared` RoleId/ROLE_TEAM → `packages/game-engine/src/actions/<role>.ts` + wire in `actions/index.ts`, `expectedCommand` (projection.ts), `nightStepComplete` (phases.ts) → tests in `src/test/` → rules doc → i18n strings |
+| New socket event  | `packages/shared/src/socket.ts` (schema + event map) → `apps/server/src/modules/<feature>/<feature>.socket.ts` → client handlers                                                                                                     |
+| New REST endpoint | `apps/server/src/modules/<feature>/<feature>.routes.ts` (thin) + `<feature>.service.ts` (logic)                                                                                                                                      |
+| New Mongo model   | `apps/server/src/modules/<feature>/<name>.model.ts`; declare indexes in the schema; update DB section of `docs/03-technical-design.md`                                                                                               |
+| Web screen        | `apps/web/src/routes/*` + `apps/web/src/features/<feature>/*`                                                                                                                                                                        |
+| Mobile screen     | `apps/mobile/app/*` (Expo Router) + `apps/mobile/src/features/<feature>/*`                                                                                                                                                           |
 
 Server module file convention: `*.routes.ts` (Fastify plugin, no logic), `*.service.ts` (pure-ish, deps via params), `*.socket.ts` (Zod-validate → service → `ack`), `*.model.ts` (Mongoose schema + `InferSchemaType`).
 
@@ -61,6 +61,14 @@ Server module file convention: `*.routes.ts` (Fastify plugin, no logic), `*.serv
 
 `LOBBY → ROLE_REVEAL → NIGHT(step1: guard+wolves+seer in parallel; step2: witch) → DAWN → [HUNTER_SHOT] → DISCUSSION → VOTE → [DEFENSE] → EXECUTION → [HUNTER_SHOT] → win check → NIGHT…  → GAME_OVER`.
 MVP roles: villager, werewolf, seer, guard, witch, hunter. Village wins when all wolves are dead. Wolves win when wolves ≥ others. See `docs/04-game-rules.md` for tie-breaks and configurable rules (⚙️).
+
+## Game engine API (`@werewolf/game-engine`)
+
+- `createGame({ players, settings }, ctx)`, `dispatch(state, { kind: 'command', actorId, command } | { kind: 'timeout' }, ctx)`, `projectFor(state, viewerId | null)`, `voicePermissions(state, viewerId | null)`. `ctx = { now, rng: createRng(seed) }`.
+- All return new data: `{ ok: true, state, events } | { ok: false, error: RuleError }`. The input state is never mutated. `GameState` is plain JSON (store as-is). `events[].audience` tells the server who receives each event.
+- Commands (`GameCommandSchema` in shared): `WOLF_VOTE`, `GUARD_PROTECT`, `SEER_CHECK`, `WITCH_ACT {heal, poisonTargetId}`, `DAY_VOTE`, `HUNTER_SHOOT`. `targetId: null` = skip.
+- Anti-leak rules baked in: the witch step always runs if the role set has a witch; night steps wait for the timer when a hidden-role holder is dead; dead players gain no extra role knowledge. Keep these when changing the engine.
+- Tests live in `src/test/` and use the `Harness` helper (seat-fixed roles, `night()`, `vote()`, `advanceTo()`). Coverage ≥ 90% is enforced in `vitest.config.ts`.
 
 ## Common commands
 
@@ -76,6 +84,7 @@ MVP roles: villager, werewolf, seer, guard, witch, hunter. Village wins when all
 
 ## Current status
 
-- 2026-11-18: docs defined; **M0 done** (monorepo, tooling, CI, skeletons). The server has `/health` + Socket.IO `server:hello`. Web and mobile show a placeholder home with a language switch and server status. The engine has `validateRoleSet`, `presetFor` and `checkWinner` only.
-- Next: **M1**, the full game engine reducer. See `docs/03-technical-design.md` §11 for all milestones.
+- 2026-11-18: docs defined; **M0 done** (monorepo, tooling, CI, skeletons). The server has `/health` + Socket.IO `server:hello`. Web and mobile show a placeholder home with a language switch and server status.
+- **M1 done**: full game engine for the 6 MVP roles (85 tests, ~98% statements / 93% branches).
+- Next: **M2**, backend core: auth (guest + Google), rooms, games over Socket.IO using the engine, PhaseScheduler + recovery, chat, reconnect. See `docs/03-technical-design.md` §11 for all milestones.
 - If code and docs disagree, ask the user which one is correct and then update the other to match.
