@@ -132,12 +132,20 @@ describe('win conditions', () => {
     h.advanceTo('NIGHT');
     const order = h
       .eventsOfType('PHASE_CHANGED')
-      .map((e) => `${e.payload.name}${e.payload.name === 'NIGHT' ? e.payload.step : ''}`);
+      .map((e) => `${e.payload.name}${e.payload.name === 'VOTE' ? '' : e.payload.step}`)
+      .map((label) => label.replace(/^(DAWN|DEFENSE|EXECUTION)1$/, '$1'));
+    // p7 died, so 7 living players get one speaking turn each.
     expect(order).toEqual([
       'NIGHT1',
       'NIGHT2',
       'DAWN',
-      'DISCUSSION',
+      'DISCUSSION1',
+      'DISCUSSION2',
+      'DISCUSSION3',
+      'DISCUSSION4',
+      'DISCUSSION5',
+      'DISCUSSION6',
+      'DISCUSSION7',
       'VOTE',
       'DEFENSE',
       'EXECUTION',

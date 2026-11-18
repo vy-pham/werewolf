@@ -2,6 +2,7 @@ import type { GameCommand, RuleError } from '@werewolf/shared';
 import { finishNightStep, nightStepComplete } from '../phases';
 import type { PlayerState, Tx } from '../types';
 import { applyDayVote, validateDayVote } from './day-vote';
+import { applyEndTurn, validateEndTurn } from './end-turn';
 import { applyGuard, validateGuard } from './guard';
 import { applyHunter, validateHunter } from './hunter';
 import { applySeer, validateSeer } from './seer';
@@ -46,6 +47,12 @@ export function runCommand(tx: Tx, actor: PlayerState, cmd: GameCommand): RuleEr
       const e = validateHunter(s, actor, cmd);
       if (e) return e;
       applyHunter(tx, actor, cmd);
+      return null;
+    }
+    case 'END_TURN': {
+      const e = validateEndTurn(s, actor);
+      if (e) return e;
+      applyEndTurn(tx);
       return null;
     }
   }

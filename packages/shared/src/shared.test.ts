@@ -29,7 +29,7 @@ describe('defaultRoomSettings', () => {
       voteTieBreak: 'none',
       maxRevotes: 3,
     });
-    expect(s.timers.discussionSeconds).toBe(120);
+    expect(s.timers.speakingSeconds).toBe(30);
     expect(s.voice).toBe(true);
   });
 });

@@ -36,6 +36,8 @@ export interface NightState {
 }
 
 export interface DayState {
+  /** DISCUSSION speaking order (living players, seat order, rotated by round). */
+  speakerOrder: string[];
   /** voterId → target (null = skip). Players who never voted abstain. */
   votes: Record<string, string | null>;
   /** Only these players can be voted for during a revote. */

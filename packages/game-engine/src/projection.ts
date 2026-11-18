@@ -1,4 +1,5 @@
 import { type GameCommandType, type PlayerView, ROLE_TEAM, type RoleId } from '@werewolf/shared';
+import { currentSpeaker } from './phases';
 import { clone, findPlayer, hasKey, wolvesMayKill } from './state';
 import type { GameState, PlayerState } from './types';
 
@@ -23,6 +24,8 @@ export function expectedCommand(s: GameState, p: PlayerState): GameCommandType |
       if (p.role === 'guard') return 'GUARD_PROTECT';
       if (p.role === 'seer') return 'SEER_CHECK';
       return null;
+    case 'DISCUSSION':
+      return currentSpeaker(s) === p.id ? 'END_TURN' : null;
     case 'VOTE':
       return p.alive ? 'DAY_VOTE' : null;
     case 'HUNTER_SHOT':
@@ -35,7 +38,7 @@ export function expectedCommand(s: GameState, p: PlayerState): GameCommandType |
 function hasSubmitted(s: GameState, p: PlayerState, cmd: GameCommandType | null): boolean {
   if (cmd === 'WOLF_VOTE') return hasKey(s.night.wolfVotes, p.id);
   if (cmd === 'DAY_VOTE') return hasKey(s.day.votes, p.id);
-  if (cmd === 'HUNTER_SHOOT' || cmd === null) return false;
+  if (cmd === 'HUNTER_SHOOT' || cmd === 'END_TURN' || cmd === null) return false;
   return s.night.submitted.includes(p.id);
 }
 
@@ -81,6 +84,8 @@ export function projectFor(s: GameState, viewerId: string | null): PlayerView {
     candidates: s.phase.name === 'VOTE' && s.day.candidates ? [...s.day.candidates] : null,
     accusedId: s.phase.name === 'DEFENSE' || s.phase.name === 'EXECUTION' ? s.day.accusedId : null,
     hunterId: s.phase.name === 'HUNTER_SHOT' ? s.hunter.pendingId : null,
+    speakerOrder: s.phase.name === 'DISCUSSION' ? [...s.day.speakerOrder] : null,
+    speakerId: currentSpeaker(s),
     winner: s.winner,
   };
 }

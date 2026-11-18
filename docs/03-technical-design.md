@@ -197,7 +197,8 @@ createRng(seed): Rng                                        // PRNG có seed; l�
   - `src/actions/<role>.ts`: validate + apply cho lệnh của từng vai (`werewolf`, `guard`, `seer`, `witch`, `hunter`, `day-vote`); `actions/index.ts` điều phối.
   - `src/phases.ts`: máy trạng thái phase, resolve đêm, phiếu, chết, thợ săn, kiểm tra thắng.
   - `src/projection.ts`, `src/voice.ts`, `src/create.ts`, `src/dispatch.ts`.
-- Lệnh (`GameCommand`, Zod schema trong `@werewolf/shared`): `WOLF_VOTE`, `GUARD_PROTECT`, `SEER_CHECK`, `WITCH_ACT { heal, poisonTargetId }`, `DAY_VOTE`, `HUNTER_SHOOT`. `targetId: null` nghĩa là bỏ qua.
+- Lệnh (`GameCommand`, Zod schema trong `@werewolf/shared`): `WOLF_VOTE`, `GUARD_PROTECT`, `SEER_CHECK`, `WITCH_ACT { heal, poisonTargetId }`, `DAY_VOTE`, `HUNTER_SHOOT`, `END_TURN` (người đang nói nhường lượt). `targetId: null` nghĩa là bỏ qua.
+- Lượt nói: `voicePermissions` cho biết ai được nói ở kênh nào; `canSend(state, userId, channel)` dùng chung cho chat chữ. Server chỉ việc áp dụng kết quả, không tự viết luật.
 - `GameEvent` có `audience`: `all | wolves | player:<id> | dead`. Server dựa vào đó để route.
 - Thêm vai mới: thêm RoleId vào shared, viết `actions/<role>.ts`, nối vào `actions/index.ts`, `expectedCommand` (projection), `nightStepComplete` (phases), viết test và cập nhật rules doc.
 - Test (`src/test/`): mỗi luật trong [04-game-rules.md](04-game-rules.md) có ít nhất 1 test. Có thêm test cả trận, test "không lộ thông tin" (kiểm tra `projectFor` của mọi người chơi ở từng mốc trong trận) và test ma trận voice. Coverage ≥ 90% được ép trong `vitest.config.ts`.
@@ -266,7 +267,7 @@ Ngoài việc lưu dữ liệu, MongoDB còn thay luôn phần Redis thường l
 **`chat_messages`**: chỉ phục vụ reconnect và báo cáo
 
 ```ts
-{ _id, roomId, gameId?, channel: 'lobby'|'day'|'wolves'|'dead', senderId, text, lang,
+{ _id, roomId, gameId?, channel: 'lobby'|'main'|'wolves'|'dead', senderId, text, lang,
   translations?: { [lang]: string }, at }
 // index: { gameId, channel, at }; TTL 24 giờ trên `at` (expireAfterSeconds: 86400)
 ```

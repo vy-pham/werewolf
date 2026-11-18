@@ -8,9 +8,10 @@
 // Every function returns new data; callers persist `state` and route `events` by `audience`.
 export { type CreateGameInput, createGame } from './create';
 export { dispatch } from './dispatch';
+export { currentSpeaker } from './phases';
 export { expectedCommand, projectFor } from './projection';
 export { createRng, pick, type Rng, shuffle } from './rng';
 export * from './role-set';
 export type * from './types';
-export { voicePermissions } from './voice';
+export { canSend, voicePermissions } from './voice';
 export * from './winner';

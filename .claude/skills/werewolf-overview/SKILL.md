@@ -59,14 +59,16 @@ Server module file convention: `*.routes.ts` (Fastify plugin, no logic), `*.serv
 
 ## Game loop (short)
 
-`LOBBY → ROLE_REVEAL → NIGHT(step1: guard+wolves+seer in parallel; step2: witch) → DAWN → [HUNTER_SHOT] → DISCUSSION → VOTE → [DEFENSE] → EXECUTION → [HUNTER_SHOT] → win check → NIGHT…  → GAME_OVER`.
+`LOBBY → ROLE_REVEAL → NIGHT(step1: guard+wolves+seer in parallel; step2: witch) → DAWN → [HUNTER_SHOT] → DISCUSSION (speaking turns, phase.step = turn) → VOTE (silent) → [DEFENSE] → EXECUTION → [HUNTER_SHOT] → win check → NIGHT…  → GAME_OVER`.
+
+**Turn-based speech (user requirement):** `main` has at most ONE speaker at any time. In DISCUSSION it is the current speaker, in DEFENSE the accused, in HUNTER_SHOT the hunter. DAWN, VOTE and EXECUTION are silent. The wolves' channel opens only during night step 1. The dead always talk on `dead`. Text chat follows the exact same rules via `canSend`.
 MVP roles: villager, werewolf, seer, guard, witch, hunter. Village wins when all wolves are dead. Wolves win when wolves ≥ others. See `docs/04-game-rules.md` for tie-breaks and configurable rules (⚙️).
 
 ## Game engine API (`@werewolf/game-engine`)
 
-- `createGame({ players, settings }, ctx)`, `dispatch(state, { kind: 'command', actorId, command } | { kind: 'timeout' }, ctx)`, `projectFor(state, viewerId | null)`, `voicePermissions(state, viewerId | null)`. `ctx = { now, rng: createRng(seed) }`.
+- `createGame({ players, settings }, ctx)`, `dispatch(state, { kind: 'command', actorId, command } | { kind: 'timeout' }, ctx)`, `projectFor(state, viewerId | null)`, `voicePermissions(state, viewerId | null)`, `canSend(state, viewerId, channel)`, `currentSpeaker(state)`. `ctx = { now, rng: createRng(seed) }`.
 - All return new data: `{ ok: true, state, events } | { ok: false, error: RuleError }`. The input state is never mutated. `GameState` is plain JSON (store as-is). `events[].audience` tells the server who receives each event.
-- Commands (`GameCommandSchema` in shared): `WOLF_VOTE`, `GUARD_PROTECT`, `SEER_CHECK`, `WITCH_ACT {heal, poisonTargetId}`, `DAY_VOTE`, `HUNTER_SHOOT`. `targetId: null` = skip.
+- Commands (`GameCommandSchema` in shared): `WOLF_VOTE`, `GUARD_PROTECT`, `SEER_CHECK`, `WITCH_ACT {heal, poisonTargetId}`, `DAY_VOTE`, `HUNTER_SHOOT`, `END_TURN` (current speaker yields). `targetId: null` = skip.
 - Anti-leak rules baked in: the witch step always runs if the role set has a witch; night steps wait for the timer when a hidden-role holder is dead; dead players gain no extra role knowledge. Keep these when changing the engine.
 - Tests live in `src/test/` and use the `Harness` helper (seat-fixed roles, `night()`, `vote()`, `advanceTo()`). Coverage ≥ 90% is enforced in `vitest.config.ts`.
 
@@ -85,6 +87,6 @@ MVP roles: villager, werewolf, seer, guard, witch, hunter. Village wins when all
 ## Current status
 
 - 2026-11-18: docs defined; **M0 done** (monorepo, tooling, CI, skeletons). The server has `/health` + Socket.IO `server:hello`. Web and mobile show a placeholder home with a language switch and server status.
-- **M1 done**: full game engine for the 6 MVP roles (85 tests, ~98% statements / 93% branches).
+- **M1 done**: full game engine for the 6 MVP roles, with turn-based speech (94 tests, ~98% statements / 93% branches).
 - Next: **M2**, backend core: auth (guest + Google), rooms, games over Socket.IO using the engine, PhaseScheduler + recovery, chat, reconnect. See `docs/03-technical-design.md` §11 for all milestones.
 - If code and docs disagree, ask the user which one is correct and then update the other to match.

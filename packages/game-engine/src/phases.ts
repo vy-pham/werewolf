@@ -28,7 +28,7 @@ function durationSeconds(s: GameState, name: PhaseName, step: number): number {
     case 'HUNTER_SHOT':
       return t.hunterSeconds;
     case 'DISCUSSION':
-      return t.discussionSeconds;
+      return t.speakingSeconds;
     case 'VOTE':
       return t.voteSeconds;
     case 'DEFENSE':
@@ -178,14 +178,56 @@ function checkWinnerOr(tx: Tx, next: 'DISCUSSION' | 'NIGHT') {
     });
     return;
   }
-  if (next === 'DISCUSSION') enterPhase(tx, 'DISCUSSION');
+  if (next === 'DISCUSSION') startDiscussion(tx);
   else startNight(tx);
 }
 
-// ── Day ──────────────────────────────────────────────────────────────────────
+// ── Day: speaking turns ──────────────────────────────────────────────────────
+
+/**
+ * DISCUSSION is a series of speaking turns: every living player, in seat order, holds the floor
+ * for `speakingSeconds` (phase.step = 1-based turn). The first speaker rotates each day.
+ */
+function startDiscussion(tx: Tx) {
+  const { s } = tx;
+  const alive = s.players
+    .filter((p) => p.alive)
+    .sort((a, b) => a.seat - b.seat)
+    .map((p) => p.id);
+  const offset = alive.length > 0 ? (s.round - 1) % alive.length : 0;
+  s.day = { ...emptyDay(), speakerOrder: [...alive.slice(offset), ...alive.slice(0, offset)] };
+  startTurn(tx, 1);
+}
+
+function startTurn(tx: Tx, turn: number) {
+  const { s } = tx;
+  const speakerId = s.day.speakerOrder[turn - 1];
+  if (!speakerId) {
+    startVote(tx);
+    return;
+  }
+  enterPhase(tx, 'DISCUSSION', { step: turn });
+  emit(tx, 'SPEAKER_CHANGED', ALL, {
+    speakerId,
+    turn,
+    total: s.day.speakerOrder.length,
+    endsAt: s.phase.endsAt,
+  });
+}
+
+/** The player holding the floor right now, if any. */
+export const currentSpeaker = (s: GameState): string | null =>
+  s.phase.name === 'DISCUSSION' ? (s.day.speakerOrder[s.phase.step - 1] ?? null) : null;
+
+/** Ends the current turn (speaker pressed "done" or the timer ran out). */
+export function nextSpeaker(tx: Tx) {
+  startTurn(tx, tx.s.phase.step + 1);
+}
+
+// ── Day: vote ────────────────────────────────────────────────────────────────
 
 export function startVote(tx: Tx, candidates: string[] | null = null, revote = 0) {
-  tx.s.day = { votes: {}, candidates, accusedId: null };
+  tx.s.day = { ...tx.s.day, votes: {}, candidates, accusedId: null };
   enterPhase(tx, 'VOTE', { revote });
 }
 
@@ -239,7 +281,7 @@ export function onTimeout(tx: Tx) {
     case 'DAWN':
       return continueAfterDeaths(tx, 'DISCUSSION');
     case 'DISCUSSION':
-      return startVote(tx);
+      return nextSpeaker(tx);
     case 'VOTE':
       return resolveVote(tx);
     case 'DEFENSE':

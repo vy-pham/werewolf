@@ -36,7 +36,12 @@ export const emptyNight = (): NightState => ({
   witchPoisonId: null,
 });
 
-export const emptyDay = (): DayState => ({ votes: {}, candidates: null, accusedId: null });
+export const emptyDay = (): DayState => ({
+  speakerOrder: [],
+  votes: {},
+  candidates: null,
+  accusedId: null,
+});
 
 export const findPlayer = (s: GameState, id: string | null | undefined) =>
   id ? s.players.find((p) => p.id === id) : undefined;

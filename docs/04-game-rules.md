@@ -66,8 +66,8 @@ LOBBY → ROLE_REVEAL (10s)
   → NIGHT ─┬─ step 1 (song song): guard, werewolves, seer      ⚙️ nightActionSeconds = 40
            └─ step 2: witch (thấy kết quả cắn của step 1)       ⚙️ witchSeconds = 20
   → DAWN (công bố người chết, 8s) → [HUNTER_SHOT nếu có] → check win
-  → DISCUSSION                                                  ⚙️ discussionSeconds = 120
-  → VOTE                                                        ⚙️ voteSeconds = 30
+  → DISCUSSION: lần lượt từng người sống nói theo ghế          ⚙️ speakingSeconds = 30 / người
+  → VOTE (im lặng, chỉ bấm phiếu)                               ⚙️ voteSeconds = 30
   → [DEFENSE: người bị nhiều phiếu nhất phát biểu]              ⚙️ defenseSeconds = 20 (0 = bỏ)
   → EXECUTION (công bố) → [HUNTER_SHOT nếu có] → check win
   → NIGHT (round + 1) ...
@@ -75,7 +75,8 @@ LOBBY → ROLE_REVEAL (10s)
 ```
 
 - Đêm 1 vẫn có sói cắn, trừ khi bật ⚙️ `noKillFirstNight` (mặc định `false`).
-- Chuyển phase sớm (chỉ áp dụng cho các step ban đêm và HUNTER_SHOT): khi **mọi người cần hành động** đã gửi hành động (hoặc bấm "bỏ qua"). VOTE luôn chạy hết giờ để người chơi còn đổi phiếu được; DISCUSSION, DAWN, DEFENSE, EXECUTION cũng chạy hết giờ.
+- Chuyển phase sớm (chỉ áp dụng cho các step ban đêm, lượt nói và HUNTER_SHOT): khi **mọi người cần hành động** đã gửi hành động (hoặc bấm "bỏ qua"/"Xong"). VOTE luôn chạy hết giờ để người chơi còn đổi phiếu được; DAWN, DEFENSE, EXECUTION cũng chạy hết giờ.
+- **Lượt nói ban ngày (DISCUSSION)**: mỗi người còn sống được nói một lượt `speakingSeconds` (mặc định 30 s) theo thứ tự ghế. Ngày thứ N bắt đầu từ người thứ N trong danh sách (xoay vòng) để không ai luôn nói đầu. Chỉ người đang có lượt được nói và gửi chat ở `main`. Người đó bấm **"Xong"** (`END_TURN`) để nhường lượt sớm. Hết vòng thì sang VOTE.
 - **Chống lộ thông tin qua thời gian**: nếu người giữ vai đặc biệt (bảo vệ, tiên tri, phù thủy) đã chết và vai đang ẩn (`revealRoleOnDeath = false`), step đó **chờ hết giờ** chứ không kết thúc sớm. Nếu kết thúc sớm, người chơi sẽ đoán ra vai đó đã chết. Tương tự, step 2 (phù thủy) **luôn diễn ra nếu bộ vai có phù thủy**, kể cả khi phù thủy đã chết hoặc đã hết bình.
 - Hết giờ mà chưa hành động: coi như bỏ qua. Riêng sói: chưa ai chọn thì đêm đó không ai bị cắn.
 - Ràng buộc mục tiêu: sói không cắn được sói; tiên tri không soi chính mình; phù thủy không độc chính mình; thợ săn không bắn chính mình; không ai bỏ phiếu cho chính mình. Mọi mục tiêu phải còn sống.
@@ -108,13 +109,20 @@ Khi thợ săn chết (do sói, xử tử, hoặc độc nếu ⚙️ cho phép)
 - **Người chết không được biết thêm vai nào**: thợ săn đã chết vẫn còn phải bắn, và người chết có thể báo cho người sống qua kênh ngoài game.
 - Phiếu ban ngày công khai. Phiếu của sói chỉ bầy sói thấy. Kết quả soi chỉ tiên tri thấy. Nạn nhân của sói chỉ phù thủy thấy, và chỉ trong step 2.
 
-## 8. Quyền giao tiếp theo phase (áp dụng cho cả voice, chat và phụ đề)
+## 8. Quyền giao tiếp theo phase (áp dụng cho cả voice, chat chữ và phụ đề)
 
-| Phase                  | Người sống (dân)                                       | Sói còn sống      | Người chết                   | Khán giả    |
-| ---------------------- | ------------------------------------------------------ | ----------------- | ---------------------------- | ----------- |
-| LOBBY                  | nói/nghe `main`                                        | nói/nghe `main`   | —                            | nghe `main` |
-| ROLE_REVEAL, NIGHT     | im lặng, không nghe gì                                 | nói/nghe `wolves` | nói/nghe `dead`              | không nghe  |
-| DAWN, DISCUSSION, VOTE | nói/nghe `main`                                        | nói/nghe `main`   | nghe `main`, nói/nghe `dead` | nghe `main` |
-| DEFENSE                | chỉ người bị đưa lên nói `main`, những người khác nghe | như dân           | như trên                     | nghe `main` |
-| HUNTER_SHOT            | nghe `main`, chỉ thợ săn nói                           | như dân           | như trên                     | nghe `main` |
-| GAME_OVER              | mọi người nói/nghe `main`                              |                   |                              |             |
+**Nói theo lượt**: ở mỗi thời điểm, kênh `main` có **tối đa một người được nói**. Kênh sói chỉ mở khi sói thức dậy. "Nói" nghĩa là cả bật mic lẫn gửi chat chữ (engine: `voicePermissions` / `canSend`).
+
+| Phase                   | Người sống (dân)                             | Sói còn sống                     | Người chết                   | Khán giả    |
+| ----------------------- | -------------------------------------------- | -------------------------------- | ---------------------------- | ----------- |
+| LOBBY                   | nói/nghe `main`                              | nói/nghe `main`                  | —                            | nghe `main` |
+| ROLE_REVEAL             | im lặng, không nghe gì                       | im lặng (chỉ được biết đồng đội) | nói/nghe `dead`              | không nghe  |
+| NIGHT step 1 (sói thức) | im lặng, không nghe gì                       | nói/nghe `wolves`                | nói/nghe `dead`              | không nghe  |
+| NIGHT step 2 (phù thủy) | im lặng, không nghe gì                       | im lặng                          | nói/nghe `dead`              | không nghe  |
+| DAWN, VOTE, EXECUTION   | chỉ nghe `main` (không ai nói)               | như dân                          | nghe `main`, nói/nghe `dead` | nghe `main` |
+| DISCUSSION              | **chỉ người đang có lượt** nói, còn lại nghe | như dân                          | như trên                     | nghe `main` |
+| DEFENSE                 | chỉ người bị đưa lên nói, còn lại nghe       | như dân                          | như trên                     | nghe `main` |
+| HUNTER_SHOT             | nghe `main`, chỉ thợ săn (đã chết) nói       | như dân                          | như trên                     | nghe `main` |
+| GAME_OVER               | mọi người nói/nghe `main`                    |                                  |                              |             |
+
+Người chết luôn được nói chuyện với nhau ở kênh `dead`; người sống không nghe được kênh này.

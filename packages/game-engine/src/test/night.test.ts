@@ -281,9 +281,11 @@ describe('night steps and timing', () => {
     const h = new Harness();
     h.night({ kill: 'p5' });
     h.night({});
-    expect(h.events.filter((e) => e.type === 'PHASE_CHANGED' && e.payload.step === 2)).toHaveLength(
-      2,
-    );
+    expect(
+      h.events.filter(
+        (e) => e.type === 'PHASE_CHANGED' && e.payload.name === 'NIGHT' && e.payload.step === 2,
+      ),
+    ).toHaveLength(2);
   });
 
   it('skips step 2 when the role set has no witch', () => {

@@ -20,6 +20,8 @@ export const GameCommandSchema = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('DAY_VOTE'), targetId: playerId.nullable() }),
   z.object({ type: z.literal('HUNTER_SHOOT'), targetId: playerId.nullable() }),
+  /** The current speaker finishes their DISCUSSION turn early. */
+  z.object({ type: z.literal('END_TURN') }),
 ]);
 export type GameCommand = z.infer<typeof GameCommandSchema>;
 export type GameCommandType = GameCommand['type'];
@@ -44,6 +46,8 @@ export interface GameEventPayloads {
   /** `wolfTeam` lists every wolf for wolves, and is empty for everyone else. */
   ROLE_ASSIGNED: { role: RoleId; wolfTeam: string[] };
   PHASE_CHANGED: { name: PhaseName; step: number; round: number; endsAt: number; revote: number };
+  /** A new DISCUSSION speaking turn started. `turn` is 1-based. */
+  SPEAKER_CHANGED: { speakerId: string; turn: number; total: number; endsAt: number };
   WOLF_VOTE_CAST: { wolfId: string; targetId: string | null };
   NIGHT_ACTION_ACCEPTED: { type: GameCommandType };
   SEER_RESULT: SeerResult;
@@ -109,6 +113,9 @@ export interface PlayerView {
   accusedId: string | null;
   /** The hunter who is choosing a target during HUNTER_SHOT. */
   hunterId: string | null;
+  /** DISCUSSION: speaking order for today and the player who holds the floor now. */
+  speakerOrder: string[] | null;
+  speakerId: string | null;
   winner: Team | null;
 }
 
@@ -116,5 +123,8 @@ export interface ChannelGrant {
   publish: boolean;
   subscribe: boolean;
 }
-/** Voice/chat/caption access per channel. A missing channel means "not connected". */
+/**
+ * Voice / text chat / caption access per channel. A missing channel means "not connected".
+ * `publish` = may speak (voice) and send messages (chat) on that channel.
+ */
 export type VoiceGrant = Partial<Record<Exclude<Channel, 'lobby'>, ChannelGrant>>;
