@@ -45,7 +45,7 @@ pnpm dev               # server :4000 + web :5173
 pnpm dev:mobile        # Expo (Metro)
 ```
 
-Kiểm tra: `pnpm lint`, `pnpm typecheck`, `pnpm test`.
+Kiểm tra: `pnpm lint`, `pnpm typecheck`, `pnpm test`. Test của server dùng MongoDB chạy trong bộ nhớ (`mongodb-memory-server`), không cần Docker; lần chạy đầu sẽ tải binary MongoDB.
 
 > **Windows:** mở repo bằng đường dẫn có ký tự ổ đĩa **viết hoa** (`D:\...`). Nếu dùng `d:\...`, Metro (Expo) sẽ không resolve được các package `@werewolf/*`.
 
@@ -67,4 +67,5 @@ Web: `VITE_API_URL` (mặc định `http://localhost:4000`). Mobile: `EXPO_PUBLI
 
 - ✅ M0: monorepo, tooling, CI, khung server / web / mobile / shared / game-engine / i18n
 - ✅ M1: game engine đủ 6 vai, lọc thông tin theo người xem, quyền voice theo phase + nói theo lượt (94 test, coverage ~98%)
-- ⏭️ M2: backend core (auth, phòng, game qua Socket.IO, timer, chat, reconnect)
+- ✅ M2: backend core: đăng nhập khách + Google, phòng, game qua Socket.IO, timer có khôi phục khi restart, chat theo lượt, reconnect (22 test tích hợp)
+- ⏭️ M3: web MVP (sảnh, phòng, màn chơi, chat)
