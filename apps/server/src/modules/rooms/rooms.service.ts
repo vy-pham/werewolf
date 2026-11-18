@@ -25,6 +25,7 @@ export interface Actor {
 
 /** What RoomsService needs from the game module (avoids a circular import). */
 export interface GameStarter {
+  /** Creates the game with `room.currentGameId` as its id (set atomically when the room was locked). */
   start(room: RoomDoc, roles: RoleCounts): Promise<string>;
 }
 
@@ -278,18 +279,17 @@ export class RoomsService {
 
     const locked = await Room.findOneAndUpdate(
       { _id: room._id, status: 'lobby' },
-      { $set: { status: 'in_game' } },
+      { $set: { status: 'in_game', currentGameId: new Types.ObjectId() } },
       { returnDocument: 'after' },
     ).lean<RoomDoc>();
     if (!locked) throw new AppError('CONFLICT', 'The game has already started');
 
     try {
       const gameId = await this.games.start(locked, roles);
-      await Room.updateOne({ _id: room._id }, { $set: { currentGameId: gameId } });
       await this.broadcast(roomId);
       return { gameId };
     } catch (error) {
-      await Room.updateOne({ _id: room._id }, { $set: { status: 'lobby' } });
+      await Room.updateOne({ _id: room._id }, { $set: { status: 'lobby', currentGameId: null } });
       throw error;
     }
   }

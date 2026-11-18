@@ -189,5 +189,18 @@
     "ABILITY_USED": "Bạn đã dùng khả năng này rồi.",
     "PLAYER_DEAD": "Người chết không thể hành động.",
     "INTERNAL": "Có lỗi xảy ra. Vui lòng thử lại."
+  },
+  "voice": {
+    "prompt": "Phòng này có voice chat.",
+    "join": "Vào voice",
+    "leave": "Rời voice",
+    "mute": "Tắt mic",
+    "unmute": "Bật mic",
+    "disabled": "Chủ phòng đã tắt voice chat trong phòng này.",
+    "status": {
+      "talk": "được nói",
+      "listen": "đang nghe",
+      "off": "đóng"
+    }
   }
 }

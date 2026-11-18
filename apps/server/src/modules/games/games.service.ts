@@ -35,7 +35,9 @@ export interface GamesDeps {
   clock: Clock;
   scheduler: PhaseScheduler;
   log: FastifyBaseLogger;
-  onFinished: (roomId: string) => Promise<void>;
+  /** After every state change (voice permissions follow the game). */
+  onStateChanged?: (game: GameDoc) => Promise<void>;
+  onFinished: (game: GameDoc) => Promise<void>;
   recentChat: (game: GameDoc, userId: string) => Promise<ChatMessageView[]>;
 }
 
@@ -65,7 +67,9 @@ export class GamesService {
     if (!result.ok)
       throw new AppError(result.error.code, result.error.message, result.error.details);
 
+    if (!room.currentGameId) throw new AppError('INTERNAL', 'Room has no game id');
     const game = await Game.create({
+      _id: room.currentGameId,
       roomId: room._id,
       seed,
       version: 0,
@@ -79,6 +83,7 @@ export class GamesService {
       this.deps.io.to(userChannel(p.id)).emit('game:started', { gameId });
     }
     await this.recordAndPublish(doc, result.events, 0);
+    await this.deps.onStateChanged?.(doc);
     this.deps.scheduler.schedule(gameId, doc.version, result.state.phase.endsAt);
     return gameId;
   }
@@ -194,6 +199,7 @@ export class GamesService {
         if (!updated) continue; // someone else wrote first: reload and re-validate
 
         await this.recordAndPublish(updated, result.events, game.eventSeq);
+        await this.deps.onStateChanged?.(updated);
         if (finished) {
           this.deps.scheduler.cancel(gameId);
           await this.finish(updated);
@@ -238,7 +244,7 @@ export class GamesService {
 
   private async finish(game: GameDoc) {
     await updateStats(game.state);
-    await this.deps.onFinished(String(game.roomId));
+    await this.deps.onFinished(game);
   }
 }
 

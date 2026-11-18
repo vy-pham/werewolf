@@ -189,5 +189,18 @@
     "ABILITY_USED": "You have already used that ability.",
     "PLAYER_DEAD": "Dead players cannot act.",
     "INTERNAL": "Something went wrong. Please try again."
+  },
+  "voice": {
+    "prompt": "Voice chat is available in this room.",
+    "join": "Join voice",
+    "leave": "Leave voice",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "disabled": "The host turned voice chat off for this room.",
+    "status": {
+      "talk": "you can talk",
+      "listen": "listening",
+      "off": "closed"
+    }
   }
 }

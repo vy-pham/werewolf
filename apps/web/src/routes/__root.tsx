@@ -6,6 +6,7 @@ import { Button, cn } from '../components/ui';
 import { LanguageSwitcher } from '../features/i18n/LanguageSwitcher';
 import { logout } from '../lib/api';
 import { socket } from '../lib/socket';
+import { stopVoice } from '../lib/voice';
 import { useGame } from '../stores/game';
 import { useSession } from '../stores/session';
 
@@ -19,6 +20,7 @@ function RootLayout() {
   const connected = useGame((s) => s.connected);
 
   const signOut = async () => {
+    await stopVoice();
     socket.disconnect();
     useGame.getState().leaveRoom();
     await logout();
