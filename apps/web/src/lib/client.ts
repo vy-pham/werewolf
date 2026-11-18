@@ -12,7 +12,7 @@ import { API_URL } from './config';
 export const useSession = createSessionStore(safeLocalStorage);
 
 const apiClient = createApi({ apiUrl: API_URL, session: useSession });
-export const { api, refreshSession, freshAccessToken, logout } = apiClient;
+export const { api, refreshSession, freshAccessToken, logout, updateMe } = apiClient;
 
 export const realtime = createRealtime({ apiUrl: API_URL, auth: apiClient });
 

@@ -3,6 +3,7 @@ import { type Locale, resolveLocale } from '@werewolf/shared';
 import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { updateMe } from './client';
 import { appStorage } from './storage';
 
 const STORAGE_KEY = 'werewolf-locale';
@@ -23,6 +24,8 @@ void Promise.resolve(appStorage.getItem(STORAGE_KEY)).then((saved) => {
 export function setLocale(locale: Locale) {
   void i18n.changeLanguage(locale);
   void Promise.resolve(appStorage.setItem(STORAGE_KEY, locale)).catch(() => undefined);
+  // The server uses it for captions in "same as app" mode.
+  void updateMe({ locale }).catch(() => undefined);
 }
 
 export { i18n };

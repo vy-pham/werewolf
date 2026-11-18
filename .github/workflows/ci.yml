@@ -42,3 +42,26 @@ jobs:
 
       - name: Build
         run: pnpm turbo run build --filter=@werewolf/server --filter=@werewolf/web
+
+  # Python captions worker (apps/captions). Unit tests use fakes: no models are downloaded.
+  captions:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/captions
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.1"
+          enable-cache: true
+          cache-dependency-glob: apps/captions/uv.lock
+
+      - run: uv sync --frozen
+
+      - name: Lint
+        run: uv run ruff check . && uv run ruff format --check .
+
+      - name: Test
+        run: uv run pytest -q

@@ -1,4 +1,11 @@
-import type { DeliveredGameEvent, PlayerView, RoomRules } from '@werewolf/shared';
+import {
+  CAPTION_LANGS,
+  type CaptionLang,
+  type DeliveredGameEvent,
+  type PlayerView,
+  type RoomRules,
+  type UserView,
+} from '@werewolf/shared';
 import type { TFunction } from 'i18next';
 
 /** UI helpers shared by web and mobile. Hints only: the server engine is the authority. */
@@ -86,3 +93,11 @@ export function describeEvent(
 /** Seconds left until `endsAt` (rounded up). */
 export const secondsLeft = (endsAt: number, now = Date.now()) =>
   Math.max(0, Math.ceil((endsAt - now) / 1000));
+
+/** The language this user reads captions in (same rule as the server): preference, else UI. */
+export function captionLangOf(user: Pick<UserView, 'locale' | 'captionLangs'>): CaptionLang {
+  const first = user.captionLangs[0];
+  return first && (CAPTION_LANGS as readonly string[]).includes(first)
+    ? (first as CaptionLang)
+    : user.locale;
+}

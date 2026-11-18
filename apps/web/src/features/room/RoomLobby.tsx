@@ -8,6 +8,7 @@ import { stopVoice } from '../../lib/voice';
 import { useGame } from '../../stores/game';
 import { useSession } from '../../stores/session';
 import { useToast } from '../../stores/toast';
+import { CaptionsBar } from '../captions/CaptionsBar';
 import { ChatPanel } from '../chat/ChatPanel';
 import { VoiceBar } from '../voice/VoiceBar';
 import { SettingsPanel } from './SettingsPanel';
@@ -64,6 +65,7 @@ export function RoomLobby({ room }: { room: RoomView }) {
         </Card>
 
         <VoiceBar />
+        <CaptionsBar />
 
         <Card>
           <h2 className="mb-3 font-semibold">

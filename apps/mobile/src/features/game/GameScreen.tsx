@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Platform, ScrollView, Text } from 'react-native';
 import { colors } from '@/components/theme';
 import { Card, Title } from '@/components/ui';
+import { CaptionsBar } from '@/features/captions/CaptionsBar';
 import { ChatPanel } from '@/features/chat/ChatPanel';
 import { VoiceBar } from '@/features/voice/VoiceBar';
 import { ActionPanel } from './ActionPanel';
@@ -64,6 +65,7 @@ export function GameScreen({
       {Platform.OS === 'web' ? null : <KeepAwake />}
       <PhaseHeader view={view} />
       <VoiceBar />
+      <CaptionsBar />
       <PlayerGrid
         view={view}
         selectable={(id) => targetable(view, rules, id)}

@@ -1,4 +1,4 @@
-import type { AppErrorBody, AuthResponse } from '@werewolf/shared';
+import type { AppErrorBody, AuthResponse, CaptionLang, Locale, UserView } from '@werewolf/shared';
 import type { SessionStore } from './session';
 
 export class ApiError extends Error {
@@ -86,7 +86,14 @@ export function createApi({ apiUrl, session }: { apiUrl: string; session: Sessio
     clear();
   }
 
-  return { api, refreshSession, freshAccessToken, logout };
+  /** Saves profile fields (language, caption language…) when signed in; no-op otherwise. */
+  async function updateMe(patch: { locale?: Locale; captionLangs?: CaptionLang[] }) {
+    if (!session.getState().refreshToken) return;
+    const user = await api<UserView>('/me', { method: 'PATCH', body: patch });
+    session.getState().setUser(user);
+  }
+
+  return { api, refreshSession, freshAccessToken, logout, updateMe };
 }
 
 export type ApiClient = ReturnType<typeof createApi>;

@@ -31,6 +31,8 @@ const roomSchema = new Schema(
 
 roomSchema.index({ visibility: 1, status: 1, lang: 1, updatedAt: -1 });
 roomSchema.index({ 'members.userId': 1 });
+// The captions worker polls rooms with captions on (modules/captions).
+roomSchema.index({ 'settings.captions': 1, status: 1 });
 
 export interface RoomMemberDoc {
   userId: Types.ObjectId;

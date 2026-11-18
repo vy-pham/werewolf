@@ -45,7 +45,8 @@ export interface AuthResponse {
 export const UpdateMeBodySchema = z.object({
   displayName: DisplayNameSchema.optional(),
   locale: LocaleSchema.optional(),
-  captionLangs: z.array(z.string().min(2).max(8)).max(2).optional(),
+  /** Caption language preference (first = shown). Empty = follow `locale`. */
+  captionLangs: z.array(z.enum(SUPPORTED_LOCALES)).max(2).optional(),
 });
 
 // ── Rooms ────────────────────────────────────────────────────────────────────

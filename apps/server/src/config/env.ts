@@ -21,6 +21,8 @@ const EnvSchema = z.object({
   LIVEKIT_API_KEY: z.string().min(1),
   LIVEKIT_API_SECRET: z.string().min(1),
   GOOGLE_CLIENT_IDS: csv,
+  /** Shared secret of the captions worker (apps/captions). Unset = captions disabled. */
+  CAPTIONS_SECRET: z.string().min(16).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

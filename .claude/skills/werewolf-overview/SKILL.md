@@ -6,7 +6,7 @@ description: Project map for the Werewolf Online monorepo (multiplayer Ma Sói g
 
 # Werewolf Online — project overview
 
-Multiplayer social-deduction game (Ma Sói / Werewolf), 6–16 players, played on **web and mobile in the same room**, with **mandatory in-game voice chat** whose permissions change by game phase, and (Release 2) **AI speech captions + translation**.
+Multiplayer social-deduction game (Ma Sói / Werewolf), 6–16 players, played on **web and mobile in the same room**, with **mandatory in-game voice chat** whose permissions change by game phase, and **AI speech captions + translation** (M6).
 
 Docs are in Vietnamese and are the source of truth. Read only what the task needs:
 
@@ -24,7 +24,7 @@ Docs are in Vietnamese and are the source of truth. Read only what the task need
 - **Deploy**: server → Render (paid instance, single instance for MVP), DB → MongoDB Atlas (same region), web → Vercel, voice → **LiveKit Cloud**, mobile → EAS. Render has no UDP, so never plan to self-host media/TURN there.
 - **apps/web**: **Vite** + React + TanStack Router + TanStack Query + Zustand + Tailwind + shadcn/ui + i18next + `livekit-client`.
 - **apps/mobile**: **Expo** + Expo Router + NativeWind + Zustand/TanStack Query + `@livekit/react-native`. Needs **Expo Dev Client / EAS Build** (WebRTC is native, Expo Go won't work).
-- **apps/captions** (Python, Release 2): LiveKit Agents + Silero VAD + **faster-whisper** (STT) + **NLLB-200-distilled-600M** via CTranslate2 (translation).
+- **apps/captions** (Python 3.12, **uv**, not in the pnpm workspace): `livekit` rtc SDK (hidden listen-only participant) + energy segmenter + **faster-whisper** (STT, int8) + **NLLB-200-distilled-600M** via CTranslate2 (translation). No torch, no LiveKit Agents framework.
 - **packages/shared**: Zod schemas, types, typed Socket.IO event maps, role/phase constants, error codes.
 - **packages/game-engine**: pure, deterministic rules engine (no I/O).
 - **packages/client-core**: client logic shared by web and mobile (session, REST + token refresh, Socket.IO, game store, LiveKit voice manager, UI helpers). Apps inject storage, audio playback and API URL.
@@ -77,10 +77,13 @@ MVP roles: villager, werewolf, seer, guard, witch, hunter. Village wins when all
 
 ## Common commands
 
+Captions: `pnpm captions:dev` (worker, needs `pnpm dev:local` + `pnpm infra:up`), `pnpm captions:test`, `uv run --project apps/captions werewolf-captions try file.wav`, opt-in e2e `CAPTIONS_E2E=1 pnpm --filter @werewolf/web e2e captions`.
+
 `pnpm dev:local` (server on an in-memory MongoDB + web, **no Docker**) · `pnpm infra:up` + `pnpm dev` (with Docker / a real Mongo) · `pnpm dev:mobile` · `pnpm test` · `pnpm typecheck` · `pnpm lint` (Biome) · `pnpm format` · `pnpm --filter @werewolf/web e2e` (Playwright: 8 browsers play a full game, about 2.5 min)
 
 ## Gotchas
 
+- **Captions worker:** the server is the only authority on who reads a caption (`CaptionsService.ingest` re-checks `eligibleChannels` + `voicePermissions`). Never add delivery logic to the worker. Python is checked with ruff + pytest (`pnpm captions:test`, CI job `captions`), and unit tests use fakes (no models). On Windows: `DEVICE=auto` falls back to CPU when cuBLAS is missing; set `PYTHONIOENCODING=utf-8` when printing Vietnamese; `taskkill //F //IM werewolf-captions.exe` if a stopped `pnpm captions:dev` leaves the process running (two workers = duplicate captions). Below DEBUG, libwebrtc logs are silenced (they flood ICE errors from virtual network adapters).
 - Internal packages have **no build step**: `exports` points at `src/index.ts`. The server bundles them with tsup (`noExternal: [/^@werewolf\//]`).
 - Mobile (Expo SDK 58) needs **Node ≥ 22.13**. Add mobile deps with `npx expo install <pkg>` (SDK-matched versions), and read `apps/mobile/AGENTS.md` first. Expo APIs change per SDK, so check the versioned docs before writing code.
 - On Windows, run tools from an **uppercase drive path** (`D:\...`). A lowercase `d:\` cwd makes Metro fail to resolve `@werewolf/*`.
@@ -104,5 +107,6 @@ MVP roles: villager, werewolf, seer, guard, witch, hunter. Village wins when all
 - **M4 done (web)**: LiveKit voice. The server issues tokens per channel and pushes permission diffs after every state change; the web voice bar has join/leave, mute, per-channel status and a speaking glow. Verified with real LiveKit: lobby (everyone hears 5 others), night (only the 2 wolves publish; nobody may subscribe on main), discussion (exactly one publisher). Fixed: lobby-voice race at game start (`currentGameId` is now set atomically with the room lock).
 - **M5 done**: Expo app at parity with web: guest login, lobby, room + host settings, game screen, chat, native LiveKit voice, haptics on your turn, keep-awake, share invite. New `packages/client-core` holds all non-UI client logic for web AND mobile (session/api/realtime/voice factories + game store + UI helpers); each app wires platform bits in `src/lib/client.ts`. Verified with Playwright: the Expo **web export** hosts a full game with 5 web players (`pnpm --filter @werewolf/web e2e:mobile`).
 - Not done yet: real-device test of native voice (needs the user to `eas login` and build the dev APK; see README "Chạy app trên điện thoại Android"), Google sign-in on mobile, LiveKit Cloud + latency from Vietnam, reports (P1), per-player volume / push-to-talk. E2E tests are not in CI.
-- Next: **M6**, AI captions + translation (`apps/captions`, Python, LiveKit Agents + faster-whisper + NLLB). See `docs/03-technical-design.md` §11 for all milestones.
+- **M6 done**: AI captions. The worker polls `GET /internal/captions/rooms` (Bearer `CAPTIONS_SECRET`) for rooms with voice + captions on, joins them with hidden listen-only tokens, segments each audio track, transcribes and translates on one model thread, then `POST /internal/captions`. `CaptionsService.ingest` (server) picks readers = players with `subscribe` on that channel right now, stores `transcripts` (24h TTL), and emits `caption:message` per user in their caption language (`captionLangs[0]` ?? `locale`). Clients show a CC bar (web + mobile). Fixed: CORS did not allow PATCH, so `PATCH /me` from browsers had always failed. Measured on a laptop CPU with whisper small: about 2.6 s STT + 0.6 s MT per sentence (the first sentence takes about 4.6 s because of language detection).
+- Next: **M7** beta. Still open: chat translation (FR-CAP-04), several caption languages at once, captions worker sharding (run exactly ONE worker instance: two would duplicate captions). See `docs/03-technical-design.md` §11.
 - If code and docs disagree, ask the user which one is correct and then update the other to match.

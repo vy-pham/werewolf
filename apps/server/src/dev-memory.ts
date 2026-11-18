@@ -19,6 +19,8 @@ const env = loadEnv({
   LIVEKIT_URL: process.env.LIVEKIT_URL ?? 'ws://127.0.0.1:7880',
   LIVEKIT_API_KEY: 'devkey',
   LIVEKIT_API_SECRET: 'secret',
+  // Must match apps/captions (its .env.example uses the same dev value).
+  CAPTIONS_SECRET: process.env.CAPTIONS_SECRET ?? 'dev-captions-secret',
   GOOGLE_CLIENT_IDS: process.env.GOOGLE_CLIENT_IDS ?? '',
 });
 

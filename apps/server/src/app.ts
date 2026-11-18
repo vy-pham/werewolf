@@ -10,6 +10,8 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { AuthService } from './modules/auth/auth.service';
 import { createGoogleVerifier, type GoogleVerifier } from './modules/auth/google';
 import { TokenService } from './modules/auth/token.service';
+import { captionsRoutes } from './modules/captions/captions.routes';
+import { CaptionsService } from './modules/captions/captions.service';
 import { ChatService } from './modules/chat/chat.service';
 import { GamesService } from './modules/games/games.service';
 import { InProcessScheduler, type PhaseScheduler } from './modules/games/phase-scheduler';
@@ -58,7 +60,12 @@ export async function buildApp({
   registerErrorHandler(app);
 
   await app.register(helmet);
-  await app.register(cors, { origin: env.CORS_ORIGINS, credentials: true });
+  await app.register(cors, {
+    origin: env.CORS_ORIGINS,
+    credentials: true,
+    // @fastify/cors only allows GET/HEAD/POST by default: PATCH /me needs to be listed.
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  });
   // In-memory store: fine for a single instance (docs/03-technical-design.md §3.8).
   if (rateLimitEnabled) await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
 
@@ -78,11 +85,10 @@ export async function buildApp({
   const presence = new Presence();
   const rooms = new RoomsService(io, presence);
   const chat = new ChatService(io, clock, rooms);
-  const voice = new VoiceService(
-    deps.voice ?? new LiveKitVoice(env.LIVEKIT_URL, env.LIVEKIT_API_KEY, env.LIVEKIT_API_SECRET),
-    io,
-    app.log,
-  );
+  const voiceProvider =
+    deps.voice ?? new LiveKitVoice(env.LIVEKIT_URL, env.LIVEKIT_API_KEY, env.LIVEKIT_API_SECRET);
+  const voice = new VoiceService(voiceProvider, io, app.log);
+  const captions = new CaptionsService(io, clock, rooms, presence, voiceProvider);
   const games = new GamesService({
     io,
     clock,
@@ -97,6 +103,7 @@ export async function buildApp({
   });
   rooms.setGameStarter(games);
   chat.setGames(games);
+  captions.setGames(games);
   registerRealtime({ io, log: app.log, presence, rooms, games, chat, voice });
 
   // ── HTTP routes (one Fastify plugin per module, docs §3.2) ─────────────────
@@ -104,6 +111,7 @@ export async function buildApp({
   await app.register(authRoutes(auth));
   await app.register(usersRoutes);
   await app.register(roomsRoutes(rooms));
+  if (env.CAPTIONS_SECRET) await app.register(captionsRoutes(captions, env.CAPTIONS_SECRET));
 
   if (connectDb) {
     const recovered = await games.recoverTimers();

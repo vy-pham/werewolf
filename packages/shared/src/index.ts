@@ -1,4 +1,5 @@
 export * from './api';
+export * from './captions';
 export * from './errors';
 export * from './game';
 export * from './locale';

@@ -3,6 +3,7 @@ import type { PlayerView, RoomRules } from '@werewolf/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '../../components/ui';
+import { CaptionsBar } from '../captions/CaptionsBar';
 import { ChatPanel } from '../chat/ChatPanel';
 import { VoiceBar } from '../voice/VoiceBar';
 import { ActionPanel } from './ActionPanel';
@@ -40,6 +41,7 @@ export function GameScreen({
       <div className="space-y-4">
         <PhaseHeader view={view} />
         <VoiceBar />
+        <CaptionsBar />
         <PlayerGrid
           view={view}
           selectable={(id) => targetable(view, rules, id)}

@@ -114,6 +114,7 @@ export function createRealtime({
   socket.on('game:state', ({ gameId, view }) => store().onState(gameId, view));
   socket.on('game:event', (event) => store().onEvent(event));
   socket.on('chat:message', (message) => store().onChat(message));
+  socket.on('caption:message', (caption) => store().onCaption(caption));
   socket.on('voice:update', ({ grants }) => handlers.onVoiceUpdate?.(grants));
 
   return {

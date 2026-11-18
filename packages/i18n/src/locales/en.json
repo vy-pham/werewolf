@@ -74,7 +74,11 @@
     "roles": "Roles ({{count}})",
     "customizeRoles": "Customize",
     "usePreset": "Use preset",
-    "presetHint": "The recommended set for the number of players is used when the game starts."
+    "presetHint": "The recommended set for the number of players is used when the game starts.",
+    "media": "Voice & captions",
+    "voice": "Voice chat",
+    "captions": "AI captions & translation (beta)",
+    "captionsHint": "Speech is transcribed and translated live. Audio is never recorded; transcripts are kept 24 hours for reports."
   },
   "phase": {
     "LOBBY": "Lobby",
@@ -201,6 +205,19 @@
       "talk": "you can talk",
       "listen": "listening",
       "off": "closed"
+    }
+  },
+  "captions": {
+    "title": "Captions",
+    "show": "Show captions",
+    "hide": "Hide captions",
+    "language": "Caption language",
+    "auto": "Same as app ({{lang}})",
+    "waiting": "Captions appear here when someone speaks.",
+    "translatedFrom": "translated from {{lang}}",
+    "langName": {
+      "en": "English",
+      "vi": "Tiếng Việt"
     }
   }
 }

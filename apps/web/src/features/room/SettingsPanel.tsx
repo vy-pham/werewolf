@@ -61,6 +61,24 @@ export function SettingsPanel({ room, editable }: { room: RoomView; editable: bo
         />
       </section>
 
+      <section className="space-y-1">
+        <h3 className="text-gray-400 text-xs uppercase">{t('settings.media')}</h3>
+        <Toggle
+          label={t('settings.voice')}
+          checked={room.settings.voice}
+          disabled={!editable}
+          onChange={(value) => update({ voice: value })}
+        />
+        <Toggle
+          label={t('settings.captions')}
+          checked={room.settings.captions}
+          disabled={!editable || !room.settings.voice}
+          onChange={(value) => update({ captions: value })}
+          testId="setting-captions"
+        />
+        <p className="text-gray-500 text-xs">{t('settings.captionsHint')}</p>
+      </section>
+
       <section className="grid grid-cols-2 gap-3">
         <h3 className="col-span-2 text-gray-400 text-xs uppercase">{t('settings.timers')}</h3>
         {EDITABLE_TIMERS.map((key) => (

@@ -7,7 +7,7 @@ import { voicePlatform } from './voice-platform';
 export const useSession = createSessionStore(appStorage);
 
 const apiClient = createApi({ apiUrl: API_URL, session: useSession });
-export const { api, refreshSession, freshAccessToken, logout } = apiClient;
+export const { api, refreshSession, freshAccessToken, logout, updateMe } = apiClient;
 
 export const realtime = createRealtime({ apiUrl: API_URL, auth: apiClient });
 export const { socket, call, joinRoom } = realtime;

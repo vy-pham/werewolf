@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, Share, Text, View } from 'react-native';
 import { colors } from '@/components/theme';
 import { Badge, Button, Card, Muted, styles, Title } from '@/components/ui';
+import { CaptionsBar } from '@/features/captions/CaptionsBar';
 import { ChatPanel } from '@/features/chat/ChatPanel';
 import { VoiceBar } from '@/features/voice/VoiceBar';
 import { call, stopVoice, useSession } from '@/lib/client';
@@ -59,6 +60,7 @@ export function RoomLobby({ room }: { room: RoomView }) {
       </Card>
 
       <VoiceBar />
+      <CaptionsBar />
 
       <Card>
         <Title>{t('room.players', { count: room.members.length, max: room.maxPlayers })}</Title>
