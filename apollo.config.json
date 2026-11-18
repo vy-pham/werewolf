@@ -1,8 +1,0 @@
-{
-  "client": {
-    "service": {
-      "name": "my-graphql-app",
-      "url": "http://localhost:4300/graphql"
-    }
-  }
-}

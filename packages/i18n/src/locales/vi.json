@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "Ma Sói Online",
+    "tagline": "Suy luận, buộc tội và nói chuyện bằng giọng nói — trên web và điện thoại"
+  },
+  "common": {
+    "play": "Chơi",
+    "language": "Ngôn ngữ",
+    "loading": "Đang tải…"
+  },
+  "auth": {
+    "playAsGuest": "Chơi với tư cách khách",
+    "signInWithGoogle": "Đăng nhập bằng Google",
+    "nickname": "Biệt danh"
+  },
+  "roles": {
+    "villager": "Dân làng",
+    "werewolf": "Sói",
+    "seer": "Tiên tri",
+    "guard": "Bảo vệ",
+    "witch": "Phù thủy",
+    "hunter": "Thợ săn"
+  },
+  "status": {
+    "serverOnline": "Máy chủ đang hoạt động",
+    "serverOffline": "Mất kết nối máy chủ"
+  }
+}
