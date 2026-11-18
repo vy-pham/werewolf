@@ -11,7 +11,9 @@
   "auth": {
     "playAsGuest": "Play as guest",
     "signInWithGoogle": "Sign in with Google",
-    "nickname": "Nickname"
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "3–20 characters",
+    "signOut": "Sign out"
   },
   "roles": {
     "villager": "Villager",
@@ -22,7 +24,170 @@
     "hunter": "Hunter"
   },
   "status": {
-    "serverOnline": "Server online",
-    "serverOffline": "Server offline"
+    "serverOnline": "Connected",
+    "serverOffline": "Disconnected"
+  },
+  "lobby": {
+    "joinTitle": "Join a room",
+    "join": "Join",
+    "createTitle": "Create a room",
+    "publicRoom": "Public (listed below for everyone)",
+    "create": "Create room",
+    "publicRooms": "Public rooms",
+    "players": "{{count}}/{{max}} players",
+    "noPublicRooms": "No public rooms right now. Create one!"
+  },
+  "room": {
+    "code": "Room code",
+    "copyLink": "Copy invite link",
+    "linkCopied": "Invite link copied",
+    "leave": "Leave",
+    "players": "Players ({{count}}/{{max}})",
+    "host": "Host",
+    "ready": "Ready",
+    "notReady": "Not ready",
+    "kick": "Kick",
+    "start": "Start game",
+    "unready": "Not ready",
+    "markReady": "I'm ready",
+    "needPlayers": "At least {{count}} players are needed",
+    "waitingReady": "Waiting for everyone to be ready",
+    "backHome": "Back to home"
+  },
+  "settings": {
+    "title": "Room settings",
+    "rules": "Rules",
+    "rule": {
+      "witchCanSelfHeal": "Witch can heal herself",
+      "guardCanSelfProtect": "Guard can protect themself",
+      "noKillFirstNight": "No kill on the first night",
+      "revealRoleOnDeath": "Reveal roles on death",
+      "revote": "Revote on a tie (up to {{count}} times)"
+    },
+    "timers": "Timers (seconds)",
+    "timer": {
+      "speakingSeconds": "Speaking turn",
+      "voteSeconds": "Vote",
+      "nightActionSeconds": "Night actions",
+      "defenseSeconds": "Defense (0 = off)"
+    },
+    "roles": "Roles ({{count}})",
+    "customizeRoles": "Customize",
+    "usePreset": "Use preset",
+    "presetHint": "The recommended set for the number of players is used when the game starts."
+  },
+  "phase": {
+    "LOBBY": "Lobby",
+    "ROLE_REVEAL": "Look at your role",
+    "NIGHT_1": "Night — wolves, guard and seer wake up",
+    "NIGHT_2": "Night — the witch wakes up",
+    "DAWN": "Dawn",
+    "HUNTER_SHOT": "The hunter takes aim",
+    "DISCUSSION": "Discussion",
+    "VOTE": "Vote",
+    "DEFENSE": "Last words",
+    "EXECUTION": "Execution",
+    "GAME_OVER": "Game over"
+  },
+  "game": {
+    "round": "Round {{count}}",
+    "speaking": "{{name}} is speaking ({{turn}}/{{total}})",
+    "revote": "Revote #{{count}} — only tied players",
+    "accused": "On trial: {{name}}",
+    "hunterShooting": "{{name}} is choosing a target",
+    "yourRole": "Your role",
+    "youAreDead": "You are dead",
+    "you": "you",
+    "speakingNow": "Speaking now",
+    "dead": "Dead",
+    "onTrial": "On trial",
+    "votes": "{{count}} votes",
+    "seerResults": "What you have seen"
+  },
+  "action": {
+    "waiting": "Nothing to do right now. Wait for your turn.",
+    "deadSpectator": "You are dead. You can still talk with the other dead players.",
+    "done": "Done. Waiting for the others…",
+    "selected": "Selected: {{name}}",
+    "pickTarget": "Tap a player to select them.",
+    "changeHint": "Vote recorded. You can still change it.",
+    "confirm": "Confirm",
+    "skip": "Skip",
+    "endTurn": "I'm done",
+    "witchVictim": "The wolves attacked {{name}} tonight.",
+    "witchNoVictim": "The wolves attacked nobody tonight.",
+    "witchHeal": "Use the healing potion",
+    "witchPoisonUsed": "Your poison is already used.",
+    "witchPoison": "Poison: {{name}}",
+    "witchPickPoison": "Tap a player to poison them (optional).",
+    "title": {
+      "WOLF_VOTE": "Choose a victim",
+      "GUARD_PROTECT": "Protect someone",
+      "SEER_CHECK": "Look into someone",
+      "WITCH_ACT": "Your potions",
+      "DAY_VOTE": "Vote",
+      "HUNTER_SHOOT": "Take someone with you",
+      "END_TURN": "Your turn to speak"
+    },
+    "help": {
+      "WOLF_VOTE": "The pack kills the player with the most wolf votes. You can change your vote.",
+      "GUARD_PROTECT": "Your target survives a wolf attack tonight. Not the same player two nights in a row.",
+      "SEER_CHECK": "You will learn whether they are a werewolf.",
+      "WITCH_ACT": "Heal the victim and/or poison someone. Each potion works once per game.",
+      "DAY_VOTE": "The player with the most votes is executed. You can change your vote until time runs out.",
+      "HUNTER_SHOOT": "You are dying. Choose a player who dies with you.",
+      "END_TURN": "Everyone can hear you. Press the button when you have finished."
+    }
+  },
+  "log": {
+    "title": "What happened",
+    "roleAssigned": "You are the {{role}}.",
+    "died": "{{name}} died.",
+    "diedWithRole": "{{name}} died. They were the {{role}}.",
+    "noDeaths": "Nobody died last night.",
+    "seerWolf": "{{name}} is a werewolf!",
+    "seerNotWolf": "{{name}} is not a werewolf.",
+    "voteExecuted": "The village executes {{name}}.",
+    "voteRevote": "Tie! The village votes again.",
+    "voteNobody": "Nobody is executed today.",
+    "hunterShot": "{{hunter}} shoots {{name}}.",
+    "hunterMissed": "{{hunter}} did not shoot.",
+    "winner": {
+      "village": "The village wins!",
+      "wolves": "The werewolves win!"
+    }
+  },
+  "chat": {
+    "channel": {
+      "lobby": "Lobby",
+      "main": "Village",
+      "wolves": "Wolves",
+      "dead": "Graveyard"
+    },
+    "placeholder": "Say something…",
+    "notYourTurn": "Not your turn to speak",
+    "send": "Send"
+  },
+  "gameOver": {
+    "youWon": "You won!",
+    "youLost": "You lost.",
+    "backToRoom": "Back to the room"
+  },
+  "errors": {
+    "UNAUTHORIZED": "Please sign in again.",
+    "FORBIDDEN": "You are not allowed to do that.",
+    "NOT_FOUND": "Not found.",
+    "VALIDATION_FAILED": "Some values are invalid.",
+    "RATE_LIMITED": "Too fast — slow down a little.",
+    "CONFLICT": "That is not possible right now.",
+    "ROOM_FULL": "This room is full.",
+    "ROOM_NOT_IN_LOBBY": "This game has already started.",
+    "NOT_HOST": "Only the host can do that.",
+    "INVALID_ROLE_SET": "The role set does not fit the number of players.",
+    "NOT_YOUR_TURN": "It is not your turn.",
+    "INVALID_TARGET": "You cannot choose that player.",
+    "ABILITY_USED": "You have already used that ability.",
+    "PLAYER_DEAD": "Dead players cannot act.",
+    "INTERNAL": "Something went wrong. Please try again."
   }
 }

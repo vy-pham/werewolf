@@ -131,3 +131,34 @@ describe('rooms', () => {
     for (const x of clients) x.close();
   });
 });
+
+describe('concurrent settings updates', () => {
+  it('keeps every change when the host edits several fields at once', async () => {
+    const { clients, host } = await setupLobby(server, 1);
+    await Promise.all([
+      host.call('room:updateSettings', { timers: { speakingSeconds: 10 } }),
+      host.call('room:updateSettings', { timers: { voteSeconds: 15 } }),
+      host.call('room:updateSettings', { timers: { nightActionSeconds: 20 } }),
+      host.call('room:updateSettings', { rules: { revealRoleOnDeath: true } }),
+    ]);
+    const room = await host.call<RoomView>('room:join', { code: host.room?.code });
+    expect(room.settings.timers).toMatchObject({
+      speakingSeconds: 10,
+      voteSeconds: 15,
+      nightActionSeconds: 20,
+    });
+    expect(room.settings.rules.revealRoleOnDeath).toBe(true);
+    for (const x of clients) x.close();
+  });
+
+  it('switching back to the role preset clears custom roles', async () => {
+    const { clients, host } = await setupLobby(server, 1);
+    const custom = await host.call<RoomView>('room:updateSettings', {
+      roles: { werewolf: 2, villager: 4 },
+    });
+    expect(custom.autoRoles).toBe(false);
+    const preset = await host.call<RoomView>('room:updateSettings', { autoRoles: true, roles: {} });
+    expect(preset.autoRoles).toBe(true);
+    for (const x of clients) x.close();
+  });
+});

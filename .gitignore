@@ -43,3 +43,8 @@ Thumbs.db
 
 # claude local settings
 .claude/settings.local.json
+
+# playwright
+apps/web/e2e/screenshots/
+apps/web/test-results/
+apps/web/playwright-report/

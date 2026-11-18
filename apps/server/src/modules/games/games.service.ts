@@ -189,7 +189,7 @@ export class GamesService {
             },
             $inc: { version: 1, eventSeq: result.events.length },
           },
-          { new: true },
+          { returnDocument: 'after' },
         ).lean<GameDoc>();
         if (!updated) continue; // someone else wrote first: reload and re-validate
 

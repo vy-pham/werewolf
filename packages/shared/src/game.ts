@@ -117,6 +117,8 @@ export interface PlayerView {
   speakerOrder: string[] | null;
   speakerId: string | null;
   winner: Team | null;
+  /** What this viewer may do on each channel right now (voice + text chat). UI hint; the server enforces it. */
+  channels: VoiceGrant;
 }
 
 export interface ChannelGrant {

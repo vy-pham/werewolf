@@ -396,30 +396,31 @@ LiveKit Agents worker (hidden participant) join {gameId}-main / -wolves / -dead
 
 ## 8. Web — `apps/web`
 
-| Mảng              | Lựa chọn                                                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Build             | **Vite** + React + TypeScript                                                                                                                    |
-| Routing           | **TanStack Router** (file-based, type-safe params như `/r/$code`)                                                                                |
-| Server state      | **TanStack Query** (REST)                                                                                                                        |
-| Client/game state | **Zustand**: store `game` được cập nhật từ socket events                                                                                         |
-| Realtime          | `socket.io-client`, dùng typed events từ `@werewolf/shared`                                                                                      |
-| UI                | **Tailwind CSS** + **shadcn/ui** (Radix), animation bằng **Motion**                                                                              |
-| Form              | react-hook-form + Zod resolver (schema dùng chung)                                                                                               |
-| i18n              | i18next + react-i18next, đọc locale từ `packages/i18n`. Phát hiện ngôn ngữ: lựa chọn đã lưu → `navigator.languages` (`vi*` thì dùng `vi`) → `en` |
-| Đăng nhập Google  | Google Identity Services (`@react-oauth/google`), lấy ID token rồi gửi lên `POST /auth/google`                                                   |
-| Voice             | `livekit-client` + `@livekit/components-react`                                                                                                   |
-| Test              | Vitest + Testing Library; Playwright cho e2e (mở nhiều browser context để mô phỏng cả trận)                                                      |
-| Deploy            | Vercel (static)                                                                                                                                  |
+| Mảng              | Lựa chọn                                                                                                                                                 |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build             | **Vite** + React + TypeScript                                                                                                                            |
+| Routing           | **TanStack Router** (file-based, type-safe params như `/r/$code`)                                                                                        |
+| Server state      | **TanStack Query** (REST)                                                                                                                                |
+| Client/game state | **Zustand**: store `game` được cập nhật từ socket events                                                                                                 |
+| Realtime          | `socket.io-client`, dùng typed events từ `@werewolf/shared`                                                                                              |
+| UI                | **Tailwind CSS** + vài primitive tự viết (`components/ui.tsx`: Button, Card, Input, Badge, Toggle). Có thể thêm shadcn/ui sau khi cần component phức tạp |
+| Form              | react-hook-form + Zod resolver (schema dùng chung)                                                                                                       |
+| i18n              | i18next + react-i18next, đọc locale từ `packages/i18n`. Phát hiện ngôn ngữ: lựa chọn đã lưu → `navigator.languages` (`vi*` thì dùng `vi`) → `en`         |
+| Đăng nhập Google  | Google Identity Services (`@react-oauth/google`), lấy ID token rồi gửi lên `POST /auth/google`                                                           |
+| Voice             | `livekit-client` + `@livekit/components-react`                                                                                                           |
+| Test              | Vitest + Testing Library; Playwright cho e2e (mở nhiều browser context để mô phỏng cả trận)                                                              |
+| Deploy            | Vercel (static)                                                                                                                                          |
 
 Cấu trúc:
 
 ```
 apps/web/src/
-├─ routes/                 __root.tsx, index.tsx, login.tsx, r.$code.tsx (lobby + game)
-├─ features/{auth,room,game,chat,voice,captions}/   components + hooks theo feature
-├─ lib/                    api.ts (fetch wrapper), socket.ts, livekit.ts, queryClient.ts
-├─ stores/                 game.store.ts, session.store.ts
-└─ components/ui/          shadcn components
+├─ routes/                 __root.tsx (header, toaster), index.tsx (đăng nhập hoặc sảnh), r.$code.tsx (phòng chờ → màn chơi → kết quả)
+├─ features/{auth,lobby,room,game,chat,i18n}/   component theo feature (game: PhaseHeader, PlayerGrid, ActionPanel, EventLog, GameOver)
+├─ lib/                    api.ts (fetch + tự refresh token), socket.ts (kết nối, call(), joinRoom/syncGame, tự resync khi reconnect), errors.ts, hooks.ts, i18n.ts
+├─ stores/                 session.ts (token, lưu localStorage), game.ts (room, view, events, chat), toast.ts
+├─ components/             ui.tsx, Toaster.tsx
+└─ e2e/ (ngoài src)         Playwright: 8 trình duyệt chơi hết một trận (`pnpm --filter @werewolf/web e2e`)
 ```
 
 ## 9. Mobile — `apps/mobile`

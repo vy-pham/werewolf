@@ -43,3 +43,21 @@ export const RoomSettingsSchema = z.object({
 export type RoomSettings = z.infer<typeof RoomSettingsSchema>;
 
 export const defaultRoomSettings = (): RoomSettings => RoomSettingsSchema.parse({});
+
+/**
+ * Same validation as `schema`, but every field optional and WITHOUT defaults. Zod's `.partial()`
+ * keeps `.default()` values, so a patch like `{ speakingSeconds: 10 }` would silently reset every
+ * other field to its default. Patch schemas must be built with this helper instead.
+ */
+function patchOf<S extends z.ZodObject>(schema: S) {
+  const shape = Object.fromEntries(
+    Object.entries(schema.shape).map(([key, field]) => [
+      key,
+      ((field instanceof z.ZodDefault ? field.unwrap() : field) as z.ZodType).optional(),
+    ]),
+  );
+  return z.object(shape).strict() as unknown as z.ZodType<Partial<z.output<S>>>;
+}
+
+export const RoomRulesPatchSchema = patchOf(RoomRulesSchema);
+export const PhaseTimersPatchSchema = patchOf(PhaseTimersSchema);

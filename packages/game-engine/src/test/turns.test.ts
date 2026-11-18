@@ -78,3 +78,17 @@ describe('discussion speaking turns', () => {
     expect(projectFor(h.state, null).speakerId).toBe('p1');
   });
 });
+
+describe('channels in the player view', () => {
+  it('mirrors voicePermissions so the UI knows when the mic / chat box is open', () => {
+    const h = new Harness();
+    h.night({});
+    h.advanceTo('DISCUSSION');
+    expect(projectFor(h.state, 'p1').channels).toEqual({
+      main: { publish: true, subscribe: true },
+    });
+    expect(projectFor(h.state, 'p2').channels).toEqual({
+      main: { publish: false, subscribe: true },
+    });
+  });
+});
