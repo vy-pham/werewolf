@@ -1,9 +1,10 @@
 import { useGame } from '@werewolf/client-core';
-import type { PlayerView } from '@werewolf/shared';
+import { isWolfRole, type PlayerView } from '@werewolf/shared';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import { colors } from '@/components/theme';
 import { Badge, Button, Card, styles } from '@/components/ui';
+import { ReportPanel } from '@/features/reports/ReportPanel';
 import { useNames } from './names';
 
 export function GameOver({ result }: { result: PlayerView }) {
@@ -15,7 +16,9 @@ export function GameOver({ result }: { result: PlayerView }) {
   return (
     <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
       <Card testID={`game-over-${result.winner ?? 'none'}`} style={{ alignItems: 'center' }}>
-        <Text style={{ fontSize: 48 }}>{result.winner === 'wolves' ? '🐺' : '🏡'}</Text>
+        <Text style={{ fontSize: 48 }}>
+          {result.winner === 'wolves' ? '🐺' : result.winner === 'lovers' ? '💘' : '🏡'}
+        </Text>
         <Text style={{ color: colors.text, fontSize: 22, fontWeight: '700' }}>
           {result.winner ? t(`log.winner.${result.winner}`) : null}
         </Text>
@@ -37,13 +40,15 @@ export function GameOver({ result }: { result: PlayerView }) {
                 }}
               >
                 {name(p.id)}
+                {result.lovers?.includes(p.id) ? ' 💘' : ''}
               </Text>
               {p.role ? (
-                <Badge tone={p.role === 'werewolf' ? 'bad' : 'good'} label={t(`roles.${p.role}`)} />
+                <Badge tone={isWolfRole(p.role) ? 'bad' : 'good'} label={t(`roles.${p.role}`)} />
               ) : null}
             </View>
           ))}
       </Card>
+      <ReportPanel latestOnly />
       <Button testID="back-to-room" title={t('gameOver.backToRoom')} onPress={dismiss} />
     </ScrollView>
   );

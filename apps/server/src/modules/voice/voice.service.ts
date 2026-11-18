@@ -1,5 +1,11 @@
 import { type GameState, voicePermissions } from '@werewolf/game-engine';
-import type { Channel, ChannelGrant, VoiceGrants, VoiceJoinInfo } from '@werewolf/shared';
+import {
+  type Channel,
+  type ChannelGrant,
+  isWolfRole,
+  type VoiceGrants,
+  type VoiceJoinInfo,
+} from '@werewolf/shared';
 import type { FastifyBaseLogger } from 'fastify';
 import { AppError } from '../../lib/errors';
 import type { IO } from '../../plugins/socket';
@@ -19,7 +25,7 @@ export function eligibleChannels(state: GameState, userId: string): Channel[] {
   const p = state.players.find((x) => x.id === userId);
   if (!p) return [];
   const channels: Channel[] = ['main'];
-  if (p.role === 'werewolf') channels.push('wolves');
+  if (isWolfRole(p.role)) channels.push('wolves');
   if (!p.alive) channels.push('dead');
   return channels;
 }

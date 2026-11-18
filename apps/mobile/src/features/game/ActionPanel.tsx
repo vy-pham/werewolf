@@ -11,7 +11,8 @@ import { useNames } from './names';
 interface Props {
   gameId: string;
   view: PlayerView;
-  selectedId: string | null;
+  /** Selected players (Cupid selects two, every other action one). */
+  selectedIds: string[];
   clearSelection: () => void;
 }
 
@@ -19,10 +20,12 @@ interface Props {
  * What the viewer can do right now (`view.me.pendingAction`); the server validates everything.
  * testID encodes the state for automated tests: `action-panel-<ACTION>-<open|done>`.
  */
-export function ActionPanel({ gameId, view, selectedId, clearSelection }: Props) {
+export function ActionPanel({ gameId, view, selectedIds, clearSelection }: Props) {
   const { t } = useTranslation();
   const name = useNames();
   const [heal, setHeal] = useState(false);
+  const [infect, setInfect] = useState(false);
+  const selectedId = selectedIds[0] ?? null;
   const me = view.me;
   const action = me?.pendingAction ?? null;
 
@@ -37,7 +40,13 @@ export function ActionPanel({ gameId, view, selectedId, clearSelection }: Props)
   if (!action) {
     return (
       <Card testID="action-panel-none">
-        <Muted>{me.alive ? t('action.waiting') : t('action.deadSpectator')}</Muted>
+        <Muted>
+          {!me.alive
+            ? t('action.deadSpectator')
+            : me.canVote === false && view.phase.name === 'VOTE'
+              ? t('action.foolCannotVote')
+              : t('action.waiting')}
+        </Muted>
       </Card>
     );
   }
@@ -65,6 +74,36 @@ export function ActionPanel({ gameId, view, selectedId, clearSelection }: Props)
           title={t('action.endTurn')}
           onPress={() => send({ type: 'END_TURN' })}
         />
+      ) : action === 'CUPID_LINK' ? (
+        <>
+          <Muted>
+            {selectedIds.length === 2
+              ? t('action.cupidPair', {
+                  a: name(selectedIds[0] ?? ''),
+                  b: name(selectedIds[1] ?? ''),
+                })
+              : t('action.cupidPick')}
+          </Muted>
+          <View style={styles.row}>
+            <Button
+              testID="action-confirm"
+              title={t('action.confirm')}
+              disabled={selectedIds.length !== 2}
+              onPress={() =>
+                send({
+                  type: 'CUPID_LINK',
+                  targetIds: [selectedIds[0] ?? '', selectedIds[1] ?? ''],
+                })
+              }
+            />
+            <Button
+              testID="action-skip"
+              variant="secondary"
+              title={t('action.skip')}
+              onPress={() => send({ type: 'CUPID_LINK', targetIds: null })}
+            />
+          </View>
+        </>
       ) : action === 'WITCH_ACT' ? (
         <>
           <Text style={{ color: colors.text }}>
@@ -111,12 +150,25 @@ export function ActionPanel({ gameId, view, selectedId, clearSelection }: Props)
             <Text style={{ color: colors.goodText }}>{t('action.changeHint')}</Text>
           ) : null}
           <Muted>{target ? t('action.selected', { name: target }) : t('action.pickTarget')}</Muted>
+          {action === 'WOLF_VOTE' && me.alpha ? (
+            me.alpha.infectUsed ? (
+              <Muted>{t('action.alphaInfectUsed')}</Muted>
+            ) : (
+              <Toggle label={t('action.alphaInfect')} value={infect} onChange={setInfect} />
+            )
+          ) : null}
           <View style={styles.row}>
             <Button
               testID="action-confirm"
               title={t('action.confirm')}
               disabled={!selectedId}
-              onPress={() => send({ type: action, targetId: selectedId } as GameCommand)}
+              onPress={() =>
+                send(
+                  (action === 'WOLF_VOTE' && me.alpha && !me.alpha.infectUsed
+                    ? { type: action, targetId: selectedId, infect }
+                    : { type: action, targetId: selectedId }) as GameCommand,
+                )
+              }
             />
             <Button
               testID="action-skip"

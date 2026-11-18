@@ -21,7 +21,11 @@
     "seer": "Seer",
     "guard": "Guard",
     "witch": "Witch",
-    "hunter": "Hunter"
+    "hunter": "Hunter",
+    "cupid": "Cupid",
+    "alpha_wolf": "Alpha wolf",
+    "fool": "Fool",
+    "elder": "Elder"
   },
   "status": {
     "serverOnline": "Connected",
@@ -106,7 +110,11 @@
     "dead": "Dead",
     "onTrial": "On trial",
     "votes": "{{count}} votes",
-    "seerResults": "What you have seen"
+    "seerResults": "What you have seen",
+    "lover": "Lover",
+    "partner": "You are in love with {{name}} 💘",
+    "couple": "You linked {{a}} 💘 {{b}}",
+    "team": "Team: {{team}}"
   },
   "action": {
     "waiting": "Nothing to do right now. Wait for your turn.",
@@ -131,7 +139,8 @@
       "WITCH_ACT": "Your potions",
       "DAY_VOTE": "Vote",
       "HUNTER_SHOOT": "Take someone with you",
-      "END_TURN": "Your turn to speak"
+      "END_TURN": "Your turn to speak",
+      "CUPID_LINK": "Make a couple"
     },
     "help": {
       "WOLF_VOTE": "The pack kills the player with the most wolf votes. You can change your vote.",
@@ -140,8 +149,14 @@
       "WITCH_ACT": "Heal the victim and/or poison someone. Each potion works once per game.",
       "DAY_VOTE": "The player with the most votes is executed. You can change your vote until time runs out.",
       "HUNTER_SHOOT": "You are dying. Choose a player who dies with you.",
-      "END_TURN": "Everyone can hear you. Press the button when you have finished."
-    }
+      "END_TURN": "Everyone can hear you. Press the button when you have finished.",
+      "CUPID_LINK": "Pick two players (you may pick yourself). If one dies, the other dies too. A wolf + a villager couple wins only as the last two alive."
+    },
+    "cupidPick": "Tap two players.",
+    "cupidPair": "Couple: {{a}} 💘 {{b}}",
+    "alphaInfect": "Infect instead of killing (once per game)",
+    "alphaInfectUsed": "You already used your infection.",
+    "foolCannotVote": "You were revealed as the fool: you can no longer vote."
   },
   "log": {
     "title": "What happened",
@@ -158,8 +173,15 @@
     "hunterMissed": "{{hunter}} did not shoot.",
     "winner": {
       "village": "The village wins!",
-      "wolves": "The werewolves win!"
-    }
+      "wolves": "The werewolves win!",
+      "lovers": "The lovers win!"
+    },
+    "cupidLinked": "You linked {{a}} and {{b}}.",
+    "loverAssigned": "You fell in love with {{name}} ({{role}}).",
+    "infected": "You were bitten by the alpha wolf: you are now a werewolf!",
+    "wolfJoined": "{{name}} joined the pack.",
+    "foolRevealed": "{{name}} was the fool! They survive but can no longer vote.",
+    "elderSurvived": "The wolves bit you, but you survived (only once)."
   },
   "chat": {
     "channel": {
@@ -192,7 +214,8 @@
     "INVALID_TARGET": "You cannot choose that player.",
     "ABILITY_USED": "You have already used that ability.",
     "PLAYER_DEAD": "Dead players cannot act.",
-    "INTERNAL": "Something went wrong. Please try again."
+    "INTERNAL": "Something went wrong. Please try again.",
+    "REPORT_WINDOW_CLOSED": "Reports are only accepted for 24 hours after a game."
   },
   "voice": {
     "prompt": "Voice chat is available in this room.",
@@ -219,5 +242,36 @@
       "en": "English",
       "vi": "Tiếng Việt"
     }
+  },
+  "teams": {
+    "village": "Village",
+    "wolves": "Werewolves",
+    "lovers": "Lovers"
+  },
+  "reports": {
+    "title": "Report a player",
+    "recent": "Recent games (report within 24 hours)",
+    "none": "No recent games.",
+    "until": "Reports open until {{time}}",
+    "report": "Report",
+    "reported": "Reported",
+    "reason": "Reason",
+    "note": "What happened? (optional)",
+    "send": "Send report",
+    "cancel": "Cancel",
+    "sent": "Report sent. Thank you.",
+    "reasons": {
+      "abuse": "Abusive language",
+      "cheating": "Cheating / sharing info outside the game",
+      "spam": "Spam",
+      "afk": "Inactive / left the game",
+      "other": "Other"
+    }
+  },
+  "stats": {
+    "title": "Your stats",
+    "summary": "{{games}} games · {{wins}} wins ({{rate}}%)",
+    "empty": "Play a game to see your stats.",
+    "role": "{{role}}: {{wins}}/{{games}}"
   }
 }

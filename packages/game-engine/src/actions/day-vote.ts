@@ -1,5 +1,5 @@
 import type { GameCommand, RuleError } from '@werewolf/shared';
-import { ALL, emit } from '../state';
+import { ALL, canVote, emit, ruleError } from '../state';
 import type { GameState, PlayerState, Tx } from '../types';
 import { checkTarget, firstError, requireAlive, requirePhase } from './common';
 
@@ -10,6 +10,7 @@ export function validateDayVote(s: GameState, actor: PlayerState, cmd: Cmd): Rul
   return firstError(
     () => requirePhase(s, 'VOTE'),
     () => requireAlive(actor),
+    () => (canVote(s, actor) ? null : ruleError('NOT_YOUR_TURN', 'A revealed fool cannot vote')),
     () => checkTarget(s, actor, cmd.targetId, { candidates: s.day.candidates }),
   );
 }

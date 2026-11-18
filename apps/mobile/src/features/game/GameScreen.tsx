@@ -1,4 +1,10 @@
-import { describeEvent, phaseStepKey, targetable, useGame } from '@werewolf/client-core';
+import {
+  describeEvent,
+  nextSelection,
+  phaseStepKey,
+  targetable,
+  useGame,
+} from '@werewolf/client-core';
 import type { PlayerView, RoomRules } from '@werewolf/shared';
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -48,8 +54,9 @@ export function GameScreen({
 
   // A selection belongs to one phase step.
   const key = phaseStepKey(view);
-  const [selection, setSelection] = useState<{ key: string; id: string | null }>({ key, id: null });
-  const selectedId = selection.key === key ? selection.id : null;
+  const [selection, setSelection] = useState<{ key: string; ids: string[] }>({ key, ids: [] });
+  const selectedIds = selection.key === key ? selection.ids : [];
+  const action = view.me?.pendingAction;
 
   const log = events
     .map((e) => ({ seq: e.seq, text: describeEvent(e, t, name) }))
@@ -69,15 +76,29 @@ export function GameScreen({
       <PlayerGrid
         view={view}
         selectable={(id) => targetable(view, rules, id)}
-        selectedId={selectedId}
-        onSelect={(id) => setSelection({ key, id: selectedId === id ? null : id })}
+        selectedIds={selectedIds}
+        onSelect={(id) => setSelection({ key, ids: nextSelection(action, selectedIds, id) })}
       />
       <ActionPanel
         gameId={gameId}
         view={view}
-        selectedId={selectedId}
-        clearSelection={() => setSelection({ key, id: null })}
+        selectedIds={selectedIds}
+        clearSelection={() => setSelection({ key, ids: [] })}
       />
+      {view.me?.partnerId || view.me?.cupidLinked ? (
+        <Card testID="lovers-card">
+          <Text style={{ color: colors.moon }}>
+            {view.me.partnerId
+              ? t('game.partner', { name: name(view.me.partnerId) })
+              : view.me.cupidLinked
+                ? t('game.couple', {
+                    a: name(view.me.cupidLinked[0]),
+                    b: name(view.me.cupidLinked[1]),
+                  })
+                : null}
+          </Text>
+        </Card>
+      ) : null}
       {view.me?.seerResults?.length ? (
         <Card>
           <Title>{t('game.seerResults')}</Title>

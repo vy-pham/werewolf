@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { colors } from '@/components/theme';
 import { Button, Card, Muted, styles, TextField, Title, Toggle } from '@/components/ui';
+import { ReportPanel } from '@/features/reports/ReportPanel';
+import { StatsCard } from '@/features/stats/StatsCard';
 import { api } from '@/lib/client';
 
 export function LobbyHome() {
@@ -88,6 +90,9 @@ export function LobbyHome() {
           </View>
         ))}
       </Card>
+
+      <StatsCard />
+      <ReportPanel />
     </ScrollView>
   );
 }

@@ -22,12 +22,13 @@ Chủ phòng chỉnh được **khi tạo phòng và trong sảnh, trước khi 
 
 ## 1. Phe & điều kiện thắng
 
-| Phe                  | Thắng khi                                          |
-| -------------------- | -------------------------------------------------- |
-| Dân làng (`village`) | Tất cả sói đã chết                                 |
-| Sói (`wolves`)       | Số sói còn sống ≥ số người không phải sói còn sống |
+| Phe                  | Thắng khi                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Dân làng (`village`) | Tất cả sói (kể cả Sói đầu đàn, người bị biến thành sói) đã chết                                               |
+| Sói (`wolves`)       | Số sói còn sống ≥ số người không phải sói còn sống. Sói nằm trong **cặp đôi khác phe** không được tính là sói |
+| Cặp đôi (`lovers`)   | Chỉ có khi Cupid ghép 1 sói + 1 người không phải sói: thắng khi hai người là **2 người cuối cùng còn sống**   |
 
-Engine kiểm tra thắng thua sau **mỗi lần có người chết** (bình minh, xử tử, thợ săn bắn). Nếu cả hai điều kiện cùng đúng một lúc (hiếm gặp, ví dụ thợ săn bắn chết con sói cuối cùng khi số người bằng nhau), **dân làng thắng**.
+Engine kiểm tra thắng thua sau **mỗi lần có người chết hoặc có thay đổi phe** (bình minh, xử tử, thợ săn bắn). Thứ tự: cặp đôi → dân làng → sói. Nếu dân làng và sói cùng thỏa một lúc (hiếm gặp, ví dụ thợ săn bắn chết con sói cuối cùng khi số người bằng nhau), **dân làng thắng**. Cặp đôi cùng phe thì vẫn thắng theo phe của mình.
 
 ## 2. Vai trò MVP
 
@@ -40,9 +41,20 @@ Engine kiểm tra thắng thua sau **mỗi lần có người chết** (bình mi
 | `witch` Phù thủy    | village | 1 bình cứu và 1 bình độc cho cả trận. Biết ai bị sói cắn đêm đó. Mỗi đêm dùng tối đa 1 bình ⚙️ `witchOnePotionPerNight` (mặc định `true`). ⚙️ `witchCanSelfHeal` (mặc định `true`) |
 | `hunter` Thợ săn    | village | Khi chết được bắn 1 người chết theo. ⚙️ `hunterShootsWhenPoisoned` (mặc định `false`)                                                                                              |
 
-### Vai trò Release 2 (đã chừa chỗ trong thiết kế)
+### Vai trò mở rộng (M7)
 
-`cupid` (đêm đầu ghép cặp đôi: một người chết thì người kia chết theo; nếu cặp đôi khác phe thì tạo phe thứ ba), `alpha_wolf` (1 lần biến người bị cắn thành sói), `little_girl` (thấy mờ hành động của sói), `fool` (bị treo cổ thì không chết nhưng mất quyền bỏ phiếu), `elder` (chịu được 1 lần sói cắn).
+Mỗi vai tối đa 1 người. Không có trong preset, chủ phòng thêm khi tự chỉnh bộ vai.
+
+| Vai trò (`RoleId`)       | Phe     | Luật                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cupid` Cupid            | village | **Chỉ đêm 1** (step 1, song song với sói/bảo vệ/tiên tri): chọn 2 người còn sống khác nhau (được chọn chính mình) làm cặp đôi, hoặc bỏ qua. Mỗi người trong cặp biết người kia là ai **và vai của người kia**. Một người chết (bất kể lý do) thì người kia chết ngay (`heartbreak`), thợ săn chết theo kiểu này vẫn được bắn. Cặp 1 sói + 1 không phải sói thành phe `lovers` (§1) |
+| `alpha_wolf` Sói đầu đàn | wolves  | Là sói (cắn cùng bầy, kênh sói). **1 lần mỗi trận**, khi bỏ phiếu cắn chọn thêm "biến thành sói": nếu đêm đó bầy cắn trúng ai và Sói đầu đàn còn sống thì người đó **không chết mà thành Ma sói** (mất khả năng cũ), được báo riêng, vào bầy từ đêm sau. Phù thủy thấy "không ai bị cắn". Bảo vệ chặn được (khi đó quyền chưa bị dùng). Tiên tri soi người bị biến thì ra sói      |
+| `fool` Kẻ ngốc           | village | Bị **xử tử lần đầu** thì không chết: lộ vai cho mọi người và **mất quyền bỏ phiếu** đến hết trận (vẫn được nói). Bị xử tử lần 2, bị cắn, bị độc, bị bắn thì chết bình thường                                                                                                                                                                                                       |
+| `elder` Già làng         | village | Sống sót **lần cắn đầu tiên** của sói (chỉ Già làng được báo). Lần cắn thứ 2 thì chết. Độc, xử tử, thợ săn bắn thì chết ngay                                                                                                                                                                                                                                                       |
+
+Bỏ khỏi phạm vi: `little_girl` (Cô bé), vì "nhìn trộm sói" khó làm công bằng trong game có voice.
+
+Kiểm tra bộ vai: Sói đầu đàn được tính vào số sói (1 ≤ werewolf + alpha_wolf < số người / 2).
 
 ## 3. Preset bộ vai theo số người
 
@@ -87,7 +99,10 @@ LOBBY → ROLE_REVEAL (10s)
 2. **Bảo vệ**: nếu bảo vệ đúng mục tiêu của sói thì mục tiêu đó không chết vì sói cắn.
 3. **Phù thủy** (step 2) được xem mục tiêu của sói **trước khi áp dụng bảo vệ**, để không lộ ai đã được bảo vệ. Cứu thì mục tiêu sống. Độc thì người bị độc chết, **bảo vệ không chặn được độc**.
 4. **Tiên tri**: nhận kết quả **ngay khi soi** qua event riêng, chỉ mình tiên tri thấy. Kết quả không phụ thuộc hành động của vai khác nên không cần chờ hết step 1.
-5. Tổng hợp danh sách chết, công bố ở DAWN theo **thứ tự xáo trộn**, không nói nguyên nhân chết. ⚙️ `revealRoleOnDeath` (mặc định `false`) quyết định có công khai vai của người chết hay không. Dù tắt, vai của mọi người vẫn được công khai ở GAME_OVER.
+5. **Sói đầu đàn**: nếu đã chọn "biến thành sói" thì mục tiêu của sói được chuyển thành mục tiêu biến ngay cuối step 1 (phù thủy thấy không có nạn nhân). Ở bình minh, nếu bảo vệ không bảo vệ người đó thì người đó thành Ma sói.
+6. **Già làng** bị cắn (không được bảo vệ hay cứu) lần đầu thì sống.
+7. **Cặp đôi**: mỗi cái chết kéo theo người yêu của người đó.
+8. Tổng hợp danh sách chết, công bố ở DAWN theo **thứ tự xáo trộn**, không nói nguyên nhân chết. ⚙️ `revealRoleOnDeath` (mặc định `false`) quyết định có công khai vai của người chết hay không. Dù tắt, vai của mọi người vẫn được công khai ở GAME_OVER.
 
 ## 6. Bỏ phiếu ban ngày
 
@@ -108,6 +123,10 @@ Khi thợ săn chết (do sói, xử tử, hoặc độc nếu ⚙️ cho phép)
 - Vai của người chết chỉ công khai khi bật `revealRoleOnDeath`. Ở GAME_OVER thì công khai tất cả.
 - **Người chết không được biết thêm vai nào**: thợ săn đã chết vẫn còn phải bắn, và người chết có thể báo cho người sống qua kênh ngoài game.
 - Phiếu ban ngày công khai. Phiếu của sói chỉ bầy sói thấy. Kết quả soi chỉ tiên tri thấy. Nạn nhân của sói chỉ phù thủy thấy, và chỉ trong step 2.
+- Cupid biết cặp đôi mình ghép (không biết vai). Hai người yêu biết nhau và vai của nhau. Cặp đôi được công khai ở GAME_OVER.
+- Người bị Sói đầu đàn biến thành sói biết cả bầy, bầy biết người đó. Không ai khác được báo.
+- Kẻ ngốc bị xử tử lần đầu thì vai của họ công khai với mọi người.
+- **Chống lộ qua thời gian**: nếu người giữ vai tiên tri/bảo vệ/phù thủy đã bị biến thành sói, step đó chờ hết giờ (giống khi họ đã chết mà vai bị ẩn).
 
 ## 8. Quyền giao tiếp theo phase (áp dụng cho cả voice, chat chữ và phụ đề)
 

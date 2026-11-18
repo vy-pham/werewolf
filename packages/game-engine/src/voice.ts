@@ -1,6 +1,6 @@
 import type { Channel, ChannelGrant, VoiceGrant } from '@werewolf/shared';
 import { currentSpeaker } from './phases';
-import { findPlayer } from './state';
+import { findPlayer, isWolf } from './state';
 import type { GameState } from './types';
 
 const TALK: ChannelGrant = { publish: true, subscribe: true };
@@ -25,7 +25,7 @@ export function voicePermissions(s: GameState, viewerId: string | null): VoiceGr
 
   if (nightLike) {
     const wolvesAwake = phase === 'NIGHT' && s.phase.step === 1;
-    if (p?.alive && p.role === 'werewolf' && wolvesAwake) return { wolves: { ...TALK } };
+    if (p?.alive && isWolf(p) && wolvesAwake) return { wolves: { ...TALK } };
     return dead;
   }
 

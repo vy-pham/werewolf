@@ -112,4 +112,5 @@ Chỉ cần build lại APK khi thêm hoặc đổi module native; đổi code J
 - ✅ M4: voice chat (LiveKit) cho web: quyền nói/nghe do server cấp theo phase; đã test với LiveKit thật (sói thì thầm ban đêm, ban ngày chỉ một người nói)
 - ✅ M5: app mobile (Expo) ngang bằng web: đăng nhập khách, sảnh, phòng, màn chơi, chat, voice LiveKit native; logic client dùng chung qua `packages/client-core`; test Playwright cho host dùng app mobile chơi cùng 5 người web. Voice trên điện thoại thật cần bản dev build (xem phần trên)
 - ✅ M6: phụ đề AI + dịch vi↔en: worker Python (faster-whisper + NLLB), server quyết định ai đọc được phụ đề theo đúng quyền nghe voice (sói chỉ sói đọc), transcript lưu 24 giờ, thanh CC trên web + mobile. Đã test e2e với LiveKit thật. Chưa có: dịch chat chữ
-- ⏭️ M7: beta (vai mở rộng, báo cáo, stats)
+- ✅ M7 (phần code): 4 vai mới (Cupid + phe cặp đôi, Sói đầu đàn, Kẻ ngốc, Già làng), báo cáo người chơi trong 24 giờ kèm bằng chứng, thống kê cá nhân, trên web + mobile. Test Playwright: 6 trình duyệt chơi với bộ vai mới, báo cáo và xem thống kê
+- ⏭️ Beta thật: đạt tiêu chí BRD §8 (20 trận beta, 12 người web + mobile, voice ổn định); deploy production

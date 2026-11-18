@@ -9,15 +9,18 @@ import { useNames } from './names';
 interface Props {
   gameId: string;
   view: PlayerView;
-  selectedId: string | null;
+  /** Selected players (Cupid selects two, every other action one). */
+  selectedIds: string[];
   clearSelection: () => void;
 }
 
 /** What the viewer can do right now (driven by `view.me.pendingAction`). The server validates. */
-export function ActionPanel({ gameId, view, selectedId, clearSelection }: Props) {
+export function ActionPanel({ gameId, view, selectedIds, clearSelection }: Props) {
   const { t } = useTranslation();
   const name = useNames();
   const [heal, setHeal] = useState(false);
+  const [infect, setInfect] = useState(false);
+  const selectedId = selectedIds[0] ?? null;
   const me = view.me;
   const action = me?.pendingAction ?? null;
 
@@ -27,6 +30,7 @@ export function ActionPanel({ gameId, view, selectedId, clearSelection }: Props)
       clearSelection();
       setHeal(false);
     }
+    return ok;
   };
 
   if (!me) return null;
@@ -34,7 +38,11 @@ export function ActionPanel({ gameId, view, selectedId, clearSelection }: Props)
     return (
       <Card data-testid="action-panel" data-action="">
         <p className="text-gray-400 text-sm">
-          {me.alive ? t('action.waiting') : t('action.deadSpectator')}
+          {!me.alive
+            ? t('action.deadSpectator')
+            : me.canVote === false && view.phase.name === 'VOTE'
+              ? t('action.foolCannotVote')
+              : t('action.waiting')}
         </p>
       </Card>
     );
@@ -71,6 +79,38 @@ export function ActionPanel({ gameId, view, selectedId, clearSelection }: Props)
         <Button data-testid="action-confirm" onClick={() => send({ type: 'END_TURN' })}>
           {t('action.endTurn')}
         </Button>
+      ) : action === 'CUPID_LINK' ? (
+        <>
+          <p className="text-gray-400 text-sm">
+            {selectedIds.length === 2
+              ? t('action.cupidPair', {
+                  a: name(selectedIds[0] ?? ''),
+                  b: name(selectedIds[1] ?? ''),
+                })
+              : t('action.cupidPick')}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              data-testid="action-confirm"
+              disabled={selectedIds.length !== 2}
+              onClick={() =>
+                send({
+                  type: 'CUPID_LINK',
+                  targetIds: [selectedIds[0] ?? '', selectedIds[1] ?? ''],
+                })
+              }
+            >
+              {t('action.confirm')}
+            </Button>
+            <Button
+              variant="secondary"
+              data-testid="action-skip"
+              onClick={() => send({ type: 'CUPID_LINK', targetIds: null })}
+            >
+              {t('action.skip')}
+            </Button>
+          </div>
+        </>
       ) : action === 'WITCH_ACT' ? (
         <>
           <p className="text-sm">
@@ -117,11 +157,29 @@ export function ActionPanel({ gameId, view, selectedId, clearSelection }: Props)
         <>
           {me.submitted ? <p className="text-green-300 text-sm">{t('action.changeHint')}</p> : null}
           {pickHint}
+          {action === 'WOLF_VOTE' && me.alpha ? (
+            me.alpha.infectUsed ? (
+              <p className="text-gray-400 text-xs">{t('action.alphaInfectUsed')}</p>
+            ) : (
+              <Toggle
+                label={t('action.alphaInfect')}
+                checked={infect}
+                onChange={setInfect}
+                testId="alpha-infect"
+              />
+            )
+          ) : null}
           <div className="flex gap-2">
             <Button
               data-testid="action-confirm"
               disabled={!selectedId}
-              onClick={() => send({ type: action, targetId: selectedId } as GameCommand)}
+              onClick={() =>
+                send(
+                  (action === 'WOLF_VOTE' && me.alpha && !me.alpha.infectUsed
+                    ? { type: action, targetId: selectedId, infect }
+                    : { type: action, targetId: selectedId }) as GameCommand,
+                )
+              }
             >
               {t('action.confirm')}
             </Button>

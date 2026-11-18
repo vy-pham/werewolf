@@ -12,6 +12,15 @@ export { currentSpeaker } from './phases';
 export { expectedCommand, projectFor } from './projection';
 export { createRng, pick, type Rng, shuffle } from './rng';
 export * from './role-set';
+export {
+  canVote,
+  isWolf,
+  mixedCouple,
+  normalize,
+  partnerOf,
+  startingRole,
+  teamOf,
+} from './state';
 export type * from './types';
 export { canSend, voicePermissions } from './voice';
 export * from './winner';

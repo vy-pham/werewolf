@@ -1,5 +1,5 @@
 import { countVotes } from '@werewolf/client-core';
-import type { PlayerView } from '@werewolf/shared';
+import { isWolfRole, type PlayerView } from '@werewolf/shared';
 import { useTranslation } from 'react-i18next';
 import { Badge, cn } from '../../components/ui';
 import { useVoice } from '../../lib/voice';
@@ -8,11 +8,11 @@ import { useNames } from './names';
 interface Props {
   view: PlayerView;
   selectable: (id: string) => boolean;
-  selectedId: string | null;
+  selectedIds: string[];
   onSelect: (id: string) => void;
 }
 
-export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
+export function PlayerGrid({ view, selectable, selectedIds, onSelect }: Props) {
   const { t } = useTranslation();
   const name = useNames();
   const dayVotes = countVotes(view.dayVotes);
@@ -44,7 +44,7 @@ export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
                     ? 'border-white/10 bg-white/5'
                     : 'border-transparent bg-black/30 opacity-60',
                   canSelect && 'cursor-pointer hover:border-moon',
-                  selectedId === p.id && 'border-moon ring-2 ring-moon/50',
+                  selectedIds.includes(p.id) && 'border-moon ring-2 ring-moon/50',
                   view.speakerId === p.id && 'border-green-400',
                   speaking.includes(p.id) && 'shadow-[0_0_0_2px_rgba(74,222,128,0.8)]',
                 )}
@@ -61,9 +61,12 @@ export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
                 </span>
                 <span className="flex flex-wrap gap-1">
                   {p.role ? (
-                    <Badge tone={p.role === 'werewolf' ? 'bad' : 'neutral'}>
+                    <Badge tone={isWolfRole(p.role) ? 'bad' : 'neutral'}>
                       {t(`roles.${p.role}`)}
                     </Badge>
+                  ) : null}
+                  {view.me?.partnerId === p.id || view.me?.cupidLinked?.includes(p.id) ? (
+                    <Badge tone="moon">💘 {t('game.lover')}</Badge>
                   ) : null}
                   {!p.alive ? <Badge>{t('game.dead')}</Badge> : null}
                   {view.accusedId === p.id ? <Badge tone="bad">{t('game.onTrial')}</Badge> : null}

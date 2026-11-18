@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Button, Card, Input, Toggle } from '../../components/ui';
 import { api } from '../../lib/api';
 import { attempt } from '../../lib/errors';
+import { ReportPanel } from '../reports/ReportPanel';
+import { StatsCard } from '../stats/StatsCard';
 
 export function LobbyHome() {
   const { t, i18n } = useTranslation();
@@ -89,6 +91,9 @@ export function LobbyHome() {
           <p className="text-gray-400 text-sm">{t('lobby.noPublicRooms')}</p>
         )}
       </Card>
+
+      <StatsCard />
+      <ReportPanel />
     </div>
   );
 }

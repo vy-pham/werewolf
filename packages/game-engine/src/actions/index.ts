@@ -1,6 +1,7 @@
 import type { GameCommand, RuleError } from '@werewolf/shared';
 import { finishNightStep, nightStepComplete } from '../phases';
 import type { PlayerState, Tx } from '../types';
+import { applyCupid, validateCupid } from './cupid';
 import { applyDayVote, validateDayVote } from './day-vote';
 import { applyEndTurn, validateEndTurn } from './end-turn';
 import { applyGuard, validateGuard } from './guard';
@@ -17,6 +18,12 @@ export function runCommand(tx: Tx, actor: PlayerState, cmd: GameCommand): RuleEr
       const e = validateWolfVote(s, actor, cmd);
       if (e) return e;
       applyWolfVote(tx, actor, cmd);
+      break;
+    }
+    case 'CUPID_LINK': {
+      const e = validateCupid(s, actor, cmd);
+      if (e) return e;
+      applyCupid(tx, actor, cmd);
       break;
     }
     case 'GUARD_PROTECT': {

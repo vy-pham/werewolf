@@ -21,7 +21,11 @@
     "seer": "Tiên tri",
     "guard": "Bảo vệ",
     "witch": "Phù thủy",
-    "hunter": "Thợ săn"
+    "hunter": "Thợ săn",
+    "cupid": "Cupid",
+    "alpha_wolf": "Sói đầu đàn",
+    "fool": "Kẻ ngốc",
+    "elder": "Già làng"
   },
   "status": {
     "serverOnline": "Đã kết nối",
@@ -106,7 +110,11 @@
     "dead": "Đã chết",
     "onTrial": "Bị đưa lên",
     "votes": "{{count}} phiếu",
-    "seerResults": "Những gì bạn đã soi"
+    "seerResults": "Những gì bạn đã soi",
+    "lover": "Người yêu",
+    "partner": "Bạn đang yêu {{name}} 💘",
+    "couple": "Bạn đã ghép {{a}} 💘 {{b}}",
+    "team": "Phe: {{team}}"
   },
   "action": {
     "waiting": "Chưa đến lượt bạn. Hãy chờ.",
@@ -131,7 +139,8 @@
       "WITCH_ACT": "Bình thuốc của bạn",
       "DAY_VOTE": "Bỏ phiếu",
       "HUNTER_SHOOT": "Kéo một người chết theo",
-      "END_TURN": "Đến lượt bạn nói"
+      "END_TURN": "Đến lượt bạn nói",
+      "CUPID_LINK": "Ghép cặp đôi"
     },
     "help": {
       "WOLF_VOTE": "Bầy sói cắn người có nhiều phiếu sói nhất. Bạn có thể đổi lựa chọn.",
@@ -140,8 +149,14 @@
       "WITCH_ACT": "Cứu nạn nhân và/hoặc đầu độc một người. Mỗi bình chỉ dùng được một lần trong cả trận.",
       "DAY_VOTE": "Người nhiều phiếu nhất bị xử tử. Bạn có thể đổi phiếu cho tới khi hết giờ.",
       "HUNTER_SHOOT": "Bạn sắp chết. Hãy chọn một người chết cùng bạn.",
-      "END_TURN": "Mọi người đang nghe bạn. Nói xong thì bấm nút."
-    }
+      "END_TURN": "Mọi người đang nghe bạn. Nói xong thì bấm nút.",
+      "CUPID_LINK": "Chọn 2 người (có thể chọn chính mình). Một người chết thì người kia chết theo. Cặp sói + dân chỉ thắng khi là 2 người cuối cùng còn sống."
+    },
+    "cupidPick": "Chạm vào 2 người chơi.",
+    "cupidPair": "Cặp đôi: {{a}} 💘 {{b}}",
+    "alphaInfect": "Biến thành sói thay vì cắn chết (1 lần mỗi trận)",
+    "alphaInfectUsed": "Bạn đã dùng quyền biến sói.",
+    "foolCannotVote": "Bạn đã lộ là Kẻ ngốc: không được bỏ phiếu nữa."
   },
   "log": {
     "title": "Diễn biến",
@@ -158,8 +173,15 @@
     "hunterMissed": "{{hunter}} không bắn ai.",
     "winner": {
       "village": "Dân làng chiến thắng!",
-      "wolves": "Bầy sói chiến thắng!"
-    }
+      "wolves": "Bầy sói chiến thắng!",
+      "lovers": "Cặp đôi chiến thắng!"
+    },
+    "cupidLinked": "Bạn đã ghép {{a}} và {{b}}.",
+    "loverAssigned": "Bạn đã yêu {{name}} ({{role}}).",
+    "infected": "Bạn bị Sói đầu đàn cắn: giờ bạn là Ma sói!",
+    "wolfJoined": "{{name}} đã gia nhập bầy sói.",
+    "foolRevealed": "{{name}} là Kẻ ngốc! Không chết nhưng không được bỏ phiếu nữa.",
+    "elderSurvived": "Sói đã cắn bạn nhưng bạn vẫn sống (chỉ 1 lần)."
   },
   "chat": {
     "channel": {
@@ -192,7 +214,8 @@
     "INVALID_TARGET": "Bạn không thể chọn người này.",
     "ABILITY_USED": "Bạn đã dùng khả năng này rồi.",
     "PLAYER_DEAD": "Người chết không thể hành động.",
-    "INTERNAL": "Có lỗi xảy ra. Vui lòng thử lại."
+    "INTERNAL": "Có lỗi xảy ra. Vui lòng thử lại.",
+    "REPORT_WINDOW_CLOSED": "Chỉ báo cáo được trong vòng 24 giờ sau trận."
   },
   "voice": {
     "prompt": "Phòng này có voice chat.",
@@ -219,5 +242,36 @@
       "en": "English",
       "vi": "Tiếng Việt"
     }
+  },
+  "teams": {
+    "village": "Dân làng",
+    "wolves": "Ma sói",
+    "lovers": "Cặp đôi"
+  },
+  "reports": {
+    "title": "Báo cáo người chơi",
+    "recent": "Trận gần đây (báo cáo trong vòng 24 giờ)",
+    "none": "Chưa có trận nào gần đây.",
+    "until": "Báo cáo được đến {{time}}",
+    "report": "Báo cáo",
+    "reported": "Đã báo cáo",
+    "reason": "Lý do",
+    "note": "Chuyện gì đã xảy ra? (không bắt buộc)",
+    "send": "Gửi báo cáo",
+    "cancel": "Hủy",
+    "sent": "Đã gửi báo cáo. Cảm ơn bạn.",
+    "reasons": {
+      "abuse": "Nói tục, xúc phạm",
+      "cheating": "Gian lận / lộ thông tin ngoài game",
+      "spam": "Spam",
+      "afk": "Bỏ trận / không chơi",
+      "other": "Khác"
+    }
+  },
+  "stats": {
+    "title": "Thống kê của bạn",
+    "summary": "{{games}} trận · thắng {{wins}} ({{rate}}%)",
+    "empty": "Chơi một trận để xem thống kê.",
+    "role": "{{role}}: {{wins}}/{{games}}"
   }
 }

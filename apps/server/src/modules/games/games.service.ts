@@ -6,15 +6,16 @@ import {
   type EngineInput,
   type GameState,
   projectFor,
+  startingRole,
+  teamOf,
 } from '@werewolf/game-engine';
-import {
-  type ChatMessageView,
-  type DeliveredGameEvent,
-  type GameCommand,
-  type GameEvent,
-  type GameSyncResult,
-  ROLE_TEAM,
-  type RoleCounts,
+import type {
+  ChatMessageView,
+  DeliveredGameEvent,
+  GameCommand,
+  GameEvent,
+  GameSyncResult,
+  RoleCounts,
 } from '@werewolf/shared';
 import type { FastifyBaseLogger } from 'fastify';
 import { Types } from 'mongoose';
@@ -252,7 +253,9 @@ async function updateStats(state: GameState) {
   if (!state.winner) return;
   await User.bulkWrite(
     state.players.map((p) => {
-      const won = ROLE_TEAM[p.role] === state.winner ? 1 : 0;
+      // Lovers win as a couple; an infected player wins with the wolves. Stats by DEALT role.
+      const won = teamOf(state, p) === state.winner ? 1 : 0;
+      const role = startingRole(state, p);
       return {
         updateOne: {
           filter: { _id: new Types.ObjectId(p.id) },
@@ -260,8 +263,8 @@ async function updateStats(state: GameState) {
             $inc: {
               'stats.games': 1,
               'stats.wins': won,
-              [`stats.byRole.${p.role}.games`]: 1,
-              [`stats.byRole.${p.role}.wins`]: won,
+              [`stats.byRole.${role}.games`]: 1,
+              [`stats.byRole.${role}.wins`]: won,
             },
           },
         },

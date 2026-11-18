@@ -1,3 +1,4 @@
+import type { RoleId } from '@werewolf/shared';
 import { MAX_PLAYERS, MIN_PLAYERS, ROLE_PRESETS } from '@werewolf/shared';
 import { describe, expect, it } from 'vitest';
 import { presetFor, totalRoles, validateRoleSet } from './role-set';
@@ -34,8 +35,8 @@ describe('checkWinner', () => {
   it('village wins when every wolf is dead', () => {
     expect(
       checkWinner([
-        { role: 'werewolf', alive: false },
-        { role: 'villager', alive: true },
+        { id: 'p1', role: 'werewolf', alive: false },
+        { id: 'p2', role: 'villager', alive: true },
       ]),
     ).toBe('village');
   });
@@ -43,9 +44,9 @@ describe('checkWinner', () => {
   it('wolves win at parity', () => {
     expect(
       checkWinner([
-        { role: 'werewolf', alive: true },
-        { role: 'seer', alive: true },
-        { role: 'villager', alive: false },
+        { id: 'p3', role: 'werewolf', alive: true },
+        { id: 'p4', role: 'seer', alive: true },
+        { id: 'p5', role: 'villager', alive: false },
       ]),
     ).toBe('wolves');
   });
@@ -53,10 +54,31 @@ describe('checkWinner', () => {
   it('game continues otherwise', () => {
     expect(
       checkWinner([
-        { role: 'werewolf', alive: true },
-        { role: 'seer', alive: true },
-        { role: 'villager', alive: true },
+        { id: 'p6', role: 'werewolf', alive: true },
+        { id: 'p7', role: 'seer', alive: true },
+        { id: 'p8', role: 'villager', alive: true },
       ]),
     ).toBeNull();
+  });
+
+  const p = (id: string, role: RoleId, alive = true) => ({ id, role, alive });
+
+  it('a mixed couple wins when they are the last two alive', () => {
+    expect(
+      checkWinner([p('w', 'werewolf'), p('v', 'villager'), p('x', 'seer', false)], ['w', 'v']),
+    ).toBe('lovers');
+  });
+
+  it('with a mixed couple alive, the wolf lover does not count for the pack', () => {
+    const players = [p('w', 'werewolf'), p('v', 'villager'), p('w2', 'werewolf'), p('s', 'seer')];
+    // pack = 1 (w2) vs 3 others: no winner; without the couple it would be 2 vs 2 = wolves.
+    expect(checkWinner(players, ['w', 'v'])).toBeNull();
+    expect(checkWinner(players)).toBe('wolves');
+    // a couple from the same team changes nothing
+    expect(checkWinner(players, ['w', 'w2'])).toBe('wolves');
+  });
+
+  it('the alpha wolf counts as a wolf', () => {
+    expect(checkWinner([p('a', 'alpha_wolf'), p('v', 'villager')])).toBe('wolves');
   });
 });

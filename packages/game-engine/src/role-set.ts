@@ -26,7 +26,7 @@ export function validateRoleSet(roles: RoleCounts, playerCount: number): RoleSet
   if (total !== playerCount) {
     errors.push({ code: 'ROLE_COUNT_MISMATCH', expected: playerCount, actual: total });
   }
-  const wolves = roles.werewolf ?? 0;
+  const wolves = (roles.werewolf ?? 0) + (roles.alpha_wolf ?? 0);
   if (wolves < 1 || wolves >= playerCount / 2) {
     errors.push({ code: 'INVALID_WOLF_COUNT', wolves });
   }
