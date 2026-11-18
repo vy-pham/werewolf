@@ -181,20 +181,27 @@ client  ──emit('game:action', {gameId, type:'WOLF_VOTE', targetId}, ack)─�
 ## 4. Game engine — `packages/game-engine`
 
 ```ts
-// API công khai (dự kiến)
-createGame(settings, players, seed): GameState
-validate(state, actorId, command): Result<void, RuleError>
-apply(state, command, ctx: { now, rng }): { state: GameState; events: GameEvent[] }
-isPhaseComplete(state): boolean
-advancePhase(state, ctx): { state; events }
-checkWinner(state): Team | null
-projectFor(state, viewerId): PlayerView          // lọc thông tin theo người xem
-voicePermissions(state, viewerId): VoiceGrant    // ma trận ở game-rules §8
+// API công khai (đã cài đặt ở M1). ctx = { now: number (ms), rng: Rng }
+createGame({ players, settings }, ctx): EngineResult        // chia vai, vào ROLE_REVEAL
+dispatch(state, input, ctx): EngineResult                   // input = { kind:'command', actorId, command } | { kind:'timeout' }
+projectFor(state, viewerId | null): PlayerView              // lọc thông tin theo người xem (null = khán giả)
+voicePermissions(state, viewerId | null): VoiceGrant        // ma trận ở game-rules §8
+checkWinner(players): Team | null
+createRng(seed): Rng                                        // PRNG có seed; lưu seed vào game để replay
+// EngineResult = { ok: true, state, events } | { ok: false, error: RuleError }
 ```
 
-- Mỗi vai trò là một module trong `src/roles/<role>.ts` khai báo: `team`, `nightStep`, `actions` (validator + effect), `onDeath` hook. Thêm vai mới = thêm file + đăng ký, không sửa core.
-- `GameEvent` có `audience`: `all | team:wolves | player:<id> | dead`. Server dựa vào đó để route.
-- Test: mỗi luật trong [04-game-rules.md](04-game-rules.md) có ít nhất 1 test; có thêm test kịch bản cả trận (table-driven) và test "không lộ thông tin" (snapshot `projectFor` của từng vai).
+- `dispatch` **pure**: không đụng vào state đầu vào. Lỗi luật thì trả `{ ok: false }` và không có gì thay đổi. Hành động ban đêm tự chuyển step hoặc phase khi đủ người. `timeout` chỉ được nhận khi `now ≥ phase.endsAt`.
+- `GameState` là **JSON thuần**, lưu thẳng vào Mongo (`games.state`). Server không bao giờ gửi `GameState` xuống client.
+- Cấu trúc code:
+  - `src/actions/<role>.ts`: validate + apply cho lệnh của từng vai (`werewolf`, `guard`, `seer`, `witch`, `hunter`, `day-vote`); `actions/index.ts` điều phối.
+  - `src/phases.ts`: máy trạng thái phase, resolve đêm, phiếu, chết, thợ săn, kiểm tra thắng.
+  - `src/projection.ts`, `src/voice.ts`, `src/create.ts`, `src/dispatch.ts`.
+- Lệnh (`GameCommand`, Zod schema trong `@werewolf/shared`): `WOLF_VOTE`, `GUARD_PROTECT`, `SEER_CHECK`, `WITCH_ACT { heal, poisonTargetId }`, `DAY_VOTE`, `HUNTER_SHOOT`, `END_TURN` (người đang nói nhường lượt). `targetId: null` nghĩa là bỏ qua.
+- Lượt nói: `voicePermissions` cho biết ai được nói ở kênh nào; `canSend(state, userId, channel)` dùng chung cho chat chữ. Server chỉ việc áp dụng kết quả, không tự viết luật.
+- `GameEvent` có `audience`: `all | wolves | player:<id> | dead`. Server dựa vào đó để route.
+- Thêm vai mới: thêm RoleId vào shared, viết `actions/<role>.ts`, nối vào `actions/index.ts`, `expectedCommand` (projection), `nightStepComplete` (phases), viết test và cập nhật rules doc.
+- Test (`src/test/`): mỗi luật trong [04-game-rules.md](04-game-rules.md) có ít nhất 1 test. Có thêm test cả trận, test "không lộ thông tin" (kiểm tra `projectFor` của mọi người chơi ở từng mốc trong trận) và test ma trận voice. Coverage ≥ 90% được ép trong `vitest.config.ts`.
 
 ## 5. Database — MongoDB + Mongoose
 
@@ -260,7 +267,7 @@ Ngoài việc lưu dữ liệu, MongoDB còn thay luôn phần Redis thường l
 **`chat_messages`**: chỉ phục vụ reconnect và báo cáo
 
 ```ts
-{ _id, roomId, gameId?, channel: 'lobby'|'day'|'wolves'|'dead', senderId, text, lang,
+{ _id, roomId, gameId?, channel: 'lobby'|'main'|'wolves'|'dead', senderId, text, lang,
   translations?: { [lang]: string }, at }
 // index: { gameId, channel, at }; TTL 24 giờ trên `at` (expireAfterSeconds: 86400)
 ```

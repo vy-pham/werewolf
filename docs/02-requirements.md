@@ -37,7 +37,8 @@
 | ID         | Yêu cầu                                                                                                                                                                          | Ưu tiên |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | FR-GAME-01 | Server chia vai ngẫu nhiên (seeded RNG, có log seed để debug), mỗi người chỉ nhận vai của mình                                                                                   | P0      |
-| FR-GAME-02 | Vòng lặp phase: Đêm → Bình minh → Thảo luận → Bỏ phiếu → Xử tử → kiểm tra thắng                                                                                                  | P0      |
+| FR-GAME-02 | Vòng lặp phase: Đêm → Bình minh → Thảo luận (nói theo lượt) → Bỏ phiếu → Xử tử → kiểm tra thắng                                                                                  | P0      |
+| FR-GAME-14 | **Nói theo lượt** ban ngày: mỗi người sống một lượt `speakingSeconds` theo thứ tự ghế, người bắt đầu xoay vòng mỗi ngày; người đang nói bấm "Xong" để nhường lượt sớm            | P0      |
 | FR-GAME-03 | Mỗi phase có timer; hành động đủ sớm thì chuyển phase sớm; hết giờ thì dùng hành động mặc định (bỏ qua)                                                                          | P0      |
 | FR-GAME-04 | Hành động ban đêm theo vai trò (Sói cắn, Tiên tri soi, Bảo vệ bảo vệ, Phù thủy cứu/độc), server kiểm tra hợp lệ (đúng vai, còn sống, đúng phase, còn lượt dùng, mục tiêu hợp lệ) | P0      |
 | FR-GAME-05 | Sói thấy đồng đội và lựa chọn của nhau theo thời gian thực; mục tiêu là người có nhiều phiếu nhất; nếu hòa thì xử theo cấu hình phòng                                            | P0      |
@@ -52,15 +53,15 @@
 
 ### 1.4 Voice (`VOICE`) — bắt buộc
 
-| ID          | Yêu cầu                                                                                                                                      | Ưu tiên |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| FR-VOICE-01 | Voice chat nhiều người trong phòng (sảnh và trong trận), tối đa 16 người nói                                                                 | P0      |
-| FR-VOICE-02 | **Quyền nói/nghe do server quyết định theo phase** (bảng ma trận ở [03-technical-design.md §6](03-technical-design.md#6-voice-chat-livekit)) | P0      |
-| FR-VOICE-03 | Ban đêm: dân làng không nói và không nghe; sói nói và nghe nhau trong kênh riêng                                                             | P0      |
-| FR-VOICE-04 | Người chết vào kênh "ma": nghe được ban ngày, nói với người chết khác, người sống không nghe thấy                                            | P0      |
-| FR-VOICE-05 | Tự tắt/mở mic, push-to-talk (tùy chọn), chỉnh âm lượng từng người, hiện chỉ báo đang nói                                                     | P0      |
-| FR-VOICE-06 | Chủ phòng mute một người trong sảnh                                                                                                          | P1      |
-| FR-VOICE-07 | Chạy được trên Chrome/Safari/Firefox desktop, Safari iOS, Chrome Android và app Expo                                                         | P0      |
+| ID          | Yêu cầu                                                                                                                                                                                                                                             | Ưu tiên |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| FR-VOICE-01 | Voice chat nhiều người trong phòng (sảnh và trong trận), tối đa 16 người nói                                                                                                                                                                        | P0      |
+| FR-VOICE-02 | **Quyền nói/nghe do server quyết định theo phase và lượt nói** (bảng ma trận ở [04-game-rules.md §8](04-game-rules.md#8-quyền-giao-tiếp-theo-phase-áp-dụng-cho-cả-voice-chat-chữ-và-phụ-đề)): kênh `main` có tối đa một người nói tại một thời điểm | P0      |
+| FR-VOICE-03 | Ban đêm: dân làng không nói và không nghe; sói chỉ nói và nghe nhau trong kênh riêng **khi tới lượt sói** (đêm step 1). Lúc bỏ phiếu không ai được nói                                                                                              | P0      |
+| FR-VOICE-04 | Người chết vào kênh "ma": nghe được ban ngày, nói với người chết khác, người sống không nghe thấy                                                                                                                                                   | P0      |
+| FR-VOICE-05 | Tự tắt/mở mic, push-to-talk (tùy chọn), chỉnh âm lượng từng người, hiện chỉ báo đang nói                                                                                                                                                            | P0      |
+| FR-VOICE-06 | Chủ phòng mute một người trong sảnh                                                                                                                                                                                                                 | P1      |
+| FR-VOICE-07 | Chạy được trên Chrome/Safari/Firefox desktop, Safari iOS, Chrome Android và app Expo                                                                                                                                                                | P0      |
 
 ### 1.5 Phụ đề & dịch AI (`CAP`)
 
@@ -76,11 +77,11 @@
 
 ### 1.6 Chat chữ (`CHAT`)
 
-| ID         | Yêu cầu                                                                                                                                                       | Ưu tiên |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| FR-CHAT-01 | Các kênh `lobby`, `day`, `wolves`, `dead`; server lọc người gửi và người nhận theo quyền                                                                      | P0      |
-| FR-CHAT-02 | Giới hạn tần suất gửi (5 tin / 5 s) và độ dài 300 ký tự; lọc từ cấm cơ bản                                                                                    | P0      |
-| FR-CHAT-03 | Chat của trận chỉ hiển thị trong trận đó và mất khỏi client khi rời trận. Server lưu chat **24 giờ** (TTL) chỉ để phục vụ reconnect và báo cáo, sau đó tự xóa | P0      |
+| ID         | Yêu cầu                                                                                                                                                                                        | Ưu tiên |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| FR-CHAT-01 | Các kênh `lobby`, `main`, `wolves`, `dead`; server lọc người gửi và người nhận theo **cùng luật lượt nói với voice** (`canSend` của engine): chỉ người đang có lượt mới gửi được tin ở kênh đó | P0      |
+| FR-CHAT-02 | Giới hạn tần suất gửi (5 tin / 5 s) và độ dài 300 ký tự; lọc từ cấm cơ bản                                                                                                                     | P0      |
+| FR-CHAT-03 | Chat của trận chỉ hiển thị trong trận đó và mất khỏi client khi rời trận. Server lưu chat **24 giờ** (TTL) chỉ để phục vụ reconnect và báo cáo, sau đó tự xóa                                  | P0      |
 
 ### 1.7 Thông báo & khác
 

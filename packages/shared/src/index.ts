@@ -1,4 +1,5 @@
 export * from './errors';
+export * from './game';
 export * from './locale';
 export * from './phases';
 export * from './roles';

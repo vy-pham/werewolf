@@ -66,4 +66,5 @@ Web: `VITE_API_URL` (mặc định `http://localhost:4000`). Mobile: `EXPO_PUBLI
 ## Trạng thái
 
 - ✅ M0: monorepo, tooling, CI, khung server / web / mobile / shared / game-engine / i18n
-- ⏭️ M1: game engine đủ 6 vai + test
+- ✅ M1: game engine đủ 6 vai, lọc thông tin theo người xem, quyền voice theo phase + nói theo lượt (94 test, coverage ~98%)
+- ⏭️ M2: backend core (auth, phòng, game qua Socket.IO, timer, chat, reconnect)

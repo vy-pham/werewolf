@@ -23,7 +23,8 @@ export const PhaseTimersSchema = z.object({
   nightActionSeconds: seconds(40, 15, 120),
   witchSeconds: seconds(20, 10, 60),
   dawnSeconds: seconds(8, 3, 20),
-  discussionSeconds: seconds(120, 30, 600),
+  /** Per-player speaking turn during DISCUSSION (players speak one by one in seat order). */
+  speakingSeconds: seconds(30, 10, 120),
   voteSeconds: seconds(30, 10, 120),
   defenseSeconds: seconds(20, 0, 120),
   hunterSeconds: seconds(15, 10, 60),
