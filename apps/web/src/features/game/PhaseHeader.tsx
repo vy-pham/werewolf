@@ -1,3 +1,4 @@
+import { phaseTitleKey } from '@werewolf/client-core';
 import type { PlayerView } from '@werewolf/shared';
 import { useTranslation } from 'react-i18next';
 import { Badge, Card } from '../../components/ui';
@@ -8,8 +9,7 @@ export function PhaseHeader({ view }: { view: PlayerView }) {
   const { t } = useTranslation();
   const name = useNames();
   const secondsLeft = useCountdown(view.phase.endsAt);
-  const phaseKey =
-    view.phase.name === 'NIGHT' ? `phase.NIGHT_${view.phase.step}` : `phase.${view.phase.name}`;
+  const phaseKey = phaseTitleKey(view);
 
   let detail: string | null = null;
   if (view.phase.name === 'DISCUSSION' && view.speakerId) {
