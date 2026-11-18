@@ -95,39 +95,45 @@ apps/server/src/
 ├─ main.ts                 bootstrap: buildApp() + listen
 ├─ app.ts                  tạo Fastify instance, đăng ký plugins + modules
 ├─ config/env.ts           đọc ENV bằng Zod (fail fast)
-├─ plugins/                mongoose.ts, auth.ts (decorate request.user), socket.ts, error-handler.ts
+├─ plugins/                mongoose.ts, auth.ts (request.user + app.authenticate), socket.ts (IO + handshake auth), error-handler.ts
 ├─ modules/
-│  ├─ auth/                auth.routes.ts, auth.service.ts, session.model.ts
-│  ├─ users/               user.model.ts, users.routes.ts, users.service.ts
-│  ├─ rooms/               room.model.ts, rooms.routes.ts, rooms.service.ts, rooms.socket.ts
-│  ├─ games/               game.model.ts, game-event.model.ts, games.service.ts, games.socket.ts, phase-scheduler.ts
-│  ├─ chat/                chat-message.model.ts, chat.socket.ts, chat.service.ts
-│  ├─ reports/             report.model.ts, reports.routes.ts, reports.service.ts
-│  ├─ voice/               voice.service.ts (token + permission sync theo phase)
-│  └─ captions/            transcript.model.ts, captions.routes.ts (internal API cho Python worker)
-└─ lib/                    errors.ts, ids.ts, rng.ts, socket-helpers.ts
+│  ├─ auth/                auth.routes.ts, auth.service.ts, token.service.ts, google.ts, session.model.ts
+│  ├─ users/               user.model.ts, users.routes.ts (/me)
+│  ├─ rooms/               room.model.ts, rooms.routes.ts, rooms.service.ts
+│  ├─ games/               game.model.ts (Game + GameEventLog), games.service.ts, phase-scheduler.ts, delivery.ts
+│  ├─ chat/                chat-message.model.ts, chat.service.ts
+│  ├─ realtime.ts          toàn bộ handler Socket.IO (mỏng: Zod → service → ack)
+│  ├─ reports/             (P1) report.model.ts, reports.routes.ts
+│  ├─ voice/               (M4) voice.service.ts: token LiveKit + đồng bộ quyền theo phase
+│  └─ captions/            (R2) transcript.model.ts, internal API cho Python worker
+├─ lib/                    clock.ts, errors.ts, ids.ts, presence.ts, socket-handler.ts
+└─ test/                   test tích hợp: MongoDB trong bộ nhớ + client Socket.IO thật
 ```
 
 Quy ước mỗi module:
 
 - `*.routes.ts` = Fastify plugin; schema lấy từ `@werewolf/shared`; **không chứa business logic**.
-- `*.service.ts` = hàm hoặc class thuần, nhận dependency qua tham số (dễ test), không phụ thuộc Fastify.
-- `*.socket.ts` = đăng ký handler Socket.IO; mỗi handler validate payload bằng Zod, gọi service, trả kết quả qua `ack`.
-- `*.model.ts` = Mongoose schema + model + type (`InferSchemaType`).
+- `*.service.ts` = class nhận dependency qua constructor (dễ test), không phụ thuộc Fastify.
+- Handler socket nằm trong `modules/realtime.ts`, dùng `onEvent(socket, log, event, ZodSchema, handler)`: validate payload, gọi service, luôn trả `ack({ ok, data | error })`.
+- `*.model.ts` = Mongoose schema + model + interface `*Doc`.
+- Dependency có thể thay trong test qua `buildApp({ deps: { clock, scheduler, google } })`.
 
 ### 3.3 Luồng xử lý một hành động trong game
 
 ```
-client  ──emit('game:action', {gameId, type:'WOLF_VOTE', targetId}, ack)──►  games.socket.ts
-  1. Zod validate payload
-  2. GamesService.submitAction(userId, cmd)
-       a. load game doc (lean) → gameEngine.validate(state, actor, cmd)        // lỗi luật → ack({error})
-       b. findOneAndUpdate({_id, version, phase điều kiện…}, {$push/ $set, $inc:{version:1}})  // atomic
-          null → reload + retry (tối đa 3 lần) hoặc trả CONFLICT
-       c. engine.isPhaseComplete(state)? → advancePhase() (resolve, ghi game_events, đặt timer mới)
-  3. Phát event: với mỗi player socket → emit('game:state', project(state, playerId))
-     và emit('game:event', event) theo audience (room `game:{id}`, `game:{id}:wolves`, `user:{id}`…)
+client ──emit('game:action', { gameId, command }, ack)──► realtime.ts (Zod: GameActionSchema)
+  GamesService.act(userId, gameId, command)  — tuần tự hóa theo gameId trong instance
+    1. load game (lean)
+    2. engine.dispatch(state, { kind:'command', actorId, command }, { now, rng(seed, version) })
+         lỗi luật → ack({ ok:false, error }) — không ghi gì
+    3. Game.findOneAndUpdate({ _id, version }, { $set:{ state }, $inc:{ version:1, eventSeq:n } })
+         null (có người ghi trước) → reload + chạy lại engine (tối đa 3 lần) → CONFLICT
+    4. insert game_events (seq liên tục), route từng event theo audience tới `user:{id}`,
+       gửi `game:state` = projectFor(state, userId) cho từng người chơi
+    5. đặt timer mới (PhaseScheduler) hoặc, nếu GAME_OVER: cập nhật thống kê, phòng về sảnh
 ```
+
+Timeout dùng cùng luồng với `{ kind: 'timeout' }` và chỉ áp dụng nếu `version` vẫn khớp.
 
 ### 3.4 Timer phase (không dùng Redis/queue)
 
@@ -141,25 +147,27 @@ client  ──emit('game:action', {gameId, type:'WOLF_VOTE', targetId}, ack)─�
 ### 3.5 Realtime (Socket.IO)
 
 - Namespace mặc định; khi handshake, xác thực bằng `auth.token` (JWT). Client dùng `transports: ['websocket']` (bỏ long-polling, không cần sticky session).
-- Socket rooms: `user:{userId}`, `room:{roomId}`, `game:{gameId}`, `game:{gameId}:wolves`, `game:{gameId}:dead`.
+- Socket rooms: `user:{userId}` (mọi event riêng và event game, server tự lọc người nhận) và `room:{roomId}` (trạng thái phòng, chat sảnh). Không dùng room cho kênh sói/người chết: server tính người nhận từ state.
 - Contract event định nghĩa **một lần** trong `packages/shared/src/socket.ts` dưới dạng `ClientToServerEvents` / `ServerToClientEvents` (typed generics của Socket.IO) kèm Zod schema.
 
-| Hướng | Event                                             | Payload chính                                                                                                                                   |
-| ----- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| C→S   | `room:join` / `room:leave`                        | `{code}`                                                                                                                                        |
-| C→S   | `room:ready`                                      | `{ready}`                                                                                                                                       |
-| C→S   | `room:updateSettings` (host)                      | `RoomSettings`                                                                                                                                  |
-| C→S   | `room:kick` (host)                                | `{userId}`                                                                                                                                      |
-| C→S   | `game:start` (host)                               | `{}`                                                                                                                                            |
-| C→S   | `game:action`                                     | `{gameId, type, targetId?}` — `type ∈ WOLF_VOTE, SEER_CHECK, GUARD_PROTECT, WITCH_HEAL, WITCH_POISON, WITCH_SKIP, DAY_VOTE, HUNTER_SHOOT, SKIP` |
-| C→S   | `game:sync`                                       | `{gameId, lastSeq}` → server gửi lại snapshot + event bị lỡ                                                                                     |
-| C→S   | `chat:send`                                       | `{channel, text}`                                                                                                                               |
-| S→C   | `room:state`                                      | Room đã lọc                                                                                                                                     |
-| S→C   | `game:state`                                      | `PlayerView` (đã project cho riêng người nhận)                                                                                                  |
-| S→C   | `game:event`                                      | `{seq, type, payload}` (ví dụ `PLAYER_DIED`, `SEER_RESULT`, `VOTE_CAST`, `PHASE_CHANGED`)                                                       |
-| S→C   | `voice:grant`                                     | `{url, tokens:{main?, wolves?, dead?}}` — gửi lại mỗi khi quyền thay đổi                                                                        |
-| S→C   | `chat:message`                                    | `{channel, sender, text, lang, translations?}`                                                                                                  |
-| S→C   | `caption` (qua LiveKit data, không qua Socket.IO) | xem §7                                                                                                                                          |
+| Hướng | Event                                             | Payload chính                                                                                                        |
+| ----- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| C→S   | `room:join` / `room:leave`                        | `{code}`                                                                                                             |
+| C→S   | `room:ready`                                      | `{ready}`                                                                                                            |
+| C→S   | `room:updateSettings` (host)                      | `RoomSettingsPatch` (merge với settings hiện tại rồi validate lại)                                                   |
+| C→S   | `room:kick` (host)                                | `{userId}`                                                                                                           |
+| C→S   | `game:start` (host)                               | `{}` → `{gameId}`                                                                                                    |
+| C→S   | `game:action`                                     | `{gameId, command: GameCommand}` (WOLF_VOTE, GUARD_PROTECT, SEER_CHECK, WITCH_ACT, DAY_VOTE, HUNTER_SHOOT, END_TURN) |
+| C→S   | `game:sync`                                       | `{gameId, lastSeq}` → `{view, events (seq > lastSeq, đã lọc), chat}`                                                 |
+| C→S   | `chat:send`                                       | `{channel, text}` — trong trận bị chặn theo `canSend` (nói theo lượt)                                                |
+| S→C   | `server:hello`                                    | `{serverTime, userId}`                                                                                               |
+| S→C   | `room:state` / `room:kicked`                      | `RoomView` / `{roomId}`                                                                                              |
+| S→C   | `game:started`                                    | `{gameId}`                                                                                                           |
+| S→C   | `game:state`                                      | `{gameId, view: PlayerView}` (đã project cho riêng người nhận), gửi sau mỗi thay đổi                                 |
+| S→C   | `game:event`                                      | `{gameId, seq, type, payload}` (ví dụ `PLAYER_DIED`, `SEER_RESULT`, `VOTE_CAST`, `SPEAKER_CHANGED`)                  |
+| S→C   | `chat:message`                                    | `ChatMessageView {id, channel, senderId, senderName, text, at}`                                                      |
+| S→C   | `voice:grant` (M4)                                | `{url, tokens:{main?, wolves?, dead?}}` — gửi lại mỗi khi quyền thay đổi                                             |
+| S→C   | `caption` (qua LiveKit data, không qua Socket.IO) | xem §7                                                                                                               |
 
 ### 3.6 REST API (tối thiểu, phần còn lại đi qua socket)
 
@@ -244,16 +252,17 @@ Ngoài việc lưu dữ liệu, MongoDB còn thay luôn phần Redis thường l
 **`games`**: snapshot authoritative, một document mỗi trận (16 người nên document nhỏ, embed là hợp lý)
 
 ```ts
-{ _id, roomId, version, seed, status: 'running'|'finished', winner?: 'village'|'wolves',
-  settingsSnapshot,
-  phase: { name, round, step, startedAt, endsAt },
-  players: [{ userId, seat, displayName, role, team, alive, diedAt?: { round, phase, cause },
-              state: { guardLastTarget?, witchHealUsed, witchPoisonUsed, ... } }],
-  actions: [{ round, phase, step, actorId, type, targetId?, at }],   // hành động của round hiện tại + lịch sử
-  votes:   [{ round, voterId, targetId | 'skip', at }],
-  createdAt, endedAt? }
+{ _id, roomId, status: 'running'|'finished', winner: 'village'|'wolves'|null,
+  version,            // optimistic concurrency, +1 mỗi lần ghi
+  seed,               // RNG của mỗi bước = createRng(seed, version) → tái hiện được
+  eventSeq,           // seq cuối cùng đã ghi vào game_events
+  players: [{ userId, displayName, seat }],
+  state: GameState,   // JSON thuần của engine: rules, timers, phase, players(role, alive…), night, day, memory
+  createdAt, endedAt }
 // index: { roomId, createdAt:-1 }, { status }, { 'players.userId': 1, status: 1 }
 ```
+
+`state` là nguồn chân lý duy nhất về luật. Server không đọc từng field để tự quyết định luật, mà luôn gọi engine.
 
 **`game_events`**: event log append-only (reconnect, replay, debug)
 
@@ -291,10 +300,12 @@ Ngoài việc lưu dữ liệu, MongoDB còn thay luôn phần Redis thường l
 
 ### 5.2 Mẫu query cho logic phức tạp (role, turn, quyền)
 
-Lợi thế của Mongo ở đây là **gộp điều kiện luật vào filter của một lệnh atomic**: lệnh chỉ thành công nếu đúng vai, đúng phase, còn sống và chưa dùng kỹ năng, nên không có race condition.
+**Cách đã cài đặt (M2):** engine kiểm tra luật trên đúng phiên bản state vừa đọc, rồi lệnh ghi có điều kiện `{ _id, version }`. Nếu giữa lúc đọc và ghi có ai thay đổi trận (dù chỉ một field), `version` đã tăng, lệnh ghi trả về `null`, server đọc lại và chạy lại engine. Như vậy mọi điều kiện luật (đúng vai, đúng phase, còn sống, chưa dùng kỹ năng) đều được đảm bảo atomic mà không phải viết lại luật bằng query Mongo.
+
+Mẫu dưới đây (gộp điều kiện luật vào filter) vẫn hữu ích cho các thao tác **ngoài engine** như thống kê, công cụ admin hay migration; không dùng nó cho luồng realtime:
 
 ```ts
-// Phù thủy dùng bình cứu: chỉ thành công khi đúng phase/step, là witch còn sống, chưa dùng bình
+// Ví dụ: chỉ thành công khi đúng phase/step, là witch còn sống, chưa dùng bình
 await Game.findOneAndUpdate(
   {
     _id: gameId,

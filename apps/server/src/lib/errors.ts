@@ -25,6 +25,14 @@ export class AppError extends Error {
   }
 
   toBody(): AppErrorBody {
-    return { code: this.code, message: this.message, details: this.details };
+    return this.details === undefined
+      ? { code: this.code, message: this.message }
+      : { code: this.code, message: this.message, details: this.details };
   }
+}
+
+/** Converts anything thrown into the shared error shape (unknown errors become INTERNAL). */
+export function toErrorBody(error: unknown): AppErrorBody {
+  if (error instanceof AppError) return error.toBody();
+  return { code: 'INTERNAL', message: 'Internal server error' };
 }
