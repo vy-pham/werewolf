@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-night: #0f0d24;
+  --color-moon: #fde68a;
+  --color-blood: #b91c1c;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-night);
+  color: #e5e7eb;
+}

@@ -1,0 +1,111 @@
+# 04 — Game Rules (luật chơi chuẩn cho engine)
+
+> Tài liệu này là **nguồn chân lý cho `packages/game-engine`**. Khi đổi luật phải sửa tài liệu này trước, sau đó sửa engine và test.
+> Các tùy chọn đánh dấu ⚙️ là cấu hình của phòng (`room.settings.rules`), có giá trị mặc định.
+
+## 0. Luật tùy chỉnh (⚙️)
+
+Chủ phòng chỉnh được **khi tạo phòng và trong sảnh, trước khi bấm bắt đầu**. Mỗi lần đổi, mọi người trong phòng đều thấy ngay. Lúc game bắt đầu, cấu hình được chụp lại vào `game.settingsSnapshot` và **không đổi được trong trận**.
+
+| Key                        | Ý nghĩa                                                | Mặc định                   | Giá trị khác                                     |
+| -------------------------- | ------------------------------------------------------ | -------------------------- | ------------------------------------------------ |
+| `witchCanSelfHeal`         | Phù thủy được dùng bình cứu cho chính mình             | **`true`**                 | `false`                                          |
+| `guardCanSelfProtect`      | Bảo vệ được bảo vệ chính mình                          | **`true`**                 | `false`                                          |
+| `noKillFirstNight`         | Đêm đầu tiên sói không được cắn                        | **`false`** (sói được cắn) | `true`                                           |
+| `revealRoleOnDeath`        | Công khai vai của người chết                           | **`false`**                | `true`                                           |
+| `voteTieBreak`             | Xử lý hòa phiếu ban ngày                               | **`none`** (không ai chết) | `revote` (bỏ phiếu lại, tối đa `maxRevotes` lần) |
+| `maxRevotes`               | Số lần bỏ phiếu lại tối đa khi `voteTieBreak = revote` | **`3`**                    | 1–3                                              |
+| `witchOnePotionPerNight`   | Mỗi đêm phù thủy chỉ dùng tối đa 1 bình                | `true`                     | `false`                                          |
+| `hunterShootsWhenPoisoned` | Thợ săn bị độc vẫn được bắn                            | `false`                    | `true`                                           |
+| `wolfTieBreak`             | Sói hòa phiếu chọn mục tiêu                            | `random`                   | `none`                                           |
+| Timer (`*Seconds`)         | Thời gian từng phase, xem §4                           | như §4                     | trong giới hạn min/max                           |
+
+## 1. Phe & điều kiện thắng
+
+| Phe                  | Thắng khi                                          |
+| -------------------- | -------------------------------------------------- |
+| Dân làng (`village`) | Tất cả sói đã chết                                 |
+| Sói (`wolves`)       | Số sói còn sống ≥ số người không phải sói còn sống |
+
+Engine kiểm tra thắng thua sau **mỗi lần có người chết** (bình minh, xử tử, thợ săn bắn). Nếu cả hai điều kiện cùng đúng một lúc (hiếm gặp, ví dụ thợ săn bắn chết con sói cuối cùng khi số người bằng nhau), **dân làng thắng**.
+
+## 2. Vai trò MVP
+
+| Vai trò (`RoleId`)  | Phe     | Khả năng                                                                                                                                                                           |
+| ------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `villager` Dân làng | village | Không có khả năng đêm                                                                                                                                                              |
+| `werewolf` Sói      | wolves  | Mỗi đêm cùng bầy chọn 1 người để cắn. Biết đồng đội                                                                                                                                |
+| `seer` Tiên tri     | village | Mỗi đêm soi 1 người, biết người đó **có phải sói hay không**                                                                                                                       |
+| `guard` Bảo vệ      | village | Mỗi đêm bảo vệ 1 người khỏi bị sói cắn. Không được bảo vệ cùng một người 2 đêm liên tiếp. ⚙️ `guardCanSelfProtect` (mặc định `true`)                                               |
+| `witch` Phù thủy    | village | 1 bình cứu và 1 bình độc cho cả trận. Biết ai bị sói cắn đêm đó. Mỗi đêm dùng tối đa 1 bình ⚙️ `witchOnePotionPerNight` (mặc định `true`). ⚙️ `witchCanSelfHeal` (mặc định `true`) |
+| `hunter` Thợ săn    | village | Khi chết được bắn 1 người chết theo. ⚙️ `hunterShootsWhenPoisoned` (mặc định `false`)                                                                                              |
+
+### Vai trò Release 2 (đã chừa chỗ trong thiết kế)
+
+`cupid` (đêm đầu ghép cặp đôi: một người chết thì người kia chết theo; nếu cặp đôi khác phe thì tạo phe thứ ba), `alpha_wolf` (1 lần biến người bị cắn thành sói), `little_girl` (thấy mờ hành động của sói), `fool` (bị treo cổ thì không chết nhưng mất quyền bỏ phiếu), `elder` (chịu được 1 lần sói cắn).
+
+## 3. Preset bộ vai theo số người
+
+| Số người | Sói | Tiên tri | Bảo vệ | Phù thủy | Thợ săn | Dân |
+| -------- | --- | -------- | ------ | -------- | ------- | --- |
+| 6        | 2   | 1        | 1      | 0        | 0       | 2   |
+| 7        | 2   | 1        | 1      | 1        | 0       | 2   |
+| 8        | 2   | 1        | 1      | 1        | 1       | 2   |
+| 9        | 2   | 1        | 1      | 1        | 1       | 3   |
+| 10       | 3   | 1        | 1      | 1        | 1       | 3   |
+| 12       | 3   | 1        | 1      | 1        | 1       | 5   |
+| 14       | 4   | 1        | 1      | 1        | 1       | 6   |
+| 16       | 4   | 1        | 1      | 1        | 1       | 8   |
+
+Kiểm tra hợp lệ khi chủ phòng tự chỉnh: tổng số vai = số người; 1 ≤ số sói < số người / 2; các vai đặc biệt tối đa 1 người mỗi vai.
+
+## 4. Vòng lặp phase
+
+```
+LOBBY → ROLE_REVEAL (10s)
+  → NIGHT ─┬─ step 1 (song song): guard, werewolves, seer      ⚙️ nightActionSeconds = 40
+           └─ step 2: witch (thấy kết quả cắn của step 1)       ⚙️ witchSeconds = 20
+  → DAWN (công bố người chết, 8s) → [HUNTER_SHOT nếu có] → check win
+  → DISCUSSION                                                  ⚙️ discussionSeconds = 120
+  → VOTE                                                        ⚙️ voteSeconds = 30
+  → [DEFENSE: người bị nhiều phiếu nhất phát biểu]              ⚙️ defenseSeconds = 20 (0 = bỏ)
+  → EXECUTION (công bố) → [HUNTER_SHOT nếu có] → check win
+  → NIGHT (round + 1) ...
+→ GAME_OVER
+```
+
+- Đêm 1 vẫn có sói cắn, trừ khi bật ⚙️ `noKillFirstNight` (mặc định `false`).
+- Chuyển phase sớm: khi **mọi người cần hành động** trong phase đã gửi hành động (hoặc bấm "bỏ qua").
+- Hết giờ mà chưa hành động: coi như bỏ qua. Riêng sói: chưa ai chọn thì đêm đó không ai bị cắn.
+
+## 5. Giải quyết đêm (thứ tự resolve)
+
+1. **Sói**: mục tiêu là người có nhiều phiếu nhất trong bầy. Hòa phiếu thì ⚙️ `wolfTieBreak`: `random` (mặc định) hoặc `none`.
+2. **Bảo vệ**: nếu bảo vệ đúng mục tiêu của sói thì mục tiêu đó không chết vì sói cắn.
+3. **Phù thủy** (step 2) được xem mục tiêu của sói **trước khi áp dụng bảo vệ**, để không lộ ai đã được bảo vệ. Cứu thì mục tiêu sống. Độc thì người bị độc chết, **bảo vệ không chặn được độc**.
+4. **Tiên tri**: nhận kết quả ngay sau step 1 qua event riêng, chỉ mình tiên tri thấy.
+5. Tổng hợp danh sách chết, công bố ở DAWN theo **thứ tự xáo trộn**, không nói nguyên nhân chết. ⚙️ `revealRoleOnDeath` (mặc định `false`) quyết định có công khai vai của người chết hay không. Dù tắt, vai của mọi người vẫn được công khai ở GAME_OVER.
+
+## 6. Bỏ phiếu ban ngày
+
+- Mỗi người sống có 1 phiếu, được đổi tới hết giờ, được bỏ trắng (`skip`).
+- Người có số phiếu cao nhất **và** lớn hơn số phiếu trắng thì bị xử tử.
+- Hòa phiếu thì ⚙️ `voteTieBreak`:
+  - `none` (mặc định): không ai chết, chuyển sang đêm.
+  - `revote`: bỏ phiếu lại, **chỉ được bầu cho những người đang hòa** (vẫn được bỏ trắng), timer bằng `voteSeconds`. Hòa tiếp thì lặp lại, tối đa ⚙️ `maxRevotes` lần (mặc định 3). Sau lần cuối vẫn hòa thì không ai chết.
+- Phiếu là công khai, mọi người thấy theo thời gian thực.
+
+## 7. Thợ săn
+
+Khi thợ săn chết (do sói, xử tử, hoặc độc nếu ⚙️ cho phép), engine chèn phase `HUNTER_SHOT` (15 s). Thợ săn chọn 1 người còn sống, người đó chết ngay. Hết giờ thì không bắn. Nếu nhiều người chết cùng lúc, mọi cái chết được công bố trước rồi mới tới lượt thợ săn bắn.
+
+## 8. Quyền giao tiếp theo phase (áp dụng cho cả voice, chat và phụ đề)
+
+| Phase                  | Người sống (dân)                                       | Sói còn sống      | Người chết                   | Khán giả    |
+| ---------------------- | ------------------------------------------------------ | ----------------- | ---------------------------- | ----------- |
+| LOBBY                  | nói/nghe `main`                                        | nói/nghe `main`   | —                            | nghe `main` |
+| ROLE_REVEAL, NIGHT     | im lặng, không nghe gì                                 | nói/nghe `wolves` | nói/nghe `dead`              | không nghe  |
+| DAWN, DISCUSSION, VOTE | nói/nghe `main`                                        | nói/nghe `main`   | nghe `main`, nói/nghe `dead` | nghe `main` |
+| DEFENSE                | chỉ người bị đưa lên nói `main`, những người khác nghe | như dân           | như trên                     | nghe `main` |
+| HUNTER_SHOT            | nghe `main`, chỉ thợ săn nói                           | như dân           | như trên                     | nghe `main` |
+| GAME_OVER              | mọi người nói/nghe `main`                              |                   |                              |             |

@@ -1,0 +1,37 @@
+# Local development services. Production uses MongoDB Atlas + LiveKit Cloud (docs/03-technical-design.md §10).
+name: werewolf
+
+services:
+  mongo:
+    image: mongo:8
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # Initiates the single-node replica set on first start, then reports healthy once it is primary.
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "--eval",
+          "try { rs.status().ok } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] }).ok }",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 5s
+
+  livekit:
+    image: livekit/livekit-server:latest
+    # --dev: API key "devkey", secret "secret"; --bind so the host can reach it
+    command: ["--dev", "--bind", "0.0.0.0"]
+    ports:
+      - "7880:7880" # HTTP / WebSocket signaling
+      - "7881:7881" # WebRTC over TCP
+      - "50000-50100:50000-50100/udp" # WebRTC over UDP
+
+volumes:
+  mongo-data:

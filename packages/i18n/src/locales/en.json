@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "Werewolf Online",
+    "tagline": "Social deduction with voice chat, on web and mobile"
+  },
+  "common": {
+    "play": "Play",
+    "language": "Language",
+    "loading": "Loading…"
+  },
+  "auth": {
+    "playAsGuest": "Play as guest",
+    "signInWithGoogle": "Sign in with Google",
+    "nickname": "Nickname"
+  },
+  "roles": {
+    "villager": "Villager",
+    "werewolf": "Werewolf",
+    "seer": "Seer",
+    "guard": "Guard",
+    "witch": "Witch",
+    "hunter": "Hunter"
+  },
+  "status": {
+    "serverOnline": "Server online",
+    "serverOffline": "Server offline"
+  }
+}
