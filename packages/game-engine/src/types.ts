@@ -33,6 +33,10 @@ export interface NightState {
   wolfTargetId: string | null;
   witchHeal: boolean;
   witchPoisonId: string | null;
+  /** The alpha wolf chose to infect tonight's victim instead of killing. */
+  alphaInfect: boolean;
+  /** Set at the end of step 1 when the infection happens: the witch sees no victim. */
+  infectTargetId: string | null;
 }
 
 export interface DayState {
@@ -62,6 +66,14 @@ export interface GameState {
     witchHealUsed: boolean;
     witchPoisonUsed: boolean;
     seerResults: SeerResult[];
+    /** Cupid's couple (night 1). */
+    lovers: [string, string] | null;
+    /** The fool after their first execution: alive, but can no longer vote. */
+    foolRevealedId: string | null;
+    /** Wolf bites the elder survived (the first one is survived). */
+    elderHits: number;
+    /** The alpha wolf's one infection per game. */
+    infection: { targetId: string; originalRole: RoleId } | null;
   };
   night: NightState;
   day: DayState;

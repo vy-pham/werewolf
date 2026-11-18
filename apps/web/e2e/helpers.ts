@@ -57,7 +57,18 @@ export async function botStep(page: Page): Promise<boolean> {
     return true;
   }
   if (submitted) return false;
+  if (action === 'CUPID_LINK') {
+    const cards = page.locator('[data-testid="player-card"][data-selectable="true"]');
+    if ((await cards.count()) < 2) return false;
+    await cards.nth(0).click();
+    await cards.nth(1).click();
+    await page.getByTestId('action-confirm').click();
+    return true;
+  }
   if (action === 'WOLF_VOTE') {
+    // Alpha wolf: always use the infection while it is available.
+    const infect = page.getByTestId('alpha-infect');
+    if ((await infect.count()) > 0 && !(await infect.isChecked())) await infect.check();
     const prey = page.locator('[data-testid="player-card"][data-selectable="true"]').first();
     if ((await prey.count()) === 0) return false;
     await prey.click();

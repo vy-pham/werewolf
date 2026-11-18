@@ -103,7 +103,7 @@ apps/server/src/
 │  ├─ games/               game.model.ts (Game + GameEventLog), games.service.ts, phase-scheduler.ts, delivery.ts
 │  ├─ chat/                chat-message.model.ts, chat.service.ts
 │  ├─ realtime.ts          toàn bộ handler Socket.IO (mỏng: Zod → service → ack)
-│  ├─ reports/             (P1) report.model.ts, reports.routes.ts
+│  ├─ reports/             report.model.ts, reports.service.ts, reports.routes.ts (M7)
 │  ├─ voice/               (M4) voice.service.ts: token LiveKit + đồng bộ quyền theo phase
 │  └─ captions/            transcript.model.ts, captions.service.ts, captions.routes.ts (internal API cho worker)
 ├─ lib/                    clock.ts, errors.ts, ids.ts, presence.ts, socket-handler.ts
@@ -171,7 +171,7 @@ Timeout dùng cùng luồng với `{ kind: 'timeout' }` và chỉ áp dụng n�
 
 ### 3.6 REST API (tối thiểu, phần còn lại đi qua socket)
 
-`POST /auth/guest` (`{displayName, locale}`), `POST /auth/google` (`{idToken}`: server verify bằng `google-auth-library`, kiểm tra `aud` khớp client ID của web/iOS/Android, rồi upsert user theo `googleSub`), `POST /auth/refresh`, `POST /auth/logout`, `GET /me`, `PATCH /me`, `GET /rooms?status=lobby&lang=`, `POST /rooms`, `GET /rooms/:code`, `GET /games/:id/summary` (sau khi kết thúc), `GET /users/:id/stats`, `POST /reports` (trong vòng 24 giờ sau khi trận kết thúc), `GET /internal/captions/rooms` và `POST /internal/captions` (chỉ cho captions worker, header `Authorization: Bearer <CAPTIONS_SECRET>`, xem §7).
+`POST /auth/guest` (`{displayName, locale}`), `POST /auth/google` (`{idToken}`: server verify bằng `google-auth-library`, kiểm tra `aud` khớp client ID của web/iOS/Android, rồi upsert user theo `googleSub`), `POST /auth/refresh`, `POST /auth/logout`, `GET /me`, `PATCH /me`, `GET /rooms?status=lobby&lang=`, `POST /rooms`, `GET /rooms/:code`, `GET /games/:id/summary` (sau khi kết thúc), `GET /users/:id/stats`, `POST /reports` (`{gameId, reportedId, reason, note?}`, trong vòng 24 giờ sau khi trận kết thúc, quá hạn trả `410 REPORT_WINDOW_CLOSED`), `GET /reports/reportable` (các trận kết thúc < 24 giờ của người gọi, kèm người đã báo cáo), `GET /internal/captions/rooms` và `POST /internal/captions` (chỉ cho captions worker, header `Authorization: Bearer <CAPTIONS_SECRET>`, xem §7).
 
 ### 3.7 Chat
 
@@ -281,12 +281,14 @@ Ngoài việc lưu dữ liệu, MongoDB còn thay luôn phần Redis thường l
 // index: { gameId, channel, at }; TTL 24 giờ trên `at` (expireAfterSeconds: 86400)
 ```
 
-**`reports`**: lưu lâu dài, chứa bản copy bằng chứng
+**`reports`**: lưu lâu dài, chứa bản copy bằng chứng (chỉ các câu chat và transcript của **người bị báo cáo** trong trận đó, tối đa 200 mỗi loại)
 
 ```ts
-{ _id, gameId, reporterId, targetId, reason, note?,
-  evidence: { messages: [...], transcripts: [...] }, status: 'open'|'reviewed'|'actioned', createdAt }
-// index: { status, createdAt }, { targetId }
+{ _id, gameId, roomId, reporterId, reportedId, reason: 'abuse'|'cheating'|'spam'|'afk'|'other', note,
+  evidence: { messages: [{channel, text, at}], transcripts: [{channel, text, lang, at}] },
+  status: 'open'|'reviewed'|'actioned', createdAt, updatedAt }
+// index: unique { gameId, reporterId, reportedId }; { status, createdAt }; { reportedId, createdAt }
+// Mỗi người tối đa 20 báo cáo / 24 giờ. Trang admin để duyệt báo cáo: Release 3.
 ```
 
 **`transcripts`**: mỗi câu phụ đề (bản gốc, không lưu bản dịch), làm bằng chứng cho báo cáo

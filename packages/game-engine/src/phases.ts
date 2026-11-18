@@ -9,7 +9,9 @@ import {
   findPlayer,
   hasKey,
   holderOf,
+  partnerOf,
   toPlayer,
+  WOLVES,
   wolvesMayKill,
 } from './state';
 import type { GameState, Tx } from './types';
@@ -64,7 +66,8 @@ export function startNight(tx: Tx) {
 function slotDone(s: GameState, role: RoleId): boolean {
   if (!s.roleCounts[role]) return true;
   const holder = holderOf(s, role);
-  if (!holder) return true;
+  // No holder: the alpha infected them. That is never revealed, so wait for the timer.
+  if (!holder) return false;
   if (holder.alive) return s.night.submitted.includes(holder.id);
   return s.rules.revealRoleOnDeath;
 }
@@ -73,7 +76,9 @@ export function nightStepComplete(s: GameState): boolean {
   if (s.phase.step === 2) return slotDone(s, 'witch');
   const wolvesDone =
     !wolvesMayKill(s) || aliveWolves(s).every((w) => hasKey(s.night.wolfVotes, w.id));
-  return wolvesDone && slotDone(s, 'guard') && slotDone(s, 'seer');
+  // Cupid only acts on night 1 (and nobody can be dead yet then).
+  const cupidDone = s.round !== 1 || slotDone(s, 'cupid');
+  return wolvesDone && cupidDone && slotDone(s, 'guard') && slotDone(s, 'seer');
 }
 
 function resolveWolfTarget(tx: Tx): string | null {
@@ -96,6 +101,12 @@ export function finishNightStep(tx: Tx) {
   const { s } = tx;
   if (s.phase.step === 1) {
     s.night.wolfTargetId = resolveWolfTarget(tx);
+    // Alpha wolf's infection: the victim is not attacked but converted, so the witch sees nobody.
+    const alpha = holderOf(s, 'alpha_wolf');
+    if (s.night.wolfTargetId && s.night.alphaInfect && alpha?.alive && !s.memory.infection) {
+      s.night.infectTargetId = s.night.wolfTargetId;
+      s.night.wolfTargetId = null;
+    }
     // Step 2 runs whenever the role set has a witch (even a dead one) so its presence is not leaked.
     if (s.roleCounts.witch) {
       enterPhase(tx, 'NIGHT', { step: 2 });
@@ -114,8 +125,19 @@ function resolveNight(tx: Tx) {
   const { night, memory } = s;
   const deaths = new Map<string, DeathCause>();
 
-  const victim = night.wolfTargetId;
-  if (victim && victim !== night.guardTargetId && !night.witchHeal) deaths.set(victim, 'wolves');
+  // The guard also blocks the infection (then the alpha keeps it for another night).
+  const infected = night.infectTargetId;
+  if (infected && infected !== night.guardTargetId) infect(tx, infected);
+
+  const victim = findPlayer(s, night.wolfTargetId);
+  if (victim && victim.id !== night.guardTargetId && !night.witchHeal) {
+    if (victim.role === 'elder' && memory.elderHits === 0) {
+      memory.elderHits = 1;
+      emit(tx, 'ELDER_SURVIVED', toPlayer(victim.id), {});
+    } else {
+      deaths.set(victim.id, 'wolves');
+    }
+  }
   // Guard protection does not block poison.
   if (night.witchPoisonId) deaths.set(night.witchPoisonId, 'poison');
 
@@ -128,6 +150,17 @@ function resolveNight(tx: Tx) {
   const ids = shuffle([...deaths.keys()].sort(), tx.ctx.rng);
   if (ids.length === 0) emit(tx, 'NO_DEATHS', ALL, {});
   for (const id of ids) killPlayer(tx, id, deaths.get(id) ?? 'wolves');
+}
+
+/** The infected player becomes a werewolf (keeps their seat; their old ability is gone). */
+function infect(tx: Tx, playerId: string) {
+  const { s } = tx;
+  const p = findPlayer(s, playerId);
+  if (!p?.alive) return;
+  s.memory.infection = { targetId: p.id, originalRole: p.role };
+  p.role = 'werewolf';
+  emit(tx, 'INFECTED', toPlayer(p.id), { wolfTeam: aliveWolves(s).map((w) => w.id) });
+  emit(tx, 'WOLF_JOINED', WOLVES, { playerId: p.id });
 }
 
 // ── Deaths, hunter, win check ────────────────────────────────────────────────
@@ -144,6 +177,9 @@ export function killPlayer(tx: Tx, playerId: string, cause: DeathCause) {
   });
   const canShoot = cause !== 'hunter' && (cause !== 'poison' || s.rules.hunterShootsWhenPoisoned);
   if (p.role === 'hunter' && canShoot) s.hunter.pendingId = p.id;
+  // Lovers: when one dies, the other dies of a broken heart.
+  const partner = partnerOf(s, p.id);
+  if (partner?.alive) killPlayer(tx, partner.id, 'heartbreak');
 }
 
 /** After DAWN or EXECUTION: let a dying hunter shoot, then check the winner and move on. */
@@ -168,13 +204,14 @@ export function resolveHunterShot(tx: Tx, targetId: string | null) {
 
 function checkWinnerOr(tx: Tx, next: 'DISCUSSION' | 'NIGHT') {
   const { s } = tx;
-  const winner = checkWinner(s.players);
+  const winner = checkWinner(s.players, s.memory.lovers);
   if (winner) {
     s.winner = winner;
     enterPhase(tx, 'GAME_OVER');
     emit(tx, 'GAME_OVER', ALL, {
       winner,
       roles: Object.fromEntries(s.players.map((p) => [p.id, p.role])),
+      lovers: s.memory.lovers,
     });
     return;
   }
@@ -265,8 +302,17 @@ function resolveVote(tx: Tx) {
 }
 
 function startExecution(tx: Tx) {
+  const { s } = tx;
   enterPhase(tx, 'EXECUTION');
-  if (tx.s.day.accusedId) killPlayer(tx, tx.s.day.accusedId, 'execution');
+  const accused = findPlayer(s, s.day.accusedId);
+  if (!accused) return;
+  // The fool survives their first execution: revealed, alive, no longer allowed to vote.
+  if (accused.role === 'fool' && s.memory.foolRevealedId === null) {
+    s.memory.foolRevealedId = accused.id;
+    emit(tx, 'FOOL_REVEALED', ALL, { playerId: accused.id });
+    return;
+  }
+  killPlayer(tx, accused.id, 'execution');
 }
 
 // ── Timeouts ─────────────────────────────────────────────────────────────────

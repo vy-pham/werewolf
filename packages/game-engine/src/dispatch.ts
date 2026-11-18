@@ -1,6 +1,6 @@
 import { runCommand } from './actions';
 import { onTimeout } from './phases';
-import { clone, findPlayer, ruleError } from './state';
+import { clone, findPlayer, normalize, ruleError } from './state';
 import type { EngineContext, EngineInput, EngineResult, GameState, Tx } from './types';
 
 /**
@@ -12,7 +12,7 @@ export function dispatch(state: GameState, input: EngineInput, ctx: EngineContex
     return { ok: false, error: ruleError('CONFLICT', 'The game is not running') };
   }
 
-  const tx: Tx = { s: clone(state), ctx, events: [] };
+  const tx: Tx = { s: normalize(clone(state)), ctx, events: [] };
 
   if (input.kind === 'timeout') {
     if (ctx.now < state.phase.endsAt) {

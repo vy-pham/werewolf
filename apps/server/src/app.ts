@@ -17,6 +17,8 @@ import { GamesService } from './modules/games/games.service';
 import { InProcessScheduler, type PhaseScheduler } from './modules/games/phase-scheduler';
 import { healthRoutes } from './modules/health/health.routes';
 import { registerRealtime } from './modules/realtime';
+import { reportsRoutes } from './modules/reports/reports.routes';
+import { ReportsService } from './modules/reports/reports.service';
 import { roomsRoutes } from './modules/rooms/rooms.routes';
 import { RoomsService } from './modules/rooms/rooms.service';
 import { usersRoutes } from './modules/users/users.routes';
@@ -111,6 +113,7 @@ export async function buildApp({
   await app.register(authRoutes(auth));
   await app.register(usersRoutes);
   await app.register(roomsRoutes(rooms));
+  await app.register(reportsRoutes(new ReportsService(clock)));
   if (env.CAPTIONS_SECRET) await app.register(captionsRoutes(captions, env.CAPTIONS_SECRET));
 
   if (connectDb) {

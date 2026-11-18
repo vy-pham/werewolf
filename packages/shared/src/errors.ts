@@ -13,6 +13,7 @@ export const ERROR_CODES = [
   'INVALID_TARGET',
   'ABILITY_USED',
   'PLAYER_DEAD',
+  'REPORT_WINDOW_CLOSED',
   'INTERNAL',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];

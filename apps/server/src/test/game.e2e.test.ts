@@ -1,4 +1,4 @@
-import type { GameCommand, PlayerView, RoomView } from '@werewolf/shared';
+import { type GameCommand, isWolfRole, type PlayerView, type RoomView } from '@werewolf/shared';
 import mongoose from 'mongoose';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Game, GameEventLog } from '../modules/games/game.model';
@@ -31,13 +31,15 @@ function chooseCommand(view: PlayerView): GameCommand | null {
   if (!me?.pendingAction || me.submitted) return null;
   switch (me.pendingAction) {
     case 'WOLF_VOTE': {
-      const prey = view.players.find((p) => p.alive && p.role !== 'werewolf');
+      const prey = view.players.find((p) => p.alive && !isWolfRole(p.role));
       return { type: 'WOLF_VOTE', targetId: prey?.id ?? null };
     }
     case 'WITCH_ACT':
       return { type: 'WITCH_ACT', heal: false, poisonTargetId: null };
     case 'END_TURN':
       return { type: 'END_TURN' };
+    case 'CUPID_LINK':
+      return { type: 'CUPID_LINK', targetIds: null };
     case 'GUARD_PROTECT':
     case 'SEER_CHECK':
     case 'DAY_VOTE':

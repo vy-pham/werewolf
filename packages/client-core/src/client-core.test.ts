@@ -6,6 +6,7 @@ import {
   captionLangOf,
   countVotes,
   describeEvent,
+  nextSelection,
   phaseTitleKey,
   secondsLeft,
   targetable,
@@ -36,6 +37,7 @@ const view = (over: Partial<PlayerView> = {}): PlayerView => ({
   speakerOrder: null,
   speakerId: null,
   winner: null,
+  lovers: null,
   channels: {},
   ...over,
 });
@@ -138,5 +140,29 @@ describe('captions', () => {
     expect(captionLangOf({ locale: 'en', captionLangs: [] })).toBe('en');
     expect(captionLangOf({ locale: 'en', captionLangs: ['vi'] })).toBe('vi');
     expect(captionLangOf({ locale: 'vi', captionLangs: ['xx'] })).toBe('vi');
+  });
+});
+
+describe('selection', () => {
+  it('single target: tapping replaces; Cupid keeps the last two', () => {
+    expect(nextSelection('SEER_CHECK', ['a'], 'b')).toEqual(['b']);
+    expect(nextSelection('SEER_CHECK', ['a'], 'a')).toEqual([]);
+    expect(nextSelection('CUPID_LINK', ['a'], 'b')).toEqual(['a', 'b']);
+    expect(nextSelection('CUPID_LINK', ['a', 'b'], 'c')).toEqual(['b', 'c']);
+    expect(nextSelection('CUPID_LINK', ['a', 'b'], 'a')).toEqual(['b']);
+  });
+
+  it('alpha wolf cannot target a wolf; cupid may pick themself', () => {
+    const v = view({
+      players: [
+        { id: 'me', seat: 1, alive: true, role: 'alpha_wolf' },
+        { id: 'w2', seat: 2, alive: true, role: 'werewolf' },
+        { id: 'v1', seat: 3, alive: true, role: null },
+      ],
+      me: { ...ME, role: 'alpha_wolf' },
+    });
+    expect(['me', 'w2', 'v1'].filter((id) => targetable(v, undefined, id))).toEqual(['v1']);
+    const c = view({ me: { ...ME, role: 'cupid', team: 'village', pendingAction: 'CUPID_LINK' } });
+    expect(targetable(c, undefined, 'me')).toBe(true);
   });
 });

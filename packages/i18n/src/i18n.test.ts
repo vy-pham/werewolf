@@ -1,4 +1,4 @@
-import { SUPPORTED_LOCALES } from '@werewolf/shared';
+import { ERROR_CODES, REPORT_REASONS, ROLE_IDS, SUPPORTED_LOCALES, TEAMS } from '@werewolf/shared';
 import { describe, expect, it } from 'vitest';
 import { resources } from './index';
 
@@ -17,5 +17,17 @@ describe('locales', () => {
     for (const l of SUPPORTED_LOCALES) {
       expect(keysOf(resources[l].translation).sort()).toEqual(base);
     }
+  });
+
+  it('every role, team, error code and report reason has a label', () => {
+    const keys = new Set(keysOf(resources.en.translation));
+    const wanted = [
+      ...ROLE_IDS.map((r) => `roles.${r}`),
+      ...TEAMS.map((t) => `teams.${t}`),
+      ...TEAMS.map((t) => `log.winner.${t}`),
+      ...ERROR_CODES.map((c) => `errors.${c}`),
+      ...REPORT_REASONS.map((r) => `reports.reasons.${r}`),
+    ];
+    expect(wanted.filter((k) => !keys.has(k))).toEqual([]);
   });
 });

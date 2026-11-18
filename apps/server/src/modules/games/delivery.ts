@@ -1,5 +1,5 @@
 import type { GameState } from '@werewolf/game-engine';
-import type { Channel, EventAudience } from '@werewolf/shared';
+import { type Channel, type EventAudience, isWolfRole } from '@werewolf/shared';
 
 /** Players who receive an event with this audience. Never broadcast blindly (NFR-01). */
 export function recipientsOf(audience: EventAudience, state: GameState): string[] {
@@ -7,7 +7,7 @@ export function recipientsOf(audience: EventAudience, state: GameState): string[
     case 'all':
       return state.players.map((p) => p.id);
     case 'wolves':
-      return state.players.filter((p) => p.role === 'werewolf').map((p) => p.id);
+      return state.players.filter((p) => isWolfRole(p.role)).map((p) => p.id);
     case 'dead':
       return state.players.filter((p) => !p.alive).map((p) => p.id);
     case 'player':

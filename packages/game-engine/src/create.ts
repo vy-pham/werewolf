@@ -1,8 +1,8 @@
-import { ROLE_IDS, ROLE_TEAM, type RoomSettings } from '@werewolf/shared';
+import { ROLE_IDS, type RoomSettings } from '@werewolf/shared';
 import { enterPhase } from './phases';
 import { shuffle } from './rng';
 import { validateRoleSet } from './role-set';
-import { ALL, clone, emit, emptyDay, emptyNight, ruleError, toPlayer } from './state';
+import { ALL, clone, emit, emptyDay, emptyNight, isWolf, ruleError, toPlayer } from './state';
 import type { EngineContext, EngineResult, GameState, Tx } from './types';
 
 export interface CreateGameInput {
@@ -48,6 +48,10 @@ export function createGame(input: CreateGameInput, ctx: EngineContext): EngineRe
       witchHealUsed: false,
       witchPoisonUsed: false,
       seerResults: [],
+      lovers: null,
+      foolRevealedId: null,
+      elderHits: 0,
+      infection: null,
     },
     night: emptyNight(),
     day: emptyDay(),
@@ -57,11 +61,11 @@ export function createGame(input: CreateGameInput, ctx: EngineContext): EngineRe
 
   const tx: Tx = { s: state, ctx, events: [] };
   emit(tx, 'GAME_STARTED', ALL, { playerIds: state.players.map((p) => p.id) });
-  const wolfIds = state.players.filter((p) => ROLE_TEAM[p.role] === 'wolves').map((p) => p.id);
+  const wolfIds = state.players.filter(isWolf).map((p) => p.id);
   for (const p of state.players) {
     emit(tx, 'ROLE_ASSIGNED', toPlayer(p.id), {
       role: p.role,
-      wolfTeam: ROLE_TEAM[p.role] === 'wolves' ? wolfIds : [],
+      wolfTeam: isWolf(p) ? wolfIds : [],
     });
   }
   enterPhase(tx, 'ROLE_REVEAL');

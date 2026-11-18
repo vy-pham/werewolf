@@ -7,6 +7,7 @@ const STATUS: Partial<Record<ErrorCode, number>> = {
   NOT_FOUND: 404,
   CONFLICT: 409,
   RATE_LIMITED: 429,
+  REPORT_WINDOW_CLOSED: 410,
   INTERNAL: 500,
 };
 

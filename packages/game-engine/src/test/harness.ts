@@ -1,6 +1,7 @@
 import {
   type GameCommand,
   type GameEvent,
+  isWolfRole,
   type PhaseName,
   type PhaseTimers,
   type RoleCounts,
@@ -132,11 +133,20 @@ export class Harness {
     seer?: string | null;
     heal?: boolean;
     poison?: string | null;
+    /** Alpha wolf: infect tonight's victim. */
+    infect?: boolean;
+    /** Cupid (night 1): the couple. */
+    cupid?: [string, string] | null;
   }) {
     this.advanceTo('NIGHT', 1);
-    for (const w of this.state.players.filter((p) => p.alive && p.role === 'werewolf')) {
+    const cupid = this.state.players.find((p) => p.role === 'cupid' && p.alive);
+    if (cupid && this.state.round === 1) {
+      this.act(cupid.id, { type: 'CUPID_LINK', targetIds: plan.cupid ?? null });
+    }
+    for (const w of this.state.players.filter((p) => p.alive && isWolfRole(p.role))) {
       if (this.state.rules.noKillFirstNight && this.state.round === 1) break;
-      this.act(w.id, { type: 'WOLF_VOTE', targetId: plan.kill ?? null });
+      const infect = w.role === 'alpha_wolf' && plan.infect ? { infect: true } : {};
+      this.act(w.id, { type: 'WOLF_VOTE', targetId: plan.kill ?? null, ...infect });
     }
     const alive = (role: RoleId) => this.state.players.find((p) => p.role === role && p.alive);
     const guard = alive('guard');

@@ -2,6 +2,8 @@ import {
   CAPTION_LANGS,
   type CaptionLang,
   type DeliveredGameEvent,
+  type GameCommandType,
+  isWolfRole,
   type PlayerView,
   type RoomRules,
   type UserView,
@@ -21,7 +23,9 @@ export function targetable(view: PlayerView, rules: RoomRules | undefined, id: s
   const self = id === me.id;
   switch (action) {
     case 'WOLF_VOTE':
-      return target.role !== 'werewolf';
+      return !isWolfRole(target.role);
+    case 'CUPID_LINK':
+      return true; // Cupid may pick themself
     case 'GUARD_PROTECT':
       return (!self || rules?.guardCanSelfProtect !== false) && id !== me.guardLastTargetId;
     case 'DAY_VOTE':
@@ -31,6 +35,23 @@ export function targetable(view: PlayerView, rules: RoomRules | undefined, id: s
     default:
       return !self;
   }
+}
+
+/** How many players an action needs (Cupid links two). */
+export const targetsNeeded = (action: GameCommandType | null | undefined) =>
+  action === 'CUPID_LINK' ? 2 : 1;
+
+/**
+ * Next selection after tapping `id`: tapping a selected player unselects them; when the action
+ * needs N players, the oldest pick is dropped once N are selected.
+ */
+export function nextSelection(
+  action: GameCommandType | null | undefined,
+  current: readonly string[],
+  id: string,
+): string[] {
+  if (current.includes(id)) return current.filter((x) => x !== id);
+  return [...current, id].slice(-targetsNeeded(action));
 }
 
 /** A key that changes with every phase step: a selection belongs to one step. */
@@ -83,6 +104,24 @@ export function describeEvent(
       return e.payload.targetId
         ? t('log.hunterShot', { hunter: name(e.payload.hunterId), name: name(e.payload.targetId) })
         : t('log.hunterMissed', { hunter: name(e.payload.hunterId) });
+    case 'CUPID_LINKED':
+      return t('log.cupidLinked', {
+        a: name(e.payload.loverIds[0]),
+        b: name(e.payload.loverIds[1]),
+      });
+    case 'LOVER_ASSIGNED':
+      return t('log.loverAssigned', {
+        name: name(e.payload.partnerId),
+        role: t(`roles.${e.payload.partnerRole}`),
+      });
+    case 'INFECTED':
+      return t('log.infected');
+    case 'WOLF_JOINED':
+      return t('log.wolfJoined', { name: name(e.payload.playerId) });
+    case 'FOOL_REVEALED':
+      return t('log.foolRevealed', { name: name(e.payload.playerId) });
+    case 'ELDER_SURVIVED':
+      return t('log.elderSurvived');
     case 'GAME_OVER':
       return t(`log.winner.${e.payload.winner}`);
     default:

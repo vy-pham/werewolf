@@ -1,5 +1,5 @@
 import { countVotes } from '@werewolf/client-core';
-import type { PlayerView } from '@werewolf/shared';
+import { isWolfRole, type PlayerView } from '@werewolf/shared';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { colors } from '@/components/theme';
@@ -10,11 +10,11 @@ import { useNames } from './names';
 interface Props {
   view: PlayerView;
   selectable: (id: string) => boolean;
-  selectedId: string | null;
+  selectedIds: string[];
   onSelect: (id: string) => void;
 }
 
-export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
+export function PlayerGrid({ view, selectable, selectedIds, onSelect }: Props) {
   const { t } = useTranslation();
   const name = useNames();
   const speaking = useVoice((s) => s.speaking);
@@ -27,7 +27,7 @@ export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
         .sort((a, b) => a.seat - b.seat)
         .map((p) => {
           const canSelect = selectable(p.id);
-          const selected = selectedId === p.id;
+          const selected = selectedIds.includes(p.id);
           const talking = speaking.includes(p.id);
           return (
             <Pressable
@@ -70,9 +70,12 @@ export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
               <View style={styles.row}>
                 {p.role ? (
                   <Badge
-                    tone={p.role === 'werewolf' ? 'bad' : 'neutral'}
+                    tone={isWolfRole(p.role) ? 'bad' : 'neutral'}
                     label={t(`roles.${p.role}`)}
                   />
+                ) : null}
+                {view.me?.partnerId === p.id || view.me?.cupidLinked?.includes(p.id) ? (
+                  <Badge tone="moon" label={`💘 ${t('game.lover')}`} />
                 ) : null}
                 {!p.alive ? <Badge label={t('game.dead')} /> : null}
                 {view.accusedId === p.id ? <Badge tone="bad" label={t('game.onTrial')} /> : null}

@@ -111,6 +111,7 @@ export function SettingsPanel({ room, editable }: { room: RoomView; editable: bo
             <Button
               variant="ghost"
               className="px-2 py-0.5 text-xs"
+              data-testid="roles-customize"
               onClick={() =>
                 room.autoRoles ? update({ roles }) : update({ autoRoles: true, roles: {} })
               }
@@ -133,14 +134,22 @@ export function SettingsPanel({ room, editable }: { room: RoomView; editable: bo
                 <Button
                   variant="ghost"
                   className="px-1 py-0"
+                  data-testid={`role-${role}-dec`}
                   onClick={() => setRoleCount(role, -1)}
                 >
                   −
                 </Button>
               ) : null}
-              <span className="w-4 text-center">{roles[role] ?? 0}</span>
+              <span className="w-4 text-center" data-testid={`role-${role}-count`}>
+                {roles[role] ?? 0}
+              </span>
               {editable && !room.autoRoles ? (
-                <Button variant="ghost" className="px-1 py-0" onClick={() => setRoleCount(role, 1)}>
+                <Button
+                  variant="ghost"
+                  className="px-1 py-0"
+                  data-testid={`role-${role}-inc`}
+                  onClick={() => setRoleCount(role, 1)}
+                >
                   +
                 </Button>
               ) : null}

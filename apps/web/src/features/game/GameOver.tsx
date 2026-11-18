@@ -1,7 +1,8 @@
-import type { PlayerView } from '@werewolf/shared';
+import { isWolfRole, type PlayerView } from '@werewolf/shared';
 import { useTranslation } from 'react-i18next';
 import { Badge, Button, Card } from '../../components/ui';
 import { useGame } from '../../stores/game';
+import { ReportPanel } from '../reports/ReportPanel';
 import { useNames } from './names';
 
 export function GameOver({ result }: { result: PlayerView }) {
@@ -13,7 +14,9 @@ export function GameOver({ result }: { result: PlayerView }) {
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-6" data-testid="game-over">
       <Card className="space-y-2 text-center">
-        <div className="text-5xl">{result.winner === 'wolves' ? '🐺' : '🏡'}</div>
+        <div className="text-5xl">
+          {result.winner === 'wolves' ? '🐺' : result.winner === 'lovers' ? '💘' : '🏡'}
+        </div>
         <h2 className="font-bold text-2xl" data-testid="winner" data-winner={result.winner ?? ''}>
           {result.winner ? t(`log.winner.${result.winner}`) : null}
         </h2>
@@ -30,16 +33,16 @@ export function GameOver({ result }: { result: PlayerView }) {
             .map((p) => (
               <li key={p.id} className="flex items-center gap-2 text-sm">
                 <span className={p.alive ? '' : 'text-gray-500 line-through'}>{name(p.id)}</span>
+                {result.lovers?.includes(p.id) ? <span title={t('game.lover')}>💘</span> : null}
                 <span className="flex-1" />
                 {p.role ? (
-                  <Badge tone={p.role === 'werewolf' ? 'bad' : 'good'}>
-                    {t(`roles.${p.role}`)}
-                  </Badge>
+                  <Badge tone={isWolfRole(p.role) ? 'bad' : 'good'}>{t(`roles.${p.role}`)}</Badge>
                 ) : null}
               </li>
             ))}
         </ul>
       </Card>
+      <ReportPanel latestOnly />
       <div className="text-center">
         <Button onClick={dismiss} data-testid="back-to-room">
           {t('gameOver.backToRoom')}

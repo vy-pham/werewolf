@@ -1,5 +1,5 @@
 import { attempt, useGame } from '@werewolf/client-core';
-import type { Channel } from '@werewolf/shared';
+import { type Channel, isWolfRole } from '@werewolf/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
@@ -20,7 +20,7 @@ export function ChatPanel({ lobby = false }: { lobby?: boolean }) {
   const tabs: Channel[] = useMemo(() => {
     if (lobby || !view?.me) return ['lobby'];
     const list: Channel[] = ['main'];
-    if (view.me.role === 'werewolf') list.push('wolves');
+    if (isWolfRole(view.me.role)) list.push('wolves');
     if (!view.me.alive) list.push('dead');
     return list;
   }, [lobby, view?.me]);
