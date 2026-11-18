@@ -49,6 +49,17 @@ describe('auth', () => {
     expect(res.body).toMatchObject({ locale: 'vi', captionLangs: ['vi', 'en'] });
   });
 
+  it('browsers may send PATCH (CORS preflight)', async () => {
+    const res = await fetch(`${server.url}/me`, {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'http://localhost:5173',
+        'access-control-request-method': 'PATCH',
+      },
+    });
+    expect(res.headers.get('access-control-allow-methods')).toContain('PATCH');
+  });
+
   it('refresh rotates tokens and detects reuse', async () => {
     const auth = await guest(server.url, 'Dave');
     const first = await http<AuthResponse>(server.url, 'POST', '/auth/refresh', {

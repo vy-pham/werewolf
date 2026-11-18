@@ -19,7 +19,7 @@ Game Ma Sói online cho **Web** và **Mobile**: voice chat theo phase, game engi
 | Mobile    | Expo, Expo Router                                                       |
 | Voice     | LiveKit Cloud (WebRTC SFU)                                              |
 | Deploy    | Render (server), MongoDB Atlas, Vercel (web), EAS (mobile)              |
-| AI phụ đề | faster-whisper (STT) + NLLB-200 (dịch) qua LiveKit Agents (Python)      |
+| AI phụ đề | Python worker: faster-whisper (STT) + NLLB-200 (dịch), LiveKit rtc, uv  |
 
 ## Cấu trúc
 
@@ -27,8 +27,10 @@ Game Ma Sói online cho **Web** và **Mobile**: voice chat theo phase, game engi
 apps/server         Fastify + Socket.IO + Mongoose
 apps/web            Vite + React
 apps/mobile         Expo + Expo Router
+apps/captions       Worker Python: phụ đề + dịch (uv, không thuộc pnpm workspace)
 packages/shared     Zod schemas, types, hằng số, socket contract
 packages/game-engine Luật chơi (pure TS)
+packages/client-core Logic client dùng chung cho web + mobile
 packages/i18n       Bản dịch en / vi
 infra/              docker-compose cho dev (Mongo replica set + LiveKit)
 ```
@@ -61,8 +63,26 @@ Kiểm tra: `pnpm lint`, `pnpm typecheck`, `pnpm test`. Test của server dùng 
 | `LIVEKIT_URL` / `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` | `ws://localhost:7880` / `devkey` / `secret`                               |
 | `GOOGLE_CLIENT_IDS`                                      | client ID OAuth của web, iOS, Android (cách nhau bằng dấu phẩy)           |
 | `LOG_LEVEL`                                              | `info`                                                                    |
+| `CAPTIONS_SECRET`                                        | chuỗi ≥ 16 ký tự, trùng với worker phụ đề (không đặt = tắt phụ đề)        |
 
 Web: `VITE_API_URL` (mặc định `http://localhost:4000`). Mobile: `EXPO_PUBLIC_API_URL` (dev tự lấy IP máy đang chạy Metro).
+
+### Phụ đề AI (`apps/captions`)
+
+Cần [uv](https://docs.astral.sh/uv/) (tự cài Python 3.12). Lần chạy đầu tải khoảng 1 GB model (whisper `small` + NLLB-600M) vào cache Hugging Face.
+
+```bash
+pnpm infra:up          # LiveKit
+pnpm dev:local         # server (secret dev: dev-captions-secret)
+pnpm captions:dev      # worker phụ đề
+pnpm captions:test     # test Python (không cần model)
+# thử 1 file audio, không cần server:
+uv run --project apps/captions werewolf-captions try path/to/audio.wav
+# e2e thật (LiveKit + worker + 2 trình duyệt, mic giả phát file tiếng Anh, người nghe đọc tiếng Việt):
+CAPTIONS_E2E=1 pnpm --filter @werewolf/web e2e captions
+```
+
+Chủ phòng bật **Phụ đề & dịch bằng AI** trong cài đặt phòng; mỗi người chọn ngôn ngữ phụ đề ở thanh CC. Env của worker: `SERVER_URL`, `CAPTIONS_SECRET`, `WHISPER_MODEL`, `DEVICE` (`auto|cpu|cuda`), `TRANSLATOR` (`nllb|none`), `CAPTION_LANGS` (xem `docs/03-technical-design.md` §7). Production: Render Background Worker build từ `apps/captions/Dockerfile`, **chỉ chạy 1 instance**.
 
 ### Chạy app trên điện thoại Android (dev build)
 
@@ -91,4 +111,5 @@ Chỉ cần build lại APK khi thêm hoặc đổi module native; đổi code J
 - ✅ M3: web MVP: đăng nhập, sảnh, phòng chờ, màn chơi, chat theo lượt, kết quả; test Playwright 8 trình duyệt chơi hết một trận
 - ✅ M4: voice chat (LiveKit) cho web: quyền nói/nghe do server cấp theo phase; đã test với LiveKit thật (sói thì thầm ban đêm, ban ngày chỉ một người nói)
 - ✅ M5: app mobile (Expo) ngang bằng web: đăng nhập khách, sảnh, phòng, màn chơi, chat, voice LiveKit native; logic client dùng chung qua `packages/client-core`; test Playwright cho host dùng app mobile chơi cùng 5 người web. Voice trên điện thoại thật cần bản dev build (xem phần trên)
-- ⏭️ M6: phụ đề AI + dịch
+- ✅ M6: phụ đề AI + dịch vi↔en: worker Python (faster-whisper + NLLB), server quyết định ai đọc được phụ đề theo đúng quyền nghe voice (sói chỉ sói đọc), transcript lưu 24 giờ, thanh CC trên web + mobile. Đã test e2e với LiveKit thật. Chưa có: dịch chat chữ
+- ⏭️ M7: beta (vai mở rộng, báo cáo, stats)

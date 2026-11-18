@@ -2,6 +2,7 @@ import { resources } from '@werewolf/i18n';
 import { type Locale, parseLocaleTag, resolveLocale } from '@werewolf/shared';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { updateMe } from './client';
 
 const STORAGE_KEY = 'locale';
 
@@ -21,6 +22,8 @@ export function setLocale(locale: Locale) {
   }
   void i18n.changeLanguage(locale);
   document.documentElement.lang = locale;
+  // The server uses it for captions in "same as app" mode.
+  void updateMe({ locale }).catch(() => undefined);
 }
 
 const initial = resolveLocale(readSavedLocale(), navigator.languages.map(parseLocaleTag));

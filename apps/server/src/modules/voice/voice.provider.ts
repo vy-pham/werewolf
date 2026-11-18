@@ -11,6 +11,8 @@ export interface VoiceProvider {
     name: string;
     grant: ChannelGrant;
   }): Promise<string>;
+  /** Token for the captions worker: hidden, listen-only (it never publishes anything). */
+  createListenerToken(input: { room: string; identity: string }): Promise<string>;
   /** Changes a connected participant's permissions. Not connected → no-op. */
   setPermissions(room: string, identity: string, grant: ChannelGrant): Promise<void>;
 }
@@ -47,6 +49,19 @@ export class LiveKitVoice implements VoiceProvider {
       roomJoin: true,
       canPublish: grant.publish,
       canSubscribe: grant.subscribe,
+      canPublishData: false,
+    });
+    return token.toJwt();
+  }
+
+  async createListenerToken({ room, identity }: { room: string; identity: string }) {
+    const token = new AccessToken(this.apiKey, this.apiSecret, { identity, ttl: TOKEN_TTL });
+    token.addGrant({
+      room,
+      roomJoin: true,
+      hidden: true,
+      canPublish: false,
+      canSubscribe: true,
       canPublishData: false,
     });
     return token.toJwt();

@@ -1,4 +1,5 @@
 import type {
+  CaptionView,
   ChatMessageView,
   DeliveredGameEvent,
   GameSyncResult,
@@ -17,6 +18,10 @@ interface GameStore {
   chat: ChatMessageView[];
   /** The final view of the last game, kept until the player dismisses the results. */
   lastResult: PlayerView | null;
+  /** Live captions (newest last). Each disappears after CAPTION_TTL_MS. */
+  captions: CaptionView[];
+  /** Local display preference (CC button). */
+  captionsVisible: boolean;
 
   setConnected: (connected: boolean) => void;
   setRoom: (room: RoomView | null) => void;
@@ -24,12 +29,16 @@ interface GameStore {
   onState: (gameId: string, view: PlayerView) => void;
   onEvent: (event: DeliveredGameEvent) => void;
   onChat: (message: ChatMessageView) => void;
+  onCaption: (caption: CaptionView) => void;
+  setCaptionsVisible: (visible: boolean) => void;
   applySync: (gameId: string, sync: GameSyncResult) => void;
   dismissResult: () => void;
   leaveRoom: () => void;
 }
 
 const MAX_CHAT = 200;
+const MAX_CAPTIONS = 3;
+export const CAPTION_TTL_MS = 8000;
 
 export const useGame = create<GameStore>()((set) => ({
   connected: false,
@@ -40,6 +49,8 @@ export const useGame = create<GameStore>()((set) => ({
   lastSeq: 0,
   chat: [],
   lastResult: null,
+  captions: [],
+  captionsVisible: true,
 
   setConnected: (connected) => set({ connected }),
 
@@ -47,13 +58,13 @@ export const useGame = create<GameStore>()((set) => ({
     set((s) => {
       // Back in the lobby: keep chat from the lobby only.
       if (room && s.room?.status === 'in_game' && room.status === 'lobby') {
-        return { room, gameId: null, view: null, events: [], lastSeq: 0, chat: [] };
+        return { room, gameId: null, view: null, events: [], lastSeq: 0, chat: [], captions: [] };
       }
       return { room };
     }),
 
   onGameStarted: (gameId) =>
-    set({ gameId, view: null, events: [], lastSeq: 0, chat: [], lastResult: null }),
+    set({ gameId, view: null, events: [], lastSeq: 0, chat: [], lastResult: null, captions: [] }),
 
   onState: (gameId, view) =>
     set((s) => ({
@@ -71,6 +82,20 @@ export const useGame = create<GameStore>()((set) => ({
     set((s) =>
       s.chat.some((m) => m.id === message.id) ? s : { chat: [...s.chat, message].slice(-MAX_CHAT) },
     ),
+
+  onCaption: (caption) => {
+    set((s) =>
+      s.captions.some((c) => c.id === caption.id)
+        ? s
+        : { captions: [...s.captions, caption].slice(-MAX_CAPTIONS) },
+    );
+    setTimeout(
+      () => set((s) => ({ captions: s.captions.filter((c) => c.id !== caption.id) })),
+      CAPTION_TTL_MS,
+    );
+  },
+
+  setCaptionsVisible: (captionsVisible) => set({ captionsVisible }),
 
   applySync: (gameId, sync) =>
     set((s) => {
@@ -101,5 +126,6 @@ export const useGame = create<GameStore>()((set) => ({
       lastSeq: 0,
       chat: [],
       lastResult: null,
+      captions: [],
     }),
 }));

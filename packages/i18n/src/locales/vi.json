@@ -74,7 +74,11 @@
     "roles": "Bộ vai ({{count}})",
     "customizeRoles": "Tự chỉnh",
     "usePreset": "Dùng bộ gợi ý",
-    "presetHint": "Khi bắt đầu, bộ vai gợi ý theo số người chơi sẽ được dùng."
+    "presetHint": "Khi bắt đầu, bộ vai gợi ý theo số người chơi sẽ được dùng.",
+    "media": "Voice & phụ đề",
+    "voice": "Voice chat",
+    "captions": "Phụ đề & dịch bằng AI (thử nghiệm)",
+    "captionsHint": "Lời nói được chuyển thành chữ và dịch trực tiếp. Không ghi âm; bản ghi chữ chỉ lưu 24 giờ để phục vụ báo cáo."
   },
   "phase": {
     "LOBBY": "Sảnh chờ",
@@ -201,6 +205,19 @@
       "talk": "được nói",
       "listen": "đang nghe",
       "off": "đóng"
+    }
+  },
+  "captions": {
+    "title": "Phụ đề",
+    "show": "Hiện phụ đề",
+    "hide": "Ẩn phụ đề",
+    "language": "Ngôn ngữ phụ đề",
+    "auto": "Theo ngôn ngữ ứng dụng ({{lang}})",
+    "waiting": "Phụ đề sẽ hiện ở đây khi có người nói.",
+    "translatedFrom": "dịch từ {{lang}}",
+    "langName": {
+      "en": "English",
+      "vi": "Tiếng Việt"
     }
   }
 }

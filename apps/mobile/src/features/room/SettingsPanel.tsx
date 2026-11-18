@@ -57,6 +57,21 @@ export function SettingsPanel({ room, editable }: { room: RoomView; editable: bo
         onChange={(value) => update({ rules: { voteTieBreak: value ? 'revote' : 'none' } })}
       />
 
+      <Muted>{t('settings.media')}</Muted>
+      <Toggle
+        label={t('settings.voice')}
+        value={room.settings.voice}
+        disabled={!editable}
+        onChange={(value) => update({ voice: value })}
+      />
+      <Toggle
+        label={t('settings.captions')}
+        value={room.settings.captions}
+        disabled={!editable || !room.settings.voice}
+        onChange={(value) => update({ captions: value })}
+      />
+      <Text style={{ color: colors.faint, fontSize: 12 }}>{t('settings.captionsHint')}</Text>
+
       <Muted>{t('settings.timers')}</Muted>
       {TIMERS.map(([key, step]) => (
         <View key={key} style={[styles.row, { justifyContent: 'space-between' }]}>

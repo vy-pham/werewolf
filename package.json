@@ -16,6 +16,8 @@
     "test": "turbo run test",
     "lint": "biome check .",
     "format": "biome check --write .",
+    "captions:dev": "uv run --project apps/captions werewolf-captions run --dev",
+    "captions:test": "uv run --project apps/captions pytest apps/captions",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
     "infra:down": "docker compose -f infra/docker-compose.yml down"
   },

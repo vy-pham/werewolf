@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { RoomCodeSchema, type RoomSettingsPatch, type RoomView } from './api';
+import type { CaptionView } from './captions';
 import type { AppErrorBody } from './errors';
 import {
   type ChannelGrant,
@@ -85,6 +86,8 @@ export interface ServerToClientEvents {
   'chat:message': (message: ChatMessageView) => void;
   /** Voice rooms or permissions changed (phase change, death, game start/end): call voice:join. */
   'voice:update': (payload: { grants: VoiceGrants }) => void;
+  /** A transcribed sentence from a voice channel this player can hear (room captions on). */
+  'caption:message': (caption: CaptionView) => void;
 }
 
 export interface SocketData {

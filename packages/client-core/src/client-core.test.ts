@@ -1,8 +1,15 @@
-import type { DeliveredGameEvent, PlayerView } from '@werewolf/shared';
+import type { CaptionView, DeliveredGameEvent, PlayerView } from '@werewolf/shared';
 import type { TFunction } from 'i18next';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { useGame } from './game-store';
-import { countVotes, describeEvent, phaseTitleKey, secondsLeft, targetable } from './game-ui';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CAPTION_TTL_MS, useGame } from './game-store';
+import {
+  captionLangOf,
+  countVotes,
+  describeEvent,
+  phaseTitleKey,
+  secondsLeft,
+  targetable,
+} from './game-ui';
 
 const view = (over: Partial<PlayerView> = {}): PlayerView => ({
   round: 1,
@@ -97,5 +104,39 @@ describe('game store', () => {
     const over = view({ phase: { name: 'GAME_OVER', step: 1, endsAt: 0, revote: 0 } });
     useGame.getState().onState('g', over);
     expect(useGame.getState().lastResult).toBe(over);
+  });
+});
+
+describe('captions', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    useGame.getState().leaveRoom();
+  });
+  afterEach(() => vi.useRealTimers());
+
+  const caption = (id: string): CaptionView => ({
+    id,
+    channel: 'main',
+    speakerId: 'u1',
+    speakerName: 'An',
+    text: `t${id}`,
+    lang: 'en',
+    original: `t${id}`,
+    sourceLang: 'en',
+    at: 0,
+  });
+
+  it('keeps the last 3 captions, ignores duplicates, and expires them', () => {
+    const { onCaption } = useGame.getState();
+    for (const id of ['1', '2', '3', '3', '4']) onCaption(caption(id));
+    expect(useGame.getState().captions.map((c) => c.id)).toEqual(['2', '3', '4']);
+    vi.advanceTimersByTime(CAPTION_TTL_MS);
+    expect(useGame.getState().captions).toEqual([]);
+  });
+
+  it('caption language: preference first, then UI language', () => {
+    expect(captionLangOf({ locale: 'en', captionLangs: [] })).toBe('en');
+    expect(captionLangOf({ locale: 'en', captionLangs: ['vi'] })).toBe('vi');
+    expect(captionLangOf({ locale: 'vi', captionLangs: ['xx'] })).toBe('vi');
   });
 });

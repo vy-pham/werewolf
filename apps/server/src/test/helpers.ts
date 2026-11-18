@@ -1,6 +1,7 @@
 import type {
   AckResult,
   AuthResponse,
+  CaptionView,
   ChannelGrant,
   ChatMessageView,
   ClientToServerEvents,
@@ -19,6 +20,8 @@ import { AppError } from '../lib/errors';
 import type { GoogleVerifier } from '../modules/auth/google';
 import type { PhaseScheduler, TimeoutHandler } from '../modules/games/phase-scheduler';
 import type { VoiceProvider } from '../modules/voice/voice.provider';
+
+export const CAPTIONS_TEST_SECRET = 'test-captions-secret';
 
 export const T0 = Date.UTC(2026, 10, 18, 12, 0, 0);
 
@@ -100,6 +103,7 @@ export async function startServer(dbUri: string, clock = new FakeClock()): Promi
     LIVEKIT_URL: 'ws://localhost:7880',
     LIVEKIT_API_KEY: 'devkey',
     LIVEKIT_API_SECRET: 'secret',
+    CAPTIONS_SECRET: CAPTIONS_TEST_SECRET,
     CORS_ORIGINS: 'http://localhost:5173',
   });
   const app = await buildApp({
@@ -152,6 +156,7 @@ export class TestClient {
   readonly events: DeliveredGameEvent[] = [];
   readonly chat: ChatMessageView[] = [];
   readonly voiceUpdates: VoiceGrants[] = [];
+  readonly captions: CaptionView[] = [];
   room: RoomView | null = null;
   gameId: string | null = null;
   kicked = false;
@@ -180,6 +185,7 @@ export class TestClient {
       this.room = r;
     });
     this.socket.on('voice:update', ({ grants }) => this.voiceUpdates.push(grants));
+    this.socket.on('caption:message', (c) => this.captions.push(c));
     this.socket.on('room:kicked', () => {
       this.kicked = true;
     });
@@ -264,6 +270,10 @@ export class FakeVoice implements VoiceProvider {
   async createToken(input: { room: string; identity: string; name: string; grant: ChannelGrant }) {
     this.tokens.push({ room: input.room, identity: input.identity, grant: input.grant });
     return `token:${input.room}:${input.identity}`;
+  }
+
+  async createListenerToken(input: { room: string; identity: string }) {
+    return `listener:${input.room}:${input.identity}`;
   }
 
   async setPermissions(room: string, identity: string, grant: ChannelGrant) {

@@ -80,11 +80,13 @@ export function Toggle({
   checked,
   disabled,
   onChange,
+  testId,
 }: {
   label: string;
   checked: boolean;
   disabled?: boolean;
   onChange: (value: boolean) => void;
+  testId?: string;
 }) {
   return (
     <label className="flex cursor-pointer items-center justify-between gap-4 py-1 text-sm">
@@ -94,6 +96,7 @@ export function Toggle({
         className="size-4 accent-red-600"
         checked={checked}
         disabled={disabled}
+        data-testid={testId}
         onChange={(e) => onChange(e.target.checked)}
       />
     </label>

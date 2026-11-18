@@ -25,7 +25,7 @@
          │ MongoDB Atlas│◄── transcripts ──┐    │  (SFU, voice)   │
          └──────────────┘                  │    └────────┬────────┘
                                    ┌───────┴────────────▼───────┐
-                                   │ apps/captions (Py, R2)     │
+                                   │ apps/captions (Py, M6)     │
                                    │ Render Background Worker   │
                                    │ faster-whisper + NLLB      │
                                    └────────────────────────────┘
@@ -50,7 +50,7 @@ werewolf/
 │  ├─ server/        Node.js + Fastify + Socket.IO + Mongoose
 │  ├─ web/           Vite + React + TS
 │  ├─ mobile/        Expo (React Native) + Expo Router
-│  └─ captions/      Python worker: LiveKit Agents + faster-whisper + NLLB (Release 2)
+│  └─ captions/      Python worker: LiveKit (rtc) + faster-whisper + NLLB (M6)
 ├─ packages/
 │  ├─ shared/        Zod schemas, types, socket event contracts, constants (roles, phases), error codes
 │  ├─ game-engine/   Pure rules engine: reducer + projection + validators
@@ -105,7 +105,7 @@ apps/server/src/
 │  ├─ realtime.ts          toàn bộ handler Socket.IO (mỏng: Zod → service → ack)
 │  ├─ reports/             (P1) report.model.ts, reports.routes.ts
 │  ├─ voice/               (M4) voice.service.ts: token LiveKit + đồng bộ quyền theo phase
-│  └─ captions/            (R2) transcript.model.ts, internal API cho Python worker
+│  └─ captions/            transcript.model.ts, captions.service.ts, captions.routes.ts (internal API cho worker)
 ├─ lib/                    clock.ts, errors.ts, ids.ts, presence.ts, socket-handler.ts
 └─ test/                   test tích hợp: MongoDB trong bộ nhớ + client Socket.IO thật
 ```
@@ -150,28 +150,28 @@ Timeout dùng cùng luồng với `{ kind: 'timeout' }` và chỉ áp dụng n�
 - Socket rooms: `user:{userId}` (mọi event riêng và event game, server tự lọc người nhận) và `room:{roomId}` (trạng thái phòng, chat sảnh). Không dùng room cho kênh sói/người chết: server tính người nhận từ state.
 - Contract event định nghĩa **một lần** trong `packages/shared/src/socket.ts` dưới dạng `ClientToServerEvents` / `ServerToClientEvents` (typed generics của Socket.IO) kèm Zod schema.
 
-| Hướng | Event                                             | Payload chính                                                                                                        |
-| ----- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| C→S   | `room:join` / `room:leave`                        | `{code}`                                                                                                             |
-| C→S   | `room:ready`                                      | `{ready}`                                                                                                            |
-| C→S   | `room:updateSettings` (host)                      | `RoomSettingsPatch` (merge với settings hiện tại rồi validate lại)                                                   |
-| C→S   | `room:kick` (host)                                | `{userId}`                                                                                                           |
-| C→S   | `game:start` (host)                               | `{}` → `{gameId}`                                                                                                    |
-| C→S   | `game:action`                                     | `{gameId, command: GameCommand}` (WOLF_VOTE, GUARD_PROTECT, SEER_CHECK, WITCH_ACT, DAY_VOTE, HUNTER_SHOOT, END_TURN) |
-| C→S   | `game:sync`                                       | `{gameId, lastSeq}` → `{view, events (seq > lastSeq, đã lọc), chat}`                                                 |
-| C→S   | `chat:send`                                       | `{channel, text}` — trong trận bị chặn theo `canSend` (nói theo lượt)                                                |
-| S→C   | `server:hello`                                    | `{serverTime, userId}`                                                                                               |
-| S→C   | `room:state` / `room:kicked`                      | `RoomView` / `{roomId}`                                                                                              |
-| S→C   | `game:started`                                    | `{gameId}`                                                                                                           |
-| S→C   | `game:state`                                      | `{gameId, view: PlayerView}` (đã project cho riêng người nhận), gửi sau mỗi thay đổi                                 |
-| S→C   | `game:event`                                      | `{gameId, seq, type, payload}` (ví dụ `PLAYER_DIED`, `SEER_RESULT`, `VOTE_CAST`, `SPEAKER_CHANGED`)                  |
-| S→C   | `chat:message`                                    | `ChatMessageView {id, channel, senderId, senderName, text, at}`                                                      |
-| S→C   | `voice:grant` (M4)                                | `{url, tokens:{main?, wolves?, dead?}}` — gửi lại mỗi khi quyền thay đổi                                             |
-| S→C   | `caption` (qua LiveKit data, không qua Socket.IO) | xem §7                                                                                                               |
+| Hướng | Event                        | Payload chính                                                                                                           |
+| ----- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| C→S   | `room:join` / `room:leave`   | `{code}`                                                                                                                |
+| C→S   | `room:ready`                 | `{ready}`                                                                                                               |
+| C→S   | `room:updateSettings` (host) | `RoomSettingsPatch` (merge với settings hiện tại rồi validate lại)                                                      |
+| C→S   | `room:kick` (host)           | `{userId}`                                                                                                              |
+| C→S   | `game:start` (host)          | `{}` → `{gameId}`                                                                                                       |
+| C→S   | `game:action`                | `{gameId, command: GameCommand}` (WOLF_VOTE, GUARD_PROTECT, SEER_CHECK, WITCH_ACT, DAY_VOTE, HUNTER_SHOOT, END_TURN)    |
+| C→S   | `game:sync`                  | `{gameId, lastSeq}` → `{view, events (seq > lastSeq, đã lọc), chat}`                                                    |
+| C→S   | `chat:send`                  | `{channel, text}` — trong trận bị chặn theo `canSend` (nói theo lượt)                                                   |
+| S→C   | `server:hello`               | `{serverTime, userId}`                                                                                                  |
+| S→C   | `room:state` / `room:kicked` | `RoomView` / `{roomId}`                                                                                                 |
+| S→C   | `game:started`               | `{gameId}`                                                                                                              |
+| S→C   | `game:state`                 | `{gameId, view: PlayerView}` (đã project cho riêng người nhận), gửi sau mỗi thay đổi                                    |
+| S→C   | `game:event`                 | `{gameId, seq, type, payload}` (ví dụ `PLAYER_DIED`, `SEER_RESULT`, `VOTE_CAST`, `SPEAKER_CHANGED`)                     |
+| S→C   | `chat:message`               | `ChatMessageView {id, channel, senderId, senderName, text, at}`                                                         |
+| S→C   | `voice:grant` (M4)           | `{url, tokens:{main?, wolves?, dead?}}` — gửi lại mỗi khi quyền thay đổi                                                |
+| S→C   | `caption:message`            | `CaptionView {id, channel, speakerId, speakerName, text, lang, original, sourceLang, at}`, đã dịch theo người nhận (§7) |
 
 ### 3.6 REST API (tối thiểu, phần còn lại đi qua socket)
 
-`POST /auth/guest` (`{displayName, locale}`), `POST /auth/google` (`{idToken}`: server verify bằng `google-auth-library`, kiểm tra `aud` khớp client ID của web/iOS/Android, rồi upsert user theo `googleSub`), `POST /auth/refresh`, `POST /auth/logout`, `GET /me`, `PATCH /me`, `GET /rooms?status=lobby&lang=`, `POST /rooms`, `GET /rooms/:code`, `GET /games/:id/summary` (sau khi kết thúc), `GET /users/:id/stats`, `POST /reports` (trong vòng 24 giờ sau khi trận kết thúc), `POST /internal/transcripts` (chỉ cho captions worker, dùng shared secret).
+`POST /auth/guest` (`{displayName, locale}`), `POST /auth/google` (`{idToken}`: server verify bằng `google-auth-library`, kiểm tra `aud` khớp client ID của web/iOS/Android, rồi upsert user theo `googleSub`), `POST /auth/refresh`, `POST /auth/logout`, `GET /me`, `PATCH /me`, `GET /rooms?status=lobby&lang=`, `POST /rooms`, `GET /rooms/:code`, `GET /games/:id/summary` (sau khi kết thúc), `GET /users/:id/stats`, `POST /reports` (trong vòng 24 giờ sau khi trận kết thúc), `GET /internal/captions/rooms` và `POST /internal/captions` (chỉ cho captions worker, header `Authorization: Bearer <CAPTIONS_SECRET>`, xem §7).
 
 ### 3.7 Chat
 
@@ -289,13 +289,13 @@ Ngoài việc lưu dữ liệu, MongoDB còn thay luôn phần Redis thường l
 // index: { status, createdAt }, { targetId }
 ```
 
-**`transcripts`**: phụ đề, Release 2
+**`transcripts`**: mỗi câu phụ đề (bản gốc, không lưu bản dịch), làm bằng chứng cho báo cáo
 
 ```ts
 {
-  _id, gameId, channel, speakerId, startedAt, durationMs, text, lang, translations, at;
+  _id, roomId, gameId | null, channel: 'lobby'|'main'|'wolves'|'dead', speakerId, lang, text, at;
 }
-// index: { gameId, at }; TTL 24 giờ (giống chat)
+// index: { gameId, at }; TTL 24 giờ trên `at` (giống chat). Không bao giờ lưu audio.
 ```
 
 ### 5.2 Mẫu query cho logic phức tạp (role, turn, quyền)
@@ -380,27 +380,37 @@ Client:
 - Web: `livekit-client` (`apps/web/src/lib/voice.ts`): mỗi kênh một `Room`; tự phát hoặc ngắt mic theo `grants` và theo `ParticipantPermissionsChanged`; chỉ báo người đang nói lấy từ `activeSpeakers`. UI nằm ở `features/voice/VoiceBar.tsx`.
 - Mobile: `@livekit/react-native` + `@livekit/react-native-webrtc` + `@livekit/react-native-expo-plugin` → **phải dùng Expo Dev Client / EAS Build, không chạy được trên Expo Go**.
 
-## 7. AI phụ đề & dịch — `apps/captions` (Release 2)
+## 7. AI phụ đề & dịch — `apps/captions` (M6)
 
-**Pipeline** (Python, vì các model tối ưu nhất đều có trong hệ sinh thái Python):
+Python, vì các model STT và dịch tối ưu nhất đều có trong hệ sinh thái Python. Worker **chỉ chuyển giọng thành chữ**. Ai được đọc phụ đề do server quyết định, theo đúng ma trận quyền của voice.
 
 ```
-LiveKit Agents worker (hidden participant) join {gameId}-main / -wolves / -dead
-  → subscribe từng audio track
-  → Silero VAD (cắt câu theo khoảng lặng)
-  → STT: faster-whisper (CTranslate2, int8)
-       CPU: model "small" (multilingual) — đủ tốt cho vi/en, ~1–2 s/câu
-       GPU: "large-v3-turbo" — chất lượng tiếng Việt tốt hơn rõ rệt
-  → Dịch: NLLB-200-distilled-600M qua CTranslate2 (int8, ~600 MB RAM), dịch sang
-          tập ngôn ngữ = hợp các `captionLangs` của những người đang nghe track đó
-  → Publish qua LiveKit data (topic "captions", destinationIdentities = chỉ người có quyền nghe)
-  → POST /internal/transcripts (lưu 24 giờ, phục vụ báo cáo)
+apps/captions (1 process)                                apps/server
+  mỗi 3 s: GET /internal/captions/rooms  ───────────────►  phòng có voice + captions bật và có người online
+           ◄── { url, rooms: [{ room, token }] }            → token LiveKit "captions-bot": hidden, chỉ subscribe
+  join từng room LiveKit (participant ẩn), subscribe mọi audio track
+  → AudioStream 16 kHz mono → Segmenter (năng lượng + noise floor thích nghi, cắt theo khoảng lặng 0,6 s, tối đa 8 s)
+  → hàng đợi có giới hạn (32, bỏ câu cũ nhất khi đầy; câu chờ > 8 s thì bỏ)
+  → 1 thread model: faster-whisper (int8, vad_filter = Silero ONNX của faster-whisper)
+       ngôn ngữ: lần đầu tự nhận (giới hạn trong CAPTION_LANGS), sau đó dùng lại ngôn ngữ của người nói, cứ 5 câu nhận lại 1 lần
+  → NLLB-200-distilled-600M (CTranslate2 int8) dịch sang các ngôn ngữ người nghe phòng đó cần
+  → POST /internal/captions { room, speakerId, lang, text, translations }  ──►  CaptionsService.ingest:
+                                                              - parse tên room → lobby / game + channel
+                                                              - speaker phải thuộc kênh (eligibleChannels); phòng phải bật captions
+                                                              - người nhận = ai đang có subscribe trên kênh đó (voicePermissions)
+                                                              - lưu transcripts (TTL 24 h)
+                                                              - emit `caption:message` tới user:{id}, chữ theo ngôn ngữ của từng người
+           ◄── { delivered, wanted: [ngôn ngữ người nghe cần] } (lần sau worker chỉ dịch sang các ngôn ngữ này)
 ```
 
-- **Vì sao không dùng LLM để dịch**: NLLB nhẹ, nhanh, chạy được offline trên CPU và hỗ trợ 200 ngôn ngữ. Thiết kế có interface `Translator` để sau này đổi sang Claude Haiku hoặc model khác nếu cần chất lượng cao hơn.
-- Chat chữ dùng cùng `Translator` qua endpoint nội bộ `POST /translate` của service này.
-- Bảo mật: worker chỉ join room khi `captions: true`. Phụ đề kênh `wolves` chỉ gửi cho sói. Không ghi lại audio.
-- Có fallback cấu hình: `STT_PROVIDER=local|deepgram`, `TRANSLATOR=nllb|llm` để chuyển sang API cloud khi tải lớn.
+- **Vì sao server-driven thay vì LiveKit Agents dispatch**: worker chỉ cần `CAPTIONS_SECRET`, không cần API secret của LiveKit; server là nơi duy nhất quyết định worker vào phòng nào và ai đọc được gì; không phụ thuộc API Agents (thay đổi nhanh); không cần torch.
+- **Vì sao không dùng LiveKit data channel để gửi phụ đề**: Socket.IO đã có sẵn kênh `user:{id}`, client nào cũng nhận được (kể cả người không vào voice), và server lọc theo `voicePermissions` ngay lúc gửi.
+- **Bảo mật**: phụ đề kênh `wolves` chỉ tới sói đang có quyền nghe. Ban đêm không ai nghe `main` nên không có phụ đề `main`. Người không thuộc kênh thì bị bỏ qua. Câu nói xong muộn sau khi đổi phase được gửi theo quyền **hiện tại** (an toàn hơn). Log của worker không ghi nội dung câu nói.
+- **Ngôn ngữ phụ đề của người dùng** = `captionLangs[0]`, không có thì lấy `locale` (client đồng bộ `locale` lên `PATCH /me` khi đổi ngôn ngữ giao diện). Hiện chỉ dùng ngôn ngữ đầu tiên của `captionLangs`.
+- **Cấu hình worker** (env): `SERVER_URL`, `CAPTIONS_SECRET` (bắt buộc, trùng với server), `WHISPER_MODEL` (`small` mặc định), `DEVICE` (`auto|cpu|cuda`; `auto` thử GPU rồi lùi về CPU nếu thiếu cuBLAS/cuDNN), `TRANSLATOR` (`nllb|none`), `NLLB_MODEL`, `CAPTION_LANGS` (`en,vi`), `POLL_SECONDS`, `MAX_LAG_SECONDS`, `MODEL_DIR`, `LOG_LEVEL`.
+- **Chỉ chạy 1 instance worker**: 2 instance sẽ cùng nghe và gửi phụ đề trùng. Khi cần scale: chia phòng theo hash (`shard i/n` trong `GET /internal/captions/rooms`).
+- **Đo được (laptop, CPU, whisper `small` int8)**: câu đầu của mỗi người nói khoảng 4,6 s (có nhận ngôn ngữ); các câu sau STT khoảng 2,6 s + dịch 0,5–1 s cho câu 3 s. `base` nhanh hơn khoảng 3 lần nhưng tiếng Việt kém hơn. Muốn ≤ 3 s ổn định: máy CPU mạnh hơn, GPU (`large-v3-turbo`), hoặc STT cloud.
+- **Chưa làm**: dịch chat chữ (FR-CAP-04); hiện nhiều ngôn ngữ phụ đề cùng lúc; `STT_PROVIDER=deepgram`, `TRANSLATOR=llm` (interface `SpeechToText` / `Translator` đã sẵn để thêm).
 
 ## 8. Web — `apps/web`
 
@@ -458,22 +468,23 @@ Kiểm thử mobile:
 
 - `mongo` (replica set `rs0`, 1 node) — port 27017
 - `livekit` (`livekit/livekit-server --dev`) — 7880 (HTTP/WS), 7881 (TCP), 7882 (UDP). `--node-ip` mặc định `127.0.0.1`; khi thử bằng điện thoại thì đặt `LIVEKIT_NODE_IP=<IP LAN của máy>`
-- (Release 2) `captions` — build từ `apps/captions`
 
-ENV chính của server: `MONGO_URI`, `JWT_SECRET`, `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `CAPTIONS_INTERNAL_SECRET`, `CORS_ORIGINS`.
+ENV chính của server: `MONGO_URI`, `JWT_SECRET`, `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `CAPTIONS_SECRET` (không đặt = tắt API cho worker), `CORS_ORIGINS`.
+
+Dev phụ đề: `pnpm infra:up`, `pnpm dev:local` (secret dev `dev-captions-secret`), `pnpm captions:dev` (lần đầu tải khoảng 1 GB model vào cache Hugging Face).
 
 Production (đã chốt):
 
-| Thành phần    | Dịch vụ                                   | Ghi chú                                                                                                           |
-| ------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Server        | **Render** Web Service                    | Gói trả phí (gói Free tự tắt sau khoảng 15 phút không có request, làm đứt WebSocket và timer). 1 instance cho MVP |
-| Database      | **MongoDB Atlas**                         | Cùng region với Render (ví dụ Singapore)                                                                          |
-| Web           | **Vercel**                                | Build static từ Vite                                                                                              |
-| Voice         | **LiveKit Cloud**                         |                                                                                                                   |
-| Captions (R2) | Render Background Worker (Docker, Python) | Cần nhiều RAM (NLLB-600M int8 + whisper small). Chuyển sang VM có GPU nếu cần chất lượng cao hơn                  |
-| Mobile        | EAS Build / Submit                        |                                                                                                                   |
+| Thành phần | Dịch vụ                                                       | Ghi chú                                                                                                                                                      |
+| ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Server     | **Render** Web Service                                        | Gói trả phí (gói Free tự tắt sau khoảng 15 phút không có request, làm đứt WebSocket và timer). 1 instance cho MVP                                            |
+| Database   | **MongoDB Atlas**                                             | Cùng region với Render (ví dụ Singapore)                                                                                                                     |
+| Web        | **Vercel**                                                    | Build static từ Vite                                                                                                                                         |
+| Voice      | **LiveKit Cloud**                                             |                                                                                                                                                              |
+| Captions   | Render Background Worker (Docker, `apps/captions/Dockerfile`) | Chỉ có kết nối ra ngoài. RAM khoảng 2 GB (whisper small + NLLB-600M int8, model nằm sẵn trong image). 1 instance. Cần GPU nếu muốn chất lượng/độ trễ tốt hơn |
+| Mobile     | EAS Build / Submit                                            |                                                                                                                                                              |
 
-CI (GitHub Actions): `pnpm install` → `turbo run lint typecheck test build` cho các package bị ảnh hưởng.
+CI (GitHub Actions): job `check`: `pnpm install` → lint, typecheck, test, build; job `captions`: `uv sync` → ruff, pytest (dùng fake, không tải model).
 
 ## 11. Lộ trình (milestones)
 
