@@ -13,7 +13,13 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:5173',
     trace: 'retain-on-failure',
+    // A bot click can race a phase change (button just got disabled): never wait forever.
+    actionTimeout: 5_000,
     ...devices['Desktop Chrome'],
+    // Fake microphone + auto-accepted permission prompt for the voice tests.
+    launchOptions: {
+      args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
+    },
   },
   webServer: [
     {

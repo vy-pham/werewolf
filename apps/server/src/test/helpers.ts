@@ -1,12 +1,14 @@
 import type {
   AckResult,
   AuthResponse,
+  ChannelGrant,
   ChatMessageView,
   ClientToServerEvents,
   DeliveredGameEvent,
   PlayerView,
   RoomView,
   ServerToClientEvents,
+  VoiceGrants,
 } from '@werewolf/shared';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { io as connect, type Socket } from 'socket.io-client';
@@ -16,6 +18,7 @@ import type { Clock } from '../lib/clock';
 import { AppError } from '../lib/errors';
 import type { GoogleVerifier } from '../modules/auth/google';
 import type { PhaseScheduler, TimeoutHandler } from '../modules/games/phase-scheduler';
+import type { VoiceProvider } from '../modules/voice/voice.provider';
 
 export const T0 = Date.UTC(2026, 10, 18, 12, 0, 0);
 
@@ -82,11 +85,13 @@ export interface TestServer {
   url: string;
   clock: FakeClock;
   scheduler: ManualScheduler;
+  voice: FakeVoice;
   close(): Promise<void>;
 }
 
 export async function startServer(dbUri: string, clock = new FakeClock()): Promise<TestServer> {
   const scheduler = new ManualScheduler(clock);
+  const voice = new FakeVoice();
   const env = loadEnv({
     NODE_ENV: 'test',
     LOG_LEVEL: 'silent',
@@ -100,12 +105,12 @@ export async function startServer(dbUri: string, clock = new FakeClock()): Promi
   const app = await buildApp({
     env,
     rateLimit: false,
-    deps: { clock, scheduler, google: fakeGoogle },
+    deps: { clock, scheduler, google: fakeGoogle, voice },
   });
   await app.listen({ port: 0, host: '127.0.0.1' });
   const address = app.server.address();
   const port = typeof address === 'object' && address ? address.port : 0;
-  return { url: `http://127.0.0.1:${port}`, clock, scheduler, close: () => app.close() };
+  return { url: `http://127.0.0.1:${port}`, clock, scheduler, voice, close: () => app.close() };
 }
 
 // ── HTTP ─────────────────────────────────────────────────────────────────────
@@ -146,6 +151,7 @@ export class TestClient {
   readonly views: PlayerView[] = [];
   readonly events: DeliveredGameEvent[] = [];
   readonly chat: ChatMessageView[] = [];
+  readonly voiceUpdates: VoiceGrants[] = [];
   room: RoomView | null = null;
   gameId: string | null = null;
   kicked = false;
@@ -173,6 +179,7 @@ export class TestClient {
     this.socket.on('room:state', (r) => {
       this.room = r;
     });
+    this.socket.on('voice:update', ({ grants }) => this.voiceUpdates.push(grants));
     this.socket.on('room:kicked', () => {
       this.kicked = true;
     });
@@ -244,4 +251,27 @@ export async function setupLobby(server: TestServer, n: number) {
   for (const c of clients) await c.call('room:join', { code });
   for (const c of clients.slice(1)) await c.call('room:ready', { ready: true });
   return { clients, host, code, roomId: created.body.id };
+}
+
+// ── Voice ────────────────────────────────────────────────────────────────────
+
+/** Records LiveKit calls instead of making them. */
+export class FakeVoice implements VoiceProvider {
+  readonly url = 'ws://fake-livekit';
+  readonly tokens: { room: string; identity: string; grant: ChannelGrant }[] = [];
+  readonly calls: { room: string; identity: string; grant: ChannelGrant }[] = [];
+
+  async createToken(input: { room: string; identity: string; name: string; grant: ChannelGrant }) {
+    this.tokens.push({ room: input.room, identity: input.identity, grant: input.grant });
+    return `token:${input.room}:${input.identity}`;
+  }
+
+  async setPermissions(room: string, identity: string, grant: ChannelGrant) {
+    this.calls.push({ room, identity, grant });
+  }
+
+  /** The last permission pushed for this participant in this room. */
+  latest(room: string, identity: string): ChannelGrant | undefined {
+    return this.calls.filter((c) => c.room === room && c.identity === identity).at(-1)?.grant;
+  }
 }

@@ -1,4 +1,5 @@
 # Local development services. Production uses MongoDB Atlas + LiveKit Cloud (docs/03-technical-design.md §10).
+# Without Docker, `pnpm dev:local` runs the server on an in-memory MongoDB (no voice).
 name: werewolf
 
 services:
@@ -26,12 +27,13 @@ services:
 
   livekit:
     image: livekit/livekit-server:latest
-    # --dev: API key "devkey", secret "secret"; --bind so the host can reach it
-    command: ["--dev", "--bind", "0.0.0.0"]
+    # --dev: API key "devkey", secret "secret". Advertise 127.0.0.1 so browsers on this machine can
+    # reach the container; WebRTC media goes over one UDP port (TCP 7881 as a fallback).
+    command: ["--dev", "--bind", "0.0.0.0", "--node-ip", "127.0.0.1", "--udp-port", "7882"]
     ports:
       - "7880:7880" # HTTP / WebSocket signaling
       - "7881:7881" # WebRTC over TCP
-      - "50000-50100:50000-50100/udp" # WebRTC over UDP
+      - "7882:7882/udp" # WebRTC over UDP
 
 volumes:
   mongo-data:

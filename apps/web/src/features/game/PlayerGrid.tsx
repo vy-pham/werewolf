@@ -1,6 +1,7 @@
 import type { PlayerView } from '@werewolf/shared';
 import { useTranslation } from 'react-i18next';
 import { Badge, cn } from '../../components/ui';
+import { useVoice } from '../../lib/voice';
 import { useNames } from './names';
 
 interface Props {
@@ -23,6 +24,7 @@ export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
   const name = useNames();
   const dayVotes = countVotes(view.dayVotes);
   const wolfVotes = countVotes(view.wolfVotes);
+  const speaking = useVoice((s) => s.speaking);
 
   return (
     <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4" data-testid="player-grid">
@@ -37,6 +39,7 @@ export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
                 type="button"
                 data-testid="player-card"
                 data-player-id={p.id}
+                data-speaking={speaking.includes(p.id)}
                 data-alive={p.alive}
                 data-role={p.role ?? ''}
                 data-selectable={canSelect}
@@ -50,6 +53,7 @@ export function PlayerGrid({ view, selectable, selectedId, onSelect }: Props) {
                   canSelect && 'cursor-pointer hover:border-moon',
                   selectedId === p.id && 'border-moon ring-2 ring-moon/50',
                   view.speakerId === p.id && 'border-green-400',
+                  speaking.includes(p.id) && 'shadow-[0_0_0_2px_rgba(74,222,128,0.8)]',
                 )}
               >
                 <span className="flex w-full items-center gap-1 text-sm">

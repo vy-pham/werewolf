@@ -1,7 +1,12 @@
 import { z } from 'zod';
 import { RoomCodeSchema, type RoomSettingsPatch, type RoomView } from './api';
 import type { AppErrorBody } from './errors';
-import { GameCommandSchema, type GameEventPayloads, type PlayerView } from './game';
+import {
+  type ChannelGrant,
+  GameCommandSchema,
+  type GameEventPayloads,
+  type PlayerView,
+} from './game';
 import { CHANNELS, type Channel } from './phases';
 
 /** Every client→server event acknowledges with either `{ ok: true, data }` or `{ ok: false, error }`. */
@@ -65,6 +70,8 @@ export interface ClientToServerEvents {
   'game:action': (payload: z.input<typeof GameActionSchema>, ack: Ack) => void;
   'game:sync': (payload: z.input<typeof GameSyncSchema>, ack: Ack<GameSyncResult>) => void;
   'chat:send': (payload: z.input<typeof ChatSendSchema>, ack: Ack) => void;
+  /** Tokens for every voice room this player may be in right now (call again after voice:update). */
+  'voice:join': (payload: Record<string, never>, ack: Ack<VoiceJoinInfo>) => void;
 }
 
 export interface ServerToClientEvents {
@@ -76,10 +83,33 @@ export interface ServerToClientEvents {
   'game:state': (payload: { gameId: string; view: PlayerView }) => void;
   'game:event': (event: DeliveredGameEvent) => void;
   'chat:message': (message: ChatMessageView) => void;
+  /** Voice rooms or permissions changed (phase change, death, game start/end): call voice:join. */
+  'voice:update': (payload: { grants: VoiceGrants }) => void;
 }
 
 export interface SocketData {
   userId: string;
   displayName: string;
   roomId: string | null;
+}
+
+/** Voice/chat access per channel, including the lobby channel. */
+export type VoiceGrants = Partial<Record<Channel, ChannelGrant>>;
+
+export interface VoiceConnection {
+  channel: Channel;
+  /** LiveKit room name. */
+  room: string;
+  /** LiveKit access token for this room (short-lived). */
+  token: string;
+}
+
+export interface VoiceJoinInfo {
+  /** False when the host turned voice off for this room. */
+  enabled: boolean;
+  /** LiveKit server URL (wss://… in production). */
+  url: string;
+  connections: VoiceConnection[];
+  /** What this player may do on each channel right now. The server enforces it in LiveKit. */
+  grants: VoiceGrants;
 }

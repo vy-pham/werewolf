@@ -16,6 +16,7 @@ import type { AppSocket, IO } from '../plugins/socket';
 import type { ChatService } from './chat/chat.service';
 import type { GamesService } from './games/games.service';
 import { type RoomsService, roomChannel, userChannel } from './rooms/rooms.service';
+import type { VoiceService } from './voice/voice.service';
 
 interface RealtimeDeps {
   io: IO;
@@ -24,10 +25,11 @@ interface RealtimeDeps {
   rooms: RoomsService;
   games: GamesService;
   chat: ChatService;
+  voice: VoiceService;
 }
 
 /** Socket.IO event handlers. Thin: validate (Zod) → service → ack. */
-export function registerRealtime({ io, log, presence, rooms, games, chat }: RealtimeDeps) {
+export function registerRealtime({ io, log, presence, rooms, games, chat, voice }: RealtimeDeps) {
   io.on('connection', (socket: AppSocket) => {
     const { userId } = socket.data;
     const actor = () => ({ userId, displayName: socket.data.displayName });
@@ -92,5 +94,15 @@ export function registerRealtime({ io, log, presence, rooms, games, chat }: Real
     onEvent(socket, log, 'chat:send', ChatSendSchema, ({ channel, text }) =>
       chat.send({ ...actor(), roomId: socket.data.roomId }, channel, text),
     );
+
+    // ── Voice ────────────────────────────────────────────────────────────────
+    onEvent(socket, log, 'voice:join', EmptySchema, async () => {
+      const room = await rooms.getById(currentRoom());
+      const game =
+        room.status === 'in_game' && room.currentGameId
+          ? await games.load(String(room.currentGameId))
+          : null;
+      return voice.joinInfo(actor(), room, game);
+    });
   });
 }

@@ -51,6 +51,13 @@ socket.on('game:started', ({ gameId }) => store().onGameStarted(gameId));
 socket.on('game:state', ({ gameId, view }) => store().onState(gameId, view));
 socket.on('game:event', (event) => store().onEvent(event));
 socket.on('chat:message', (message) => store().onChat(message));
+// Lazy import: voice.ts imports this module too.
+socket.on('voice:update', ({ grants }) => {
+  void import('./voice').then((v) => v.onVoiceUpdate(grants));
+});
+socket.on('room:kicked', () => {
+  void import('./voice').then((v) => v.stopVoice());
+});
 
 /** Emits an event and resolves with its data, or throws a SocketError. */
 export function call<T = null>(event: keyof ClientToServerEvents, payload: unknown): Promise<T> {

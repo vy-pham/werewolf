@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '../../components/ui';
 import { ChatPanel } from '../chat/ChatPanel';
+import { VoiceBar } from '../voice/VoiceBar';
 import { ActionPanel } from './ActionPanel';
 import { EventLog } from './EventLog';
 import { useNames } from './names';
@@ -63,6 +64,7 @@ export function GameScreen({
     <div className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-4 lg:grid-cols-[1fr_340px]">
       <div className="space-y-4">
         <PhaseHeader view={view} />
+        <VoiceBar />
         <PlayerGrid
           view={view}
           selectable={(id) => targetable(view, rules, id)}

@@ -18,6 +18,8 @@ import { registerRealtime } from './modules/realtime';
 import { roomsRoutes } from './modules/rooms/rooms.routes';
 import { RoomsService } from './modules/rooms/rooms.service';
 import { usersRoutes } from './modules/users/users.routes';
+import { LiveKitVoice, type VoiceProvider } from './modules/voice/voice.provider';
+import { VoiceService } from './modules/voice/voice.service';
 import { registerAuth } from './plugins/auth';
 import { registerErrorHandler } from './plugins/error-handler';
 import { connectMongo } from './plugins/mongoose';
@@ -34,6 +36,7 @@ export interface BuildAppOptions {
     clock?: Clock;
     scheduler?: PhaseScheduler;
     google?: GoogleVerifier;
+    voice?: VoiceProvider;
   };
 }
 
@@ -75,17 +78,26 @@ export async function buildApp({
   const presence = new Presence();
   const rooms = new RoomsService(io, presence);
   const chat = new ChatService(io, clock, rooms);
+  const voice = new VoiceService(
+    deps.voice ?? new LiveKitVoice(env.LIVEKIT_URL, env.LIVEKIT_API_KEY, env.LIVEKIT_API_SECRET),
+    io,
+    app.log,
+  );
   const games = new GamesService({
     io,
     clock,
     scheduler,
     log: app.log,
-    onFinished: (roomId) => rooms.backToLobby(roomId),
+    onStateChanged: (game) => voice.syncGame(game, String(game.roomId)),
+    onFinished: async (game) => {
+      await rooms.backToLobby(String(game.roomId));
+      await voice.syncLobby(await rooms.getById(String(game.roomId)), game);
+    },
     recentChat: (game, userId) => chat.recentForGame(game, userId),
   });
   rooms.setGameStarter(games);
   chat.setGames(games);
-  registerRealtime({ io, log: app.log, presence, rooms, games, chat });
+  registerRealtime({ io, log: app.log, presence, rooms, games, chat, voice });
 
   // ── HTTP routes (one Fastify plugin per module, docs §3.2) ─────────────────
   await app.register(healthRoutes);

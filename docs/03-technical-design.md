@@ -357,19 +357,27 @@ Lý do chọn LiveKit:
 - Có **LiveKit Agents** để gắn AI phụ đề vào cùng room. Worker chỉ kết nối ra ngoài, nên chạy được trên Render.
 - Dev local: `livekit-server --dev` trong docker-compose. Staging và production dùng LiveKit Cloud project (region gần Việt Nam nhất). **Cần đo độ trễ thực tế ở milestone M4.**
 
-Thiết kế room LiveKit cho mỗi trận:
+Room LiveKit (đã cài đặt ở M4, `apps/server/src/modules/voice/`):
 
-| LiveKit room      | Ai tham gia                          |
-| ----------------- | ------------------------------------ |
-| `{gameId}-main`   | Mọi người chơi + khán giả            |
-| `{gameId}-wolves` | Sói (chỉ tồn tại khi trận đang chạy) |
-| `{gameId}-dead`   | Người chết                           |
+| LiveKit room           | Ai có token                                    |
+| ---------------------- | ---------------------------------------------- |
+| `room-{roomId}-lobby`  | Thành viên phòng khi đang ở sảnh (ai cũng nói) |
+| `game-{gameId}-main`   | Mọi người chơi                                 |
+| `game-{gameId}-wolves` | Chỉ người có vai sói, kể cả sói đã chết        |
+| `game-{gameId}-dead`   | Chỉ người đã chết                              |
 
-`VoiceService.syncPermissions(game)` chạy sau mỗi lần `PHASE_CHANGED` hoặc `PLAYER_DIED`. Hàm này dựa vào `engine.voicePermissions()` để gọi `updateParticipant` cho từng người. Client nhận `voice:grant` để join hoặc rời room phù hợp. Ở NIGHT, dân làng bị `canSubscribe=false` trong `main`, tức server **chặn không cho nghe**, chứ không chỉ chặn nói.
+Luồng xử lý:
+
+- Client bấm "Vào voice" và gọi `voice:join`. Server trả về `{ url, connections: [{ channel, room, token }], grants }` cho đúng bối cảnh hiện tại (sảnh hoặc trận). Token đã chứa `canPublish` / `canSubscribe` hiện hành. Server **không bao giờ cấp token phòng sói cho người không phải sói**.
+- Sau mỗi thay đổi state, `GamesService` gọi `VoiceService.syncGame(game)`. Hàm này tính `engine.voicePermissions()` cho từng người, **so với lần đẩy trước** (bỏ phiếu không làm đổi quyền nên không gọi LiveKit), rồi gọi `updateParticipant` cho người đang kết nối và gửi `voice:update` cho client. Client gọi lại `voice:join` để vào hoặc rời các phòng cho khớp.
+- Khi LiveKit thu quyền `canPublish`, nó tự gỡ track của người đó; khi thu `canSubscribe`, người đó không nhận được âm thanh. Vì vậy ở NIGHT dân làng **bị server chặn nghe**, chứ không chỉ bị chặn nói. Client sửa đổi cũng không vượt qua được.
+- Lúc bắt đầu trận, `status: 'in_game'` và `currentGameId` được ghi trong cùng một lệnh khóa phòng, nên `voice:join` ngay sau đó đã trả về phòng của trận. (Bug này do test với LiveKit thật phát hiện.)
+- Chủ phòng tắt voice (`settings.voice = false`) thì `voice:join` trả về `enabled: false`.
+- Dev: `pnpm infra:up` chạy LiveKit với `--node-ip 127.0.0.1 --udp-port 7882`, để trình duyệt trên cùng máy kết nối được tới container.
 
 Client:
 
-- Web: `livekit-client` + `@livekit/components-react`
+- Web: `livekit-client` (`apps/web/src/lib/voice.ts`): mỗi kênh một `Room`; tự phát hoặc ngắt mic theo `grants` và theo `ParticipantPermissionsChanged`; chỉ báo người đang nói lấy từ `activeSpeakers`. UI nằm ở `features/voice/VoiceBar.tsx`.
 - Mobile: `@livekit/react-native` + `@livekit/react-native-webrtc` + `@livekit/react-native-expo-plugin` → **phải dùng Expo Dev Client / EAS Build, không chạy được trên Expo Go**.
 
 ## 7. AI phụ đề & dịch — `apps/captions` (Release 2)

@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { Badge, Button, Card } from '../../components/ui';
 import { attempt } from '../../lib/errors';
 import { call } from '../../lib/socket';
+import { stopVoice } from '../../lib/voice';
 import { useGame } from '../../stores/game';
 import { useSession } from '../../stores/session';
 import { useToast } from '../../stores/toast';
 import { ChatPanel } from '../chat/ChatPanel';
+import { VoiceBar } from '../voice/VoiceBar';
 import { SettingsPanel } from './SettingsPanel';
 
 export function RoomLobby({ room }: { room: RoomView }) {
@@ -33,6 +35,7 @@ export function RoomLobby({ room }: { room: RoomView }) {
   const leave = async () => {
     const ok = await attempt(t, () => call('room:leave', {}));
     if (ok) {
+      await stopVoice();
       useGame.getState().leaveRoom();
       await navigate({ to: '/' });
     }
@@ -59,6 +62,8 @@ export function RoomLobby({ room }: { room: RoomView }) {
             {t('room.leave')}
           </Button>
         </Card>
+
+        <VoiceBar />
 
         <Card>
           <h2 className="mb-3 font-semibold">
